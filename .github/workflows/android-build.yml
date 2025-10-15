@@ -30,7 +30,6 @@ jobs:
     - name: Sign Release APK
       id: sign_app
       continue-on-error: true
-      if: ${{ secrets.SIGNING_KEY != '' }}
       uses: r0adkll/sign-android-release@v1
       with:
         releaseDirectory: app/build/outputs/apk/release
