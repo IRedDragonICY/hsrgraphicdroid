@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">HSR Graphic Droid</string>
+    
+    <!-- Main Screen -->
+    <string name="system_status">システムステータス</string>
+    <string name="quick_actions">クイックアクション</string>
+    <string name="saved_backups">保存されたバックアップ</string>
+    <string name="backup_count">%1$d バックアップ</string>
+    
+    <!-- Status -->
+    <string name="checking">確認中…</string>
+    <string name="root_granted">Root権限が付与されました</string>
+    <string name="root_not_granted">Root権限が必要です</string>
+    <string name="game_found">ゲームがインストールされています</string>
+    <string name="game_not_found">ゲームが見つかりません</string>
+    
+    <!-- Actions -->
+    <string name="read_current_settings">現在の設定を読む</string>
+    <string name="edit_settings">グラフィック設定を編集</string>
+    <string name="create_backup">バックアップを作成</string>
+    <string name="refresh">更新</string>
+    <string name="restore">復元</string>
+    <string name="delete">削除</string>
+    <string name="apply">適用</string>
+    <string name="save">保存</string>
+    <string name="cancel">キャンセル</string>
+    
+    <!-- Graphics Editor -->
+    <string name="graphics_editor">グラフィックエディタ</string>
+    <string name="graphics_settings">グラフィック設定</string>
+    <string name="presets">プリセット</string>
+    <string name="preset_low">低</string>
+    <string name="preset_medium">中</string>
+    <string name="preset_high">高</string>
+    <string name="preset_ultra">最高</string>
+    
+    <!-- Settings -->
+    <string name="fps">フレームレート (FPS)</string>
+    <string name="vsync">垂直同期</string>
+    <string name="render_scale">レンダースケール</string>
+    <string name="resolution_quality">解像度品質</string>
+    <string name="shadow_quality">影の品質</string>
+    <string name="light_quality">照明品質</string>
+    <string name="character_quality">キャラクター品質</string>
+    <string name="environment_quality">環境品質</string>
+    <string name="reflection_quality">反射品質</string>
+    <string name="sfx_quality">エフェクト品質</string>
+    <string name="bloom_quality">ブルーム品質</string>
+    <string name="anti_aliasing">アンチエイリアシング</string>
+    <string name="self_shadow">セルフシャドウ</string>
+    <string name="screen_resolution">画面解像度</string>
+    <string name="resolution_width">幅</string>
+    <string name="resolution_height">高さ</string>
+    <string name="resolution_presets">解像度プリセット</string>
+    <string name="custom_resolution">カスタム</string>
+    <string name="overall_graphics_quality">全体グラフィック品質</string>
+    <string name="fullscreen_mode">フルスクリーンモード</string>
+    <string name="fullscreen_window">フルスクリーンウィンドウ</string>
+    <string name="exclusive_fullscreen">排他的フルスクリーン</string>
+    <string name="maximized_window">最大化ウィンドウ</string>
+    <string name="windowed">ウィンドウ表示</string>
+    <string name="speed_up_open">起動高速化</string>
+    <string name="enable_speed_up">高速化を有効化</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings">設定</string>
+    <string name="theme">テーマ</string>
+    <string name="language">言語</string>
+    <string name="system_default">システムデフォルト</string>
+    <string name="light">ライト</string>
+    <string name="dark">ダーク</string>
+</resources>

@@ -1,0 +1,147 @@
+<resources>
+    <string name="app_name">HSR Graphic Droid</string>
+    
+    <!-- Main Screen -->
+    <string name="system_status">Status Sistem</string>
+    <string name="quick_actions">Aksi Cepat</string>
+    <string name="saved_backups">Backup Tersimpan</string>
+    <string name="backup_count">%1$d backup</string>
+    
+    <!-- Status -->
+    <string name="checking">Memeriksa…</string>
+    <string name="root_granted">Akses Root Diberikan</string>
+    <string name="root_not_granted">Membutuhkan Akses Root</string>
+    <string name="game_found">Game Terinstal</string>
+    <string name="game_not_found">Game Tidak Ditemukan</string>
+    
+    <!-- Actions -->
+    <string name="read_current_settings">Baca Pengaturan Saat Ini</string>
+    <string name="edit_settings">Edit Pengaturan Grafis</string>
+    <string name="create_backup">Buat Backup</string>
+    <string name="refresh">Segarkan</string>
+    <string name="restore">Pulihkan</string>
+    <string name="delete">Hapus</string>
+    <string name="apply">Terapkan</string>
+    <string name="save">Simpan</string>
+    <string name="cancel">Batal</string>
+    <string name="ok">OK</string>
+    <string name="grant">Izinkan</string>
+    <string name="exit">Keluar</string>
+    
+    <!-- Graphics Editor -->
+    <string name="graphics_editor">Editor Grafis</string>
+    <string name="graphics_settings">Pengaturan Grafis</string>
+    <string name="presets">Preset</string>
+    <string name="preset_low">Rendah</string>
+    <string name="preset_medium">Sedang</string>
+    <string name="preset_high">Tinggi</string>
+    <string name="preset_ultra">Ultra</string>
+    <string name="preset_applied">Preset %1$s diterapkan</string>
+    
+    <!-- Settings -->
+    <string name="fps">Frame Rate (FPS)</string>
+    <string name="vsync">Sinkronisasi Vertikal</string>
+    <string name="render_scale">Skala Render</string>
+    <string name="resolution_quality">Kualitas Resolusi</string>
+    <string name="shadow_quality">Kualitas Bayangan</string>
+    <string name="light_quality">Kualitas Pencahayaan</string>
+    <string name="character_quality">Kualitas Karakter</string>
+    <string name="environment_quality">Kualitas Lingkungan</string>
+    <string name="reflection_quality">Kualitas Refleksi</string>
+    <string name="sfx_quality">Kualitas Efek</string>
+    <string name="bloom_quality">Kualitas Bloom</string>
+    <string name="anti_aliasing">Anti-Aliasing</string>
+    <string name="self_shadow">Bayangan Sendiri</string>
+    <string name="metalfx_super_resolution">Resolusi Super MetalFX</string>
+    <string name="half_res_transparent">Transparan Setengah Resolusi</string>
+    <string name="dlss_quality">Kualitas DLSS</string>
+    <string name="screen_resolution">Resolusi Layar</string>
+    <string name="resolution_width">Lebar</string>
+    <string name="resolution_height">Tinggi</string>
+    <string name="resolution_presets">Preset Resolusi</string>
+    <string name="custom_resolution">Kustom</string>
+    <string name="overall_graphics_quality">Kualitas Grafis Keseluruhan</string>
+    <string name="fullscreen_mode">Mode Layar Penuh</string>
+    <string name="fullscreen_window">Jendela Layar Penuh</string>
+    <string name="exclusive_fullscreen">Layar Penuh Eksklusif</string>
+    <string name="maximized_window">Jendela Maksimal</string>
+    <string name="windowed">Berjendela</string>
+    <string name="speed_up_open">Percepat Pembukaan</string>
+    <string name="enable_speed_up">Aktifkan Percepatan</string>
+    <string name="apply_settings_now">Terapkan Pengaturan Sekarang</string>
+    <string name="save_as_backup">Simpan sebagai Cadangan</string>
+    
+    <!-- Descriptions -->
+    <string name="fps_desc">Target frame per detik</string>
+    <string name="vsync_desc">Sinkron dengan refresh rate layar</string>
+    <string name="render_scale_desc">Resolusi rendering internal</string>
+    <string name="resolution_quality_desc">Kualitas resolusi output</string>
+    <string name="shadow_quality_desc">Detail dan jarak bayangan</string>
+    <string name="light_quality_desc">Kualitas efek pencahayaan</string>
+    <string name="character_quality_desc">Detail model karakter</string>
+    <string name="environment_quality_desc">Level detail dunia</string>
+    <string name="reflection_quality_desc">Akurasi refleksi</string>
+    <string name="sfx_quality_desc">Kualitas efek khusus</string>
+    <string name="bloom_quality_desc">Intensitas cahaya bloom</string>
+    <string name="anti_aliasing_desc">Mode penghalusan tepi</string>
+    <string name="self_shadow_desc">Bayangan diri karakter</string>
+    <string name="metalfx_desc">Teknologi upscaling Apple</string>
+    <string name="half_res_desc">Optimasi efek transparan</string>
+    <string name="dlss_desc">Upscaling AI NVIDIA</string>
+    <string name="screen_resolution_desc">Resolusi jendela game</string>
+    <string name="overall_graphics_quality_desc">Pengaturan kualitas grafis master Unity</string>
+    <string name="fullscreen_mode_desc">Mode tampilan jendela game</string>
+    <string name="speed_up_open_desc">Aktifkan startup dan loading game lebih cepat</string>
+    
+    <!-- Quality Levels -->
+    <string name="low">Rendah</string>
+    <string name="high">Tinggi</string>
+    <string name="off">Mati</string>
+    <string name="on">Nyala</string>
+    <string name="unknown">Tidak Diketahui</string>
+    
+    <!-- Dialogs -->
+    <string name="root_required">Memerlukan Akses Root</string>
+    <string name="root_required_message">Aplikasi ini memerlukan akses root untuk mengubah pengaturan game. Mohon berikan izin root.</string>
+    <string name="current_settings">Pengaturan Saat Ini</string>
+    <string name="backup_name_hint">Nama cadangan (opsional)</string>
+    <string name="apply_settings">Terapkan Pengaturan</string>
+    <string name="apply_settings_message">Ini akan mengubah pengaturan game. Pastikan game ditutup.</string>
+    <string name="restore_backup">Pulihkan Cadangan</string>
+    <string name="restore_backup_message">Pulihkan pengaturan dari "%1$s"?</string>
+    <string name="delete_backup">Hapus Cadangan</string>
+    <string name="delete_backup_message">Hapus cadangan "%1$s"?</string>
+    <string name="kill_game">Tutup Paksa Game</string>
+    
+    <!-- Messages -->
+    <string name="backup_created">Backup berhasil dibuat</string>
+    <string name="backup_failed">Gagal membuat backup</string>
+    <string name="backup_saved">Backup disimpan</string>
+    <string name="backup_deleted">Backup dihapus</string>
+    <string name="restore_success">Pengaturan berhasil dipulihkan. Silakan restart game.</string>
+    <string name="restore_failed">Gagal memulihkan pengaturan</string>
+    <string name="settings_applied">Pengaturan berhasil diterapkan. Silakan restart game.</string>
+    <string name="apply_failed">Gagal menerapkan pengaturan</string>
+    <string name="error_read_settings">Gagal membaca pengaturan. Pastikan game terinstal dan Anda memiliki akses root.</string>
+    <string name="game_killed">Game ditutup</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings">Pengaturan</string>
+    <string name="theme">Tema</string>
+    <string name="language">Bahasa</string>
+    <string name="system_default">Bawaan Sistem</string>
+    <string name="light">Terang</string>
+    <string name="dark">Gelap</string>
+    
+    <!-- Language Options -->
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_chinese">中文</string>
+    <string name="language_japanese">日本語</string>
+    <string name="language_system">Bawaan Sistem</string>
+    
+    <!-- Menu -->
+    <string name="action_settings">Pengaturan</string>
+    <string name="about">Tentang</string>
+    <string name="about_message">HSR Graphic Droid v1.0.0\n\nAlat premium untuk menyesuaikan pengaturan grafis Honkai: Star Rail.\n\nFitur:\n• Baca dan modifikasi pengaturan grafis game\n• Cadangkan dan pulihkan konfigurasi\n• Profil preset (Rendah, Sedang, Tinggi, Ultra)\n• Dukungan berbagai bahasa\n• Antarmuka Material Design 3\n\nMemerlukan akses root melalui Magisk atau sejenisnya.\n\n© 2025 iRedDragonICY</string>
+</resources>

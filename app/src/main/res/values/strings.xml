@@ -1,0 +1,147 @@
+<resources>
+    <string name="app_name">HSR Graphic Droid</string>
+    
+    <!-- Main Screen -->
+    <string name="system_status">System Status</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="saved_backups">Saved Backups</string>
+    <string name="backup_count">%1$d backups</string>
+    
+    <!-- Status -->
+    <string name="checking">Checking…</string>
+    <string name="root_granted">Root Access Granted</string>
+    <string name="root_not_granted">Root Access Required</string>
+    <string name="game_found">Game Installed</string>
+    <string name="game_not_found">Game Not Found</string>
+    
+    <!-- Actions -->
+    <string name="read_current_settings">Read Current Settings</string>
+    <string name="edit_settings">Edit Graphics Settings</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="refresh">Refresh</string>
+    <string name="restore">Restore</string>
+    <string name="delete">Delete</string>
+    <string name="apply">Apply</string>
+    <string name="apply_settings_now">Apply Settings Now</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="grant">Grant</string>
+    <string name="exit">Exit</string>
+    
+    <!-- Graphics Editor -->
+    <string name="graphics_editor">Graphics Editor</string>
+    <string name="graphics_settings">Graphics Settings</string>
+    <string name="presets">Presets</string>
+    <string name="preset_low">Low</string>
+    <string name="preset_medium">Medium</string>
+    <string name="preset_high">High</string>
+    <string name="preset_ultra">Ultra</string>
+    <string name="preset_applied">Preset %1$s applied</string>
+    
+    <!-- Settings -->
+    <string name="fps">Frame Rate (FPS)</string>
+    <string name="vsync">Vertical Sync</string>
+    <string name="render_scale">Render Scale</string>
+    <string name="resolution_quality">Resolution Quality</string>
+    <string name="shadow_quality">Shadow Quality</string>
+    <string name="light_quality">Light Quality</string>
+    <string name="character_quality">Character Quality</string>
+    <string name="environment_quality">Environment Quality</string>
+    <string name="reflection_quality">Reflection Quality</string>
+    <string name="sfx_quality">SFX Quality</string>
+    <string name="bloom_quality">Bloom Quality</string>
+    <string name="anti_aliasing">Anti-Aliasing</string>
+    <string name="self_shadow">Self Shadow</string>
+    <string name="metalfx_super_resolution">MetalFX Super Resolution</string>
+    <string name="half_res_transparent">Half Resolution Transparent</string>
+    <string name="dlss_quality">DLSS Quality</string>
+    <string name="screen_resolution">Screen Resolution</string>
+    <string name="resolution_width">Width</string>
+    <string name="resolution_height">Height</string>
+    <string name="resolution_presets">Resolution Presets</string>
+    <string name="custom_resolution">Custom</string>
+    <string name="overall_graphics_quality">Overall Graphics Quality</string>
+    <string name="fullscreen_mode">Fullscreen Mode</string>
+    <string name="fullscreen_window">Fullscreen Window</string>
+    <string name="exclusive_fullscreen">Exclusive Fullscreen</string>
+    <string name="maximized_window">Maximized Window</string>
+    <string name="windowed">Windowed</string>
+    <string name="speed_up_open">Speed Up Open</string>
+    <string name="enable_speed_up">Enable Speed Up</string>
+    
+    <!-- Descriptions -->
+    <string name="fps_desc">Target frames per second</string>
+    <string name="vsync_desc">Sync with display refresh rate</string>
+    <string name="render_scale_desc">Internal rendering resolution</string>
+    <string name="resolution_quality_desc">Output resolution quality</string>
+    <string name="shadow_quality_desc">Shadow detail and distance</string>
+    <string name="light_quality_desc">Lighting effects quality</string>
+    <string name="character_quality_desc">Character model details</string>
+    <string name="environment_quality_desc">World detail level</string>
+    <string name="reflection_quality_desc">Reflection accuracy</string>
+    <string name="sfx_quality_desc">Special effects quality</string>
+    <string name="bloom_quality_desc">Light bloom intensity</string>
+    <string name="anti_aliasing_desc">Edge smoothing mode</string>
+    <string name="self_shadow_desc">Character self-shadowing</string>
+    <string name="metalfx_desc">Apple upscaling tech</string>
+    <string name="half_res_desc">Transparent effects optimization</string>
+    <string name="dlss_desc">NVIDIA AI upscaling</string>
+    <string name="screen_resolution_desc">Game window resolution</string>
+    <string name="overall_graphics_quality_desc">Unity master graphics quality setting</string>
+    <string name="fullscreen_mode_desc">Display mode for game window</string>
+    <string name="speed_up_open_desc">Enable faster game startup and loading</string>
+    
+    <!-- Quality Levels -->
+    <string name="low">Low</string>
+    <string name="high">High</string>
+    <string name="off">Off</string>
+    <string name="on">On</string>
+    <string name="unknown">Unknown</string>
+    
+    <!-- Dialogs -->
+    <string name="root_required">Root Access Required</string>
+    <string name="root_required_message">This app requires root access to modify game settings. Please grant root permission.</string>
+    <string name="current_settings">Current Settings</string>
+    <string name="backup_name_hint">Backup name (optional)</string>
+    <string name="save_as_backup">Save as Backup</string>
+    <string name="apply_settings">Apply Settings</string>
+    <string name="apply_settings_message">This will modify the game settings. Make sure the game is closed.</string>
+    <string name="restore_backup">Restore Backup</string>
+    <string name="restore_backup_message">Restore settings from "%1$s"?</string>
+    <string name="delete_backup">Delete Backup</string>
+    <string name="delete_backup_message">Delete backup "%1$s"?</string>
+    <string name="kill_game">Force Close Game</string>
+    
+    <!-- Messages -->
+    <string name="backup_created">Backup created successfully</string>
+    <string name="backup_failed">Failed to create backup</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_deleted">Backup deleted</string>
+    <string name="restore_success">Settings restored successfully. Please restart the game.</string>
+    <string name="restore_failed">Failed to restore settings</string>
+    <string name="settings_applied">Settings applied successfully. Please restart the game.</string>
+    <string name="apply_failed">Failed to apply settings</string>
+    <string name="error_read_settings">Failed to read settings. Make sure the game is installed and you have root access.</string>
+    <string name="game_killed">Game closed</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="system_default">System Default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    
+    <!-- Language Options -->
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_chinese">中文</string>
+    <string name="language_japanese">日本語</string>
+    <string name="language_system">System Default</string>
+    
+    <!-- Menu -->
+    <string name="action_settings">Settings</string>
+    <string name="about">About</string>
+    <string name="about_message">HSR Graphic Droid v1.0.0\n\nA premium tool for customizing Honkai: Star Rail graphics settings.\n\nFeatures:\n• Read and modify game graphics settings\n• Backup and restore configurations\n• Preset profiles (Low, Medium, High, Ultra)\n• Support for multiple languages\n• Material Design 3 interface\n\nRequires root access via Magisk or similar.\n\n© 2025 iRedDragonICY</string>
+</resources>

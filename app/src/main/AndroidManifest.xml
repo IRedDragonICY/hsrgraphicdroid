@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Queries for detecting installed HSR game packages -->
+    <queries>
+        <package android:name="com.HoYoverse.hkrpgoversea"/>
+        <package android:name="com.miHoYo.hkrpg"/>
+        <package android:name="com.HoYoverse.hkrpg"/>
+        <package android:name="com.cognosphere.hkrpg"/>
+    </queries>
+
+    <application
+            android:name=".HsrGraphicApp"
+            android:allowBackup="true"
+            android:fullBackupContent="@xml/backup_rules"
+            tools:targetApi="31"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.HsrGraphicDroid">
+            
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:configChanges="locale|layoutDirection|uiMode"
+            android:theme="@style/Theme.HsrGraphicDroid">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:configChanges="locale|layoutDirection|uiMode"
+            android:theme="@style/Theme.HsrGraphicDroid.Settings"
+            android:parentActivityName=".ui.MainActivity"/>
+        
+        <activity
+            android:name=".ui.GraphicsEditorActivity"
+            android:exported="false"
+            android:configChanges="locale|layoutDirection|uiMode"
+            android:parentActivityName=".ui.MainActivity"/>
+            
+    </application>
+
+</manifest>

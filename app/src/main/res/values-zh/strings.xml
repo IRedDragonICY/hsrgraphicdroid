@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">HSR Graphic Droid</string>
+    
+    <!-- Main Screen -->
+    <string name="system_status">系统状态</string>
+    <string name="quick_actions">快速操作</string>
+    <string name="saved_backups">已保存备份</string>
+    <string name="backup_count">%1$d 个备份</string>
+    
+    <!-- Status -->
+    <string name="checking">检查中…</string>
+    <string name="root_granted">已授予Root权限</string>
+    <string name="root_not_granted">需要Root权限</string>
+    <string name="game_found">游戏已安装</string>
+    <string name="game_not_found">未找到游戏</string>
+    
+    <!-- Actions -->
+    <string name="read_current_settings">读取当前设置</string>
+    <string name="edit_settings">编辑图形设置</string>
+    <string name="create_backup">创建备份</string>
+    <string name="refresh">刷新</string>
+    <string name="restore">恢复</string>
+    <string name="delete">删除</string>
+    <string name="apply">应用</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    
+    <!-- Graphics Editor -->
+    <string name="graphics_editor">图形编辑器</string>
+    <string name="graphics_settings">图形设置</string>
+    <string name="presets">预设</string>
+    <string name="preset_low">低</string>
+    <string name="preset_medium">中</string>
+    <string name="preset_high">高</string>
+    <string name="preset_ultra">超高</string>
+    
+    <!-- Settings -->
+    <string name="fps">帧率 (FPS)</string>
+    <string name="vsync">垂直同步</string>
+    <string name="render_scale">渲染缩放</string>
+    <string name="resolution_quality">分辨率质量</string>
+    <string name="shadow_quality">阴影质量</string>
+    <string name="light_quality">光照质量</string>
+    <string name="character_quality">角色质量</string>
+    <string name="environment_quality">环境质量</string>
+    <string name="reflection_quality">反射质量</string>
+    <string name="sfx_quality">特效质量</string>
+    <string name="bloom_quality">泛光质量</string>
+    <string name="anti_aliasing">抗锯齿</string>
+    <string name="self_shadow">自阴影</string>
+    <string name="screen_resolution">屏幕分辨率</string>
+    <string name="resolution_width">宽度</string>
+    <string name="resolution_height">高度</string>
+    <string name="resolution_presets">分辨率预设</string>
+    <string name="custom_resolution">自定义</string>
+    <string name="overall_graphics_quality">整体图形质量</string>
+    <string name="fullscreen_mode">全屏模式</string>
+    <string name="fullscreen_window">全屏窗口</string>
+    <string name="exclusive_fullscreen">独占全屏</string>
+    <string name="maximized_window">最大化窗口</string>
+    <string name="windowed">窗口化</string>
+    <string name="speed_up_open">加速启动</string>
+    <string name="enable_speed_up">启用加速</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings">设置</string>
+    <string name="theme">主题</string>
+    <string name="language">语言</string>
+    <string name="system_default">系统默认</string>
+    <string name="light">浅色</string>
+    <string name="dark">深色</string>
+</resources>
