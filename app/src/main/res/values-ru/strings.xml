@@ -1,0 +1,161 @@
+<resources>
+    <string name="app_name">HSR Graphic Droid</string>
+    
+    <!-- Main Screen -->
+    <string name="system_status">Состояние системы</string>
+    <string name="quick_actions">Быстрые действия</string>
+    <string name="saved_backups">Сохранённые резервные копии</string>
+    <string name="backup_count">%1$d резервных копий</string>
+    
+    <!-- Status -->
+    <string name="checking">Проверка…</string>
+    <string name="root_granted">Доступ root предоставлен</string>
+    <string name="root_not_granted">Требуется доступ root</string>
+    <string name="game_found">Игра установлена</string>
+    <string name="game_not_found">Игра не найдена</string>
+    
+    <!-- Actions -->
+    <string name="read_current_settings">Прочитать текущие настройки</string>
+    <string name="edit_settings">Редактировать графику</string>
+    <string name="create_backup">Создать резервную копию</string>
+    <string name="refresh">Обновить</string>
+    <string name="restore">Восстановить</string>
+    <string name="delete">Удалить</string>
+    <string name="apply">Применить</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">ОК</string>
+    <string name="grant">Предоставить</string>
+    <string name="exit">Выйти</string>
+    
+    <!-- Graphics Editor -->
+    <string name="graphics_editor">Редактор графики</string>
+    <string name="graphics_settings">Настройки графики</string>
+    <string name="presets">Пресеты</string>
+    <string name="preset_low">Низкий</string>
+    <string name="preset_medium">Средний</string>
+    <string name="preset_high">Высокий</string>
+    <string name="preset_ultra">Ультра</string>
+    <string name="preset_applied">Пресет %1$s применён</string>
+    
+    <!-- Settings -->
+    <string name="fps">Частота кадров (FPS)</string>
+    <string name="vsync">Вертикальная синхронизация</string>
+    <string name="render_scale">Масштаб рендера</string>
+    <string name="resolution_quality">Качество разрешения</string>
+    <string name="shadow_quality">Качество теней</string>
+    <string name="light_quality">Качество освещения</string>
+    <string name="character_quality">Качество персонажей</string>
+    <string name="environment_quality">Качество окружения</string>
+    <string name="reflection_quality">Качество отражений</string>
+    <string name="sfx_quality">Качество эффектов</string>
+    <string name="bloom_quality">Интенсивность свечения</string>
+    <string name="anti_aliasing">Сглаживание</string>
+    <string name="self_shadow">Собственные тени</string>
+    <string name="metalfx_super_resolution">MetalFX Super Resolution</string>
+    <string name="half_res_transparent">Полупрозрачные в половинном разрешении</string>
+    <string name="dlss_quality">Качество DLSS</string>
+    <string name="screen_resolution">Разрешение экрана</string>
+    <string name="resolution_width">Ширина</string>
+    <string name="resolution_height">Высота</string>
+    <string name="resolution_presets">Пресеты разрешений</string>
+    <string name="custom_resolution">Пользовательское</string>
+    <string name="overall_graphics_quality">Общее качество графики</string>
+    <string name="fullscreen_mode">Режим полного экрана</string>
+    <string name="fullscreen_window">Полноэкранное окно</string>
+    <string name="exclusive_fullscreen">Эксклюзивный полный экран</string>
+    <string name="maximized_window">Развёрнутое окно</string>
+    <string name="windowed">Оконный режим</string>
+    <string name="speed_up_open">Ускорить запуск</string>
+    <string name="enable_speed_up">Включить ускорение</string>
+    <string name="apply_settings_now">Применить настройки сейчас</string>
+    <string name="save_as_backup">Сохранить как резервную копию</string>
+    
+    <!-- Descriptions -->
+    <string name="fps_desc">Целевая частота кадров</string>
+    <string name="vsync_desc">Синхронизация с частотой обновления дисплея</string>
+    <string name="render_scale_desc">Внутреннее разрешение рендеринга</string>
+    <string name="resolution_quality_desc">Качество выходного разрешения</string>
+    <string name="shadow_quality_desc">Детализация и дальность теней</string>
+    <string name="light_quality_desc">Качество световых эффектов</string>
+    <string name="character_quality_desc">Детализация персонажей</string>
+    <string name="environment_quality_desc">Уровень детализации мира</string>
+    <string name="reflection_quality_desc">Точность отражений</string>
+    <string name="sfx_quality_desc">Качество специальных эффектов</string>
+    <string name="bloom_quality_desc">Интенсивность эффекта свечения</string>
+    <string name="anti_aliasing_desc">Режим сглаживания контуров</string>
+    <string name="self_shadow_desc">Самозатенение персонажей</string>
+    <string name="metalfx_desc">Технология апскейлинга Apple</string>
+    <string name="half_res_desc">Оптимизация прозрачных эффектов</string>
+    <string name="dlss_desc">AI-апскейлинг NVIDIA</string>
+    <string name="screen_resolution_desc">Разрешение окна игры</string>
+    <string name="overall_graphics_quality_desc">Основной параметр качества графики Unity</string>
+    <string name="fullscreen_mode_desc">Режим отображения игрового окна</string>
+    <string name="speed_up_open_desc">Ускоряет запуск и загрузку игры</string>
+    
+    <!-- Quality Levels -->
+    <string name="low">Низкий</string>
+    <string name="high">Высокий</string>
+    <string name="off">Выкл.</string>
+    <string name="on">Вкл.</string>
+    <string name="unknown">Неизвестно</string>
+    
+    <!-- Dialogs -->
+    <string name="root_required">Требуется доступ root</string>
+    <string name="root_required_message">Для изменения настроек игры требуется доступ root. Пожалуйста, предоставьте разрешение.</string>
+    <string name="current_settings">Текущие настройки</string>
+    <string name="backup_name_hint">Имя резервной копии (необязательно)</string>
+    <string name="apply_settings">Применить настройки</string>
+    <string name="apply_settings_message">Это изменит настройки игры. Убедитесь, что игра закрыта.</string>
+    <string name="restore_backup">Восстановить резервную копию</string>
+    <string name="restore_backup_message">Восстановить настройки из «%1$s»?</string>
+    <string name="delete_backup">Удалить резервную копию</string>
+    <string name="delete_backup_message">Удалить резервную копию «%1$s»?</string>
+    <string name="kill_game">Принудительно закрыть игру</string>
+    
+    <!-- Messages -->
+    <string name="backup_created">Резервная копия успешно создана</string>
+    <string name="backup_failed">Не удалось создать резервную копию</string>
+    <string name="backup_saved">Резервная копия сохранена</string>
+    <string name="backup_deleted">Резервная копия удалена</string>
+    <string name="restore_success">Настройки успешно восстановлены. Перезапустите игру.</string>
+    <string name="restore_failed">Не удалось восстановить настройки</string>
+    <string name="settings_applied">Настройки успешно применены. Перезапустите игру.</string>
+    <string name="apply_failed">Не удалось применить настройки</string>
+    <string name="error_read_settings">Не удалось прочитать настройки. Убедитесь, что игра установлена и у вас есть доступ root.</string>
+    <string name="game_killed">Игра закрыта</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings">Настройки</string>
+    <string name="theme">Тема</string>
+    <string name="language">Язык</string>
+    <string name="system_default">По умолчанию</string>
+    <string name="light">Светлая</string>
+    <string name="dark">Тёмная</string>
+    
+    <!-- Language Options -->
+    <string name="language_english">English</string>
+    <string name="language_indonesian">Bahasa Indonesia</string>
+    <string name="language_chinese">中文</string>
+    <string name="language_japanese">日本語</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_system">По умолчанию</string>
+    
+    <!-- Menu -->
+    <string name="action_settings">Настройки</string>
+    <string name="about">О приложении</string>
+    <string name="about_message">HSR Graphic Droid v1.0.0
+
+Премиальный инструмент для настройки графики Honkai: Star Rail.
+
+Возможности:
+• Чтение и изменение графических настроек игры
+• Создание и восстановление резервных копий конфигураций
+• Профили пресетов (Низкий, Средний, Высокий, Ультра)
+• Поддержка нескольких языков
+• Интерфейс в стиле Material Design 3
+
+Требуется доступ root через Magisk или аналогичный инструмент.
+
+© 2025 iRedDragonICY</string>
+</resources>

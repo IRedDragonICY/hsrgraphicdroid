@@ -415,6 +415,45 @@
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardLangRussian"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="2dp"
+                            app:strokeColor="?attr/colorOutline"
+                            app:cardBackgroundColor="?attr/colorSurfaceContainerHighest">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="16dp"
+                                android:minHeight="64dp">
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/language_russian"
+                                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                                    android:textColor="?attr/colorOnSurface"/>
+
+                                <ImageView
+                                    android:id="@+id/checkLangRussian"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/ic_check"
+                                    android:visibility="gone"
+                                    app:tint="?attr/colorPrimary"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
                             android:id="@+id/cardLangJapanese"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

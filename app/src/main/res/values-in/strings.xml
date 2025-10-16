@@ -138,10 +138,24 @@
     <string name="language_indonesian">Bahasa Indonesia</string>
     <string name="language_chinese">中文</string>
     <string name="language_japanese">日本語</string>
+    <string name="language_russian">Rusia</string>
     <string name="language_system">Bawaan Sistem</string>
     
     <!-- Menu -->
     <string name="action_settings">Pengaturan</string>
     <string name="about">Tentang</string>
-    <string name="about_message">HSR Graphic Droid v1.0.0\n\nAlat premium untuk menyesuaikan pengaturan grafis Honkai: Star Rail.\n\nFitur:\n• Baca dan modifikasi pengaturan grafis game\n• Cadangkan dan pulihkan konfigurasi\n• Profil preset (Rendah, Sedang, Tinggi, Ultra)\n• Dukungan berbagai bahasa\n• Antarmuka Material Design 3\n\nMemerlukan akses root melalui Magisk atau sejenisnya.\n\n© 2025 iRedDragonICY</string>
+    <string name="about_message">HSR Graphic Droid v1.0.0
+
+Alat premium untuk menyesuaikan pengaturan grafis Honkai: Star Rail.
+
+Fitur:
+• Baca dan modifikasi pengaturan grafis game
+• Cadangkan dan pulihkan konfigurasi
+• Profil preset (Rendah, Sedang, Tinggi, Ultra)
+• Dukungan berbagai bahasa
+• Antarmuka Material Design 3
+
+Memerlukan akses root melalui Magisk atau sejenisnya.
+
+© 2025 iRedDragonICY</string>
 </resources>

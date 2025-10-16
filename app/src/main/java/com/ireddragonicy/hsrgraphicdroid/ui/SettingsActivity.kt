@@ -23,7 +23,6 @@ import com.ireddragonicy.hsrgraphicdroid.databinding.ActivitySettingsBinding
 import com.ireddragonicy.hsrgraphicdroid.utils.PreferenceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 class SettingsActivity : AppCompatActivity() {
     
@@ -179,6 +178,12 @@ class SettingsActivity : AppCompatActivity() {
                 selectLanguage("zh")
             }
         }
+
+        binding.cardLangRussian.setOnClickListener {
+            animateCardSelection(it) {
+                selectLanguage("ru")
+            }
+        }
         
         binding.cardLangJapanese.setOnClickListener {
             animateCardSelection(it) {
@@ -300,6 +305,7 @@ class SettingsActivity : AppCompatActivity() {
         resetCardSelection(binding.cardLangEnglish, binding.checkLangEnglish)
         resetCardSelection(binding.cardLangIndonesian, binding.checkLangIndonesian)
         resetCardSelection(binding.cardLangChinese, binding.checkLangChinese)
+        resetCardSelection(binding.cardLangRussian, binding.checkLangRussian)
         resetCardSelection(binding.cardLangJapanese, binding.checkLangJapanese)
         
         // Select current
@@ -307,6 +313,7 @@ class SettingsActivity : AppCompatActivity() {
             "en" -> setCardSelected(binding.cardLangEnglish, binding.checkLangEnglish)
             "id" -> setCardSelected(binding.cardLangIndonesian, binding.checkLangIndonesian)
             "zh" -> setCardSelected(binding.cardLangChinese, binding.checkLangChinese)
+            "ru" -> setCardSelected(binding.cardLangRussian, binding.checkLangRussian)
             "ja" -> setCardSelected(binding.cardLangJapanese, binding.checkLangJapanese)
             else -> setCardSelected(binding.cardLangSystem, binding.checkLangSystem)
         }
@@ -343,19 +350,19 @@ class SettingsActivity : AppCompatActivity() {
     }
     
     private fun applyLanguage(language: String) {
-        val locale = when (language) {
-            "en" -> Locale("en")
-            "id" -> Locale("id")
-            "zh" -> Locale("zh")
-            "ja" -> Locale("ja")
+        val languageTag = when (language) {
+            "en" -> "en"
+            "id" -> "in" // Android keeps Indonesian resources under the historic "in" qualifier
+            "zh" -> "zh"
+            "ru" -> "ru"
+            "ja" -> "ja"
             else -> {
-                // System default - clear app locale
                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
                 return
             }
         }
-        
-        val localeList = LocaleListCompat.create(locale)
+
+        val localeList = LocaleListCompat.forLanguageTags(languageTag)
         AppCompatDelegate.setApplicationLocales(localeList)
     }
     
