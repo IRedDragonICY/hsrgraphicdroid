@@ -54,6 +54,9 @@ data class GraphicsSettings(
     @SerializedName("DlssQuality")
     var dlssQuality: Int = 0,
     
+    @SerializedName("ParticleTrailSmoothness")
+    var particleTrailSmoothness: Int = 0,
+    
     @SerializedName("Screenmanager Resolution Width")
     var screenWidth: Int = 1920,
     
@@ -118,6 +121,45 @@ data class GraphicsSettings(
             2 -> "Maximized Window"
             3 -> "Windowed"
             else -> "Default"
+        }
+    }
+    
+    fun getAAModeName(mode: Int): String {
+        return when (mode) {
+            0 -> "Off"
+            1 -> "TAA"
+            2 -> "SMAA"
+            else -> "Off"
+        }
+    }
+    
+    fun getSelfShadowName(level: Int): String {
+        return when (level) {
+            0 -> "Off"
+            1 -> "Low"
+            2 -> "High"
+            else -> "Off"
+        }
+    }
+    
+    fun getDlssName(quality: Int): String {
+        return when (quality) {
+            0 -> "Off"
+            1 -> "Quality"
+            2 -> "Balanced"
+            3 -> "Performance"
+            4 -> "Ultra Performance"
+            else -> "Off"
+        }
+    }
+    
+    fun getParticleTrailName(level: Int): String {
+        return when (level) {
+            0 -> "Off"
+            1 -> "Low"
+            2 -> "Medium"
+            3 -> "High"
+            else -> "Off"
         }
     }
     

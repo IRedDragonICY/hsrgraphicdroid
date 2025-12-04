@@ -2,10 +2,14 @@ package com.ireddragonicy.hsrgraphicdroid.ui
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -29,6 +33,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameManager: HsrGameManager
     private lateinit var backupAdapter: BackupAdapter
     private var currentSettings: com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings? = null
+    private var pendingXmlContent: String? = null
+
+    // SAF launcher for creating XML file
+    private val createXmlFileLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/xml")
+    ) { uri ->
+        uri?.let { saveXmlToUri(it) }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +97,141 @@ class MainActivity : AppCompatActivity() {
             loadBackups()
             loadCurrentSettings()
         }
+
+        // Game action buttons
+        binding.btnLaunchGame.setOnClickListener {
+            launchGame()
+        }
+
+        binding.btnGameSettings.setOnClickListener {
+            openGameAppInfo()
+        }
+
+        binding.btnExportXml.setOnClickListener {
+            exportXmlFile()
+        }
+
+        binding.btnShareXml.setOnClickListener {
+            shareXmlFile()
+        }
+    }
+
+    private fun exportXmlFile() {
+        lifecycleScope.launch {
+            binding.progressIndicator.show()
+            
+            val content = withContext(Dispatchers.IO) {
+                gameManager.getPrefsContent()
+            }
+            
+            binding.progressIndicator.hide()
+            
+            if (content != null) {
+                pendingXmlContent = content
+                val pkg = gameManager.installedGamePackage ?: "hsr"
+                val fileName = "${pkg}_settings_${System.currentTimeMillis()}.xml"
+                createXmlFileLauncher.launch(fileName)
+            } else {
+                Snackbar.make(binding.root, getString(R.string.export_failed), Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun saveXmlToUri(uri: Uri) {
+        val content = pendingXmlContent ?: return
+        
+        lifecycleScope.launch {
+            val success = withContext(Dispatchers.IO) {
+                runCatching {
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        outputStream.write(content.toByteArray())
+                    }
+                    true
+                }.getOrDefault(false)
+            }
+            
+            pendingXmlContent = null
+            
+            if (success) {
+                Snackbar.make(binding.root, getString(R.string.export_success), Snackbar.LENGTH_LONG)
+                    .setAction("Open") {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "text/xml")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        runCatching { startActivity(intent) }
+                    }
+                    .show()
+            } else {
+                Snackbar.make(binding.root, getString(R.string.export_failed), Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun shareXmlFile() {
+        lifecycleScope.launch {
+            binding.progressIndicator.show()
+            
+            val content = withContext(Dispatchers.IO) {
+                gameManager.getPrefsContent()
+            }
+            
+            binding.progressIndicator.hide()
+            
+            if (content != null) {
+                val pkg = gameManager.installedGamePackage ?: "hsr"
+                val fileName = "${pkg}_settings.xml"
+                
+                // Create temp file for sharing
+                val shareFile = java.io.File(cacheDir, fileName)
+                shareFile.writeText(content)
+                
+                val shareUri = androidx.core.content.FileProvider.getUriForFile(
+                    this@MainActivity,
+                    "$packageName.fileprovider",
+                    shareFile
+                )
+                
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/xml"
+                    putExtra(Intent.EXTRA_STREAM, shareUri)
+                    putExtra(Intent.EXTRA_SUBJECT, "HSR Graphics Settings")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.share_xml)))
+            } else {
+                Snackbar.make(binding.root, getString(R.string.share_failed), Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun launchGame() {
+        val pkg = gameManager.installedGamePackage
+        if (pkg == null) {
+            Snackbar.make(binding.root, getString(R.string.game_not_found), Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
+        if (launchIntent != null) {
+            startActivity(launchIntent)
+        } else {
+            Snackbar.make(binding.root, getString(R.string.game_not_found), Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openGameAppInfo() {
+        val pkg = gameManager.installedGamePackage
+        if (pkg == null) {
+            Snackbar.make(binding.root, getString(R.string.game_not_found), Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:$pkg")
+        }
+        startActivity(intent)
     }
     
     private fun setupGraphicsEditor() {
@@ -160,16 +307,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
+        // AA Mode Slider (Off/TAA/SMAA)
+        binding.sliderAa.addOnChangeListener { _, value, _ ->
+            currentSettings?.let {
+                binding.tvAaValue.text = it.getAAModeName(value.toInt())
+            }
+        }
+        
         // Self Shadow Slider
         binding.sliderSelfShadow.addOnChangeListener { _, value, _ ->
-            val selfShadowNames = arrayOf("Off", "Low", "High")
-            binding.tvSelfShadowValue.text = selfShadowNames.getOrNull(value.toInt()) ?: "Off"
+            currentSettings?.let {
+                binding.tvSelfShadowValue.text = it.getSelfShadowName(value.toInt())
+            }
         }
         
         // DLSS Quality Slider
         binding.sliderDlss.addOnChangeListener { _, value, _ ->
-            val dlssNames = arrayOf("Off", "Quality", "Balanced", "Performance", "Ultra Performance")
-            binding.tvDlssValue.text = dlssNames.getOrNull(value.toInt()) ?: "Off"
+            currentSettings?.let {
+                binding.tvDlssValue.text = it.getDlssName(value.toInt())
+            }
+        }
+        
+        // Particle Trail Smoothness Slider
+        binding.sliderParticleTrail.addOnChangeListener { _, value, _ ->
+            currentSettings?.let {
+                binding.tvParticleTrailValue.text = it.getParticleTrailName(value.toInt())
+            }
         }
         
         // Resolution Presets
@@ -292,12 +455,13 @@ class MainActivity : AppCompatActivity() {
         binding.sliderBloom.value = settings.bloomQuality.toFloat()
         binding.tvBloomValue.text = settings.getQualityName(settings.bloomQuality)
         
-        binding.switchAa.isChecked = settings.aaMode == 1
+        // AA Mode (Off/TAA/SMAA)
+        binding.sliderAa.value = settings.aaMode.toFloat()
+        binding.tvAaValue.text = settings.getAAModeName(settings.aaMode)
         
         // Self Shadow
         binding.sliderSelfShadow.value = settings.enableSelfShadow.toFloat()
-        val selfShadowNames = arrayOf("Off", "Low", "High")
-        binding.tvSelfShadowValue.text = selfShadowNames.getOrNull(settings.enableSelfShadow) ?: "Off"
+        binding.tvSelfShadowValue.text = settings.getSelfShadowName(settings.enableSelfShadow)
         
         // MetalFX and Half Res Transparent
         binding.switchMetalFx.isChecked = settings.enableMetalFXSU
@@ -305,8 +469,11 @@ class MainActivity : AppCompatActivity() {
         
         // DLSS Quality
         binding.sliderDlss.value = settings.dlssQuality.toFloat()
-        val dlssNames = arrayOf("Off", "Quality", "Balanced", "Performance", "Ultra Performance")
-        binding.tvDlssValue.text = dlssNames.getOrNull(settings.dlssQuality) ?: "Off"
+        binding.tvDlssValue.text = settings.getDlssName(settings.dlssQuality)
+        
+        // Particle Trail Smoothness
+        binding.sliderParticleTrail.value = settings.particleTrailSmoothness.toFloat()
+        binding.tvParticleTrailValue.text = settings.getParticleTrailName(settings.particleTrailSmoothness)
         
         // Screen Resolution
         binding.etResolutionWidth.setText(settings.screenWidth.toString())
@@ -456,11 +623,12 @@ class MainActivity : AppCompatActivity() {
             reflectionQuality = binding.sliderReflection.value.toInt(),
             sfxQuality = binding.sliderSfx.value.toInt(),
             bloomQuality = binding.sliderBloom.value.toInt(),
-            aaMode = if (binding.switchAa.isChecked) 1 else 0,
+            aaMode = binding.sliderAa.value.toInt(),
             enableSelfShadow = binding.sliderSelfShadow.value.toInt(),
             enableMetalFXSU = binding.switchMetalFx.isChecked,
             enableHalfResTransparent = binding.switchHalfResTransparent.isChecked,
             dlssQuality = binding.sliderDlss.value.toInt(),
+            particleTrailSmoothness = binding.sliderParticleTrail.value.toInt(),
             screenWidth = binding.etResolutionWidth.text.toString().toIntOrNull() ?: 1920,
             screenHeight = binding.etResolutionHeight.text.toString().toIntOrNull() ?: 1080,
             fullscreenMode = when {
@@ -556,15 +724,15 @@ class MainActivity : AppCompatActivity() {
     private fun checkStatus() {
         lifecycleScope.launch {
             val rootStatus = withContext(Dispatchers.IO) {
-                gameManager.isRootAvailable()
+                gameManager.isRootAvailable
             }
             
             val gameInstalled = withContext(Dispatchers.IO) {
-                gameManager.isGameInstalled()
+                gameManager.isGameInstalled
             }
             
             val gameVersion = withContext(Dispatchers.IO) {
-                if (gameInstalled) gameManager.getGameVersionName() else null
+                if (gameInstalled) gameManager.gameVersionName else null
             }
             
             binding.chipRootStatus.apply {
@@ -576,18 +744,14 @@ class MainActivity : AppCompatActivity() {
                 text = if (gameInstalled) {
                     getString(R.string.game_found) + " ($gameVersion)"
                 } else {
-                    // Show related packages if game not found
-                    val relatedPackages = withContext(Dispatchers.IO) {
-                        gameManager.findHoyoversePackages()
-                    }
-                    if (relatedPackages.isNotEmpty()) {
-                        getString(R.string.game_not_found) + "\nFound: ${relatedPackages.joinToString()}"
-                    } else {
-                        getString(R.string.game_not_found)
-                    }
+                    getString(R.string.game_not_found)
                 }
                 setChipIconResource(if (gameInstalled) R.drawable.ic_check else R.drawable.ic_close)
             }
+
+            // Show/hide game action buttons based on game installation status
+            binding.layoutGameActions.visibility = if (gameInstalled) View.VISIBLE else View.GONE
+            binding.layoutExportShare.visibility = if (gameInstalled && rootStatus) View.VISIBLE else View.GONE
             
             if (!rootStatus) {
                 requestRootAccess()
@@ -793,6 +957,10 @@ class MainActivity : AppCompatActivity() {
     
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.action_game_prefs -> {
+                startActivity(Intent(this, GamePreferencesActivity::class.java))
+                true
+            }
             R.id.action_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true

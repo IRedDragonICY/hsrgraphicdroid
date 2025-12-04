@@ -1,6 +1,7 @@
 package com.ireddragonicy.hsrgraphicdroid.ui
 
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -8,7 +9,9 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.Gson
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
@@ -24,277 +27,188 @@ class GraphicsEditorActivity : AppCompatActivity() {
     private lateinit var gameManager: HsrGameManager
     private lateinit var settings: GraphicsSettings
     
+    // Preset configurations
+    private enum class Preset(
+        val fps: Int,
+        val renderScale: Double,
+        val quality: Int,
+        val selfShadow: Int,
+        val metalFx: Boolean,
+        val halfRes: Boolean,
+        val dlss: Int,
+        val aaMode: Int,
+        val particleTrail: Int
+    ) {
+        LOW(30, 0.8, 1, 0, false, true, 0, 0, 0),
+        MEDIUM(60, 1.0, 3, 1, false, false, 2, 1, 1),
+        HIGH(60, 1.2, 4, 2, true, false, 3, 1, 2),
+        ULTRA(120, 1.4, 5, 2, true, false, 3, 2, 3)
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Enable edge-to-edge display
         WindowCompat.setDecorFitsSystemWindows(window, false)
         
         binding = ActivityGraphicsEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Handle window insets for AppBarLayout
+        setupWindowInsets()
+        setupToolbar()
+        initializeSettings()
+        setupAllControls()
+        setupButtons()
+    }
+    
+    private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(0, insets.top, 0, 0)
             windowInsets
         }
-        
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        
-        gameManager = HsrGameManager(this)
-        
-        val settingsJson = intent.getStringExtra("settings")
-        settings = if (settingsJson != null) {
-            Gson().fromJson(settingsJson, GraphicsSettings::class.java)
-        } else {
-            GraphicsSettings()
-        }
-        
-        setupUI()
-        setupButtons()
     }
     
-    private fun setupUI() {
-        // FPS Settings
-        binding.sliderFps.value = settings.fps.toFloat()
-        binding.tvFpsValue.text = "${settings.fps}"
-        binding.sliderFps.addOnChangeListener { _, value, _ ->
-            settings.fps = value.toInt()
-            binding.tvFpsValue.text = "${value.toInt()}"
-        }
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+    
+    private fun initializeSettings() {
+        gameManager = HsrGameManager(this)
+        settings = intent.getStringExtra("settings")?.let {
+            Gson().fromJson(it, GraphicsSettings::class.java)
+        } ?: GraphicsSettings()
+    }
+    
+    private fun setupAllControls() {
+        setupFpsControl()
+        setupSwitchControls()
+        setupQualitySliders()
+        setupSpecialSliders()
+    }
+    
+    private fun setupFpsControl() {
+        binding.sliderFps.setupSlider(
+            initialValue = settings.fps.toFloat(),
+            displayView = binding.tvFpsValue,
+            formatter = { it.toInt().toString() }
+        ) { settings.fps = it.toInt() }
+    }
+    
+    private fun setupSwitchControls() {
+        binding.switchVsync.setupSwitch(settings.enableVSync) { settings.enableVSync = it }
+        binding.switchMetalFx.setupSwitch(settings.enableMetalFXSU) { settings.enableMetalFXSU = it }
+        binding.switchHalfResTransparent.setupSwitch(settings.enableHalfResTransparent) { settings.enableHalfResTransparent = it }
+    }
+    
+    private fun setupQualitySliders() {
+        // Define quality slider configurations: (slider, textView, property getter, property setter)
+        val qualitySliders = listOf(
+            Triple(binding.sliderRenderScale, binding.tvRenderScaleValue, 
+                QualityConfig(settings.renderScale.toFloat(), { String.format("%.1f", it) }) { settings.renderScale = it.toDouble() }),
+            Triple(binding.sliderResolution, binding.tvResolutionValue,
+                QualityConfig(settings.resolutionQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.resolutionQuality = it.toInt() }),
+            Triple(binding.sliderShadow, binding.tvShadowValue,
+                QualityConfig(settings.shadowQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.shadowQuality = it.toInt() }),
+            Triple(binding.sliderLight, binding.tvLightValue,
+                QualityConfig(settings.lightQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.lightQuality = it.toInt() }),
+            Triple(binding.sliderCharacter, binding.tvCharacterValue,
+                QualityConfig(settings.characterQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.characterQuality = it.toInt() }),
+            Triple(binding.sliderEnvironment, binding.tvEnvironmentValue,
+                QualityConfig(settings.envDetailQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.envDetailQuality = it.toInt() }),
+            Triple(binding.sliderReflection, binding.tvReflectionValue,
+                QualityConfig(settings.reflectionQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.reflectionQuality = it.toInt() }),
+            Triple(binding.sliderSfx, binding.tvSfxValue,
+                QualityConfig(settings.sfxQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.sfxQuality = it.toInt() }),
+            Triple(binding.sliderBloom, binding.tvBloomValue,
+                QualityConfig(settings.bloomQuality.toFloat(), { settings.getQualityName(it.toInt()) }) { settings.bloomQuality = it.toInt() })
+        )
         
-        // VSync
-        binding.switchVsync.isChecked = settings.enableVSync
-        binding.switchVsync.setOnCheckedChangeListener { _, isChecked ->
-            settings.enableVSync = isChecked
+        qualitySliders.forEach { (slider, textView, config) ->
+            slider.setupSlider(config.initialValue, textView, config.formatter, config.setter)
         }
+    }
+    
+    private fun setupSpecialSliders() {
+        // AA Mode (Off/TAA/SMAA)
+        binding.sliderAa.setupSlider(
+            initialValue = settings.aaMode.toFloat(),
+            displayView = binding.tvAaValue,
+            formatter = { settings.getAAModeName(it.toInt()) }
+        ) { settings.aaMode = it.toInt() }
         
-        // Render Scale
-        binding.sliderRenderScale.value = settings.renderScale.toFloat()
-        binding.tvRenderScaleValue.text = String.format("%.1f", settings.renderScale)
-        binding.sliderRenderScale.addOnChangeListener { _, value, _ ->
-            settings.renderScale = value.toDouble()
-            binding.tvRenderScaleValue.text = String.format("%.1f", value)
-        }
-        
-        // Resolution Quality
-        binding.sliderResolution.value = settings.resolutionQuality.toFloat()
-        binding.tvResolutionValue.text = settings.getQualityName(settings.resolutionQuality)
-        binding.sliderResolution.addOnChangeListener { _, value, _ ->
-            settings.resolutionQuality = value.toInt()
-            binding.tvResolutionValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Shadow Quality
-        binding.sliderShadow.value = settings.shadowQuality.toFloat()
-        binding.tvShadowValue.text = settings.getQualityName(settings.shadowQuality)
-        binding.sliderShadow.addOnChangeListener { _, value, _ ->
-            settings.shadowQuality = value.toInt()
-            binding.tvShadowValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Light Quality
-        binding.sliderLight.value = settings.lightQuality.toFloat()
-        binding.tvLightValue.text = settings.getQualityName(settings.lightQuality)
-        binding.sliderLight.addOnChangeListener { _, value, _ ->
-            settings.lightQuality = value.toInt()
-            binding.tvLightValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Character Quality
-        binding.sliderCharacter.value = settings.characterQuality.toFloat()
-        binding.tvCharacterValue.text = settings.getQualityName(settings.characterQuality)
-        binding.sliderCharacter.addOnChangeListener { _, value, _ ->
-            settings.characterQuality = value.toInt()
-            binding.tvCharacterValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Environment Quality
-        binding.sliderEnvironment.value = settings.envDetailQuality.toFloat()
-        binding.tvEnvironmentValue.text = settings.getQualityName(settings.envDetailQuality)
-        binding.sliderEnvironment.addOnChangeListener { _, value, _ ->
-            settings.envDetailQuality = value.toInt()
-            binding.tvEnvironmentValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Reflection Quality
-        binding.sliderReflection.value = settings.reflectionQuality.toFloat()
-        binding.tvReflectionValue.text = settings.getQualityName(settings.reflectionQuality)
-        binding.sliderReflection.addOnChangeListener { _, value, _ ->
-            settings.reflectionQuality = value.toInt()
-            binding.tvReflectionValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // SFX Quality
-        binding.sliderSfx.value = settings.sfxQuality.toFloat()
-        binding.tvSfxValue.text = settings.getQualityName(settings.sfxQuality)
-        binding.sliderSfx.addOnChangeListener { _, value, _ ->
-            settings.sfxQuality = value.toInt()
-            binding.tvSfxValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Bloom Quality
-        binding.sliderBloom.value = settings.bloomQuality.toFloat()
-        binding.tvBloomValue.text = settings.getQualityName(settings.bloomQuality)
-        binding.sliderBloom.addOnChangeListener { _, value, _ ->
-            settings.bloomQuality = value.toInt()
-            binding.tvBloomValue.text = settings.getQualityName(value.toInt())
-        }
-        
-        // Anti-Aliasing
-        binding.switchAa.isChecked = settings.aaMode == 1
-        binding.switchAa.setOnCheckedChangeListener { _, isChecked ->
-            settings.aaMode = if (isChecked) 1 else 0
-        }
-        
-        // Self Shadow
-        binding.sliderSelfShadow.value = settings.enableSelfShadow.toFloat()
-        binding.tvSelfShadowValue.text = when(settings.enableSelfShadow) {
-            0 -> getString(R.string.off)
-            1 -> getString(R.string.low)
-            2 -> getString(R.string.high)
-            else -> getString(R.string.unknown)
-        }
-        binding.sliderSelfShadow.addOnChangeListener { _, value, _ ->
-            settings.enableSelfShadow = value.toInt()
-            binding.tvSelfShadowValue.text = when(value.toInt()) {
-                0 -> getString(R.string.off)
-                1 -> getString(R.string.low)
-                2 -> getString(R.string.high)
-                else -> getString(R.string.unknown)
-            }
-        }
-        
-        // MetalFX Super Resolution (Apple Silicon)
-        binding.switchMetalFx.isChecked = settings.enableMetalFXSU
-        binding.switchMetalFx.setOnCheckedChangeListener { _, isChecked ->
-            settings.enableMetalFXSU = isChecked
-        }
-        
-        // Half Resolution Transparent
-        binding.switchHalfResTransparent.isChecked = settings.enableHalfResTransparent
-        binding.switchHalfResTransparent.setOnCheckedChangeListener { _, isChecked ->
-            settings.enableHalfResTransparent = isChecked
-        }
+        // Self Shadow (Off/Low/High)
+        binding.sliderSelfShadow.setupSlider(
+            initialValue = settings.enableSelfShadow.toFloat(),
+            displayView = binding.tvSelfShadowValue,
+            formatter = { settings.getSelfShadowName(it.toInt()) }
+        ) { settings.enableSelfShadow = it.toInt() }
         
         // DLSS Quality
-        binding.sliderDlss.value = settings.dlssQuality.toFloat()
-        binding.tvDlssValue.text = when(settings.dlssQuality) {
-            0 -> getString(R.string.off)
-            1 -> "Performance"
-            2 -> "Balanced"
-            3 -> "Quality"
-            4 -> "Ultra Performance"
-            else -> getString(R.string.off)
-        }
-        binding.sliderDlss.addOnChangeListener { _, value, _ ->
-            settings.dlssQuality = value.toInt()
-            binding.tvDlssValue.text = when(value.toInt()) {
-                0 -> getString(R.string.off)
-                1 -> "Performance"
-                2 -> "Balanced"
-                3 -> "Quality"
-                4 -> "Ultra Performance"
-                else -> getString(R.string.off)
-            }
-        }
+        binding.sliderDlss.setupSlider(
+            initialValue = settings.dlssQuality.toFloat(),
+            displayView = binding.tvDlssValue,
+            formatter = { settings.getDlssName(it.toInt()) }
+        ) { settings.dlssQuality = it.toInt() }
+        
+        // Particle Trail Smoothness
+        binding.sliderParticleTrail.setupSlider(
+            initialValue = settings.particleTrailSmoothness.toFloat(),
+            displayView = binding.tvParticleTrailValue,
+            formatter = { settings.getParticleTrailName(it.toInt()) }
+        ) { settings.particleTrailSmoothness = it.toInt() }
     }
     
     private fun setupButtons() {
-        binding.btnPresetLow.setOnClickListener { applyPreset("low") }
-        binding.btnPresetMedium.setOnClickListener { applyPreset("medium") }
-        binding.btnPresetHigh.setOnClickListener { applyPreset("high") }
-        binding.btnPresetUltra.setOnClickListener { applyPreset("ultra") }
-        
-        binding.btnApply.setOnClickListener {
-            confirmApply()
+        // Preset buttons
+        mapOf(
+            binding.btnPresetLow to Preset.LOW,
+            binding.btnPresetMedium to Preset.MEDIUM,
+            binding.btnPresetHigh to Preset.HIGH,
+            binding.btnPresetUltra to Preset.ULTRA
+        ).forEach { (button, preset) ->
+            button.setOnClickListener { applyPreset(preset) }
         }
         
-        binding.btnSaveBackup.setOnClickListener {
-            showBackupDialog()
-        }
+        binding.btnApply.setOnClickListener { confirmApply() }
+        binding.btnSaveBackup.setOnClickListener { showBackupDialog() }
     }
     
-    private fun applyPreset(preset: String) {
-        when (preset) {
-            "low" -> {
-                settings.fps = 30
-                settings.renderScale = 0.8
-                settings.resolutionQuality = 1
-                settings.shadowQuality = 1
-                settings.lightQuality = 1
-                settings.characterQuality = 1
-                settings.envDetailQuality = 1
-                settings.reflectionQuality = 1
-                settings.sfxQuality = 1
-                settings.bloomQuality = 1
-                settings.enableSelfShadow = 0
-                settings.enableMetalFXSU = false
-                settings.enableHalfResTransparent = true
-                settings.dlssQuality = 0
-            }
-            "medium" -> {
-                settings.fps = 60
-                settings.renderScale = 1.0
-                settings.resolutionQuality = 3
-                settings.shadowQuality = 2
-                settings.lightQuality = 3
-                settings.characterQuality = 3
-                settings.envDetailQuality = 2
-                settings.reflectionQuality = 2
-                settings.sfxQuality = 3
-                settings.bloomQuality = 3
-                settings.enableSelfShadow = 1
-                settings.enableMetalFXSU = false
-                settings.enableHalfResTransparent = false
-                settings.dlssQuality = 2
-            }
-            "high" -> {
-                settings.fps = 60
-                settings.renderScale = 1.2
-                settings.resolutionQuality = 4
-                settings.shadowQuality = 4
-                settings.lightQuality = 4
-                settings.characterQuality = 4
-                settings.envDetailQuality = 4
-                settings.reflectionQuality = 4
-                settings.sfxQuality = 4
-                settings.bloomQuality = 4
-                settings.enableSelfShadow = 2
-                settings.enableMetalFXSU = true
-                settings.enableHalfResTransparent = false
-                settings.dlssQuality = 3
-            }
-            "ultra" -> {
-                settings.fps = 120
-                settings.renderScale = 1.4
-                settings.resolutionQuality = 5
-                settings.shadowQuality = 4
-                settings.lightQuality = 5
-                settings.characterQuality = 4
-                settings.envDetailQuality = 5
-                settings.reflectionQuality = 5
-                settings.sfxQuality = 4
-                settings.bloomQuality = 4
-                settings.enableSelfShadow = 2
-                settings.enableMetalFXSU = true
-                settings.enableHalfResTransparent = false
-                settings.dlssQuality = 3
-            }
+    private fun applyPreset(preset: Preset) {
+        settings.apply {
+            fps = preset.fps
+            renderScale = preset.renderScale
+            resolutionQuality = preset.quality
+            shadowQuality = preset.quality
+            lightQuality = preset.quality
+            characterQuality = preset.quality
+            envDetailQuality = preset.quality
+            reflectionQuality = preset.quality
+            sfxQuality = preset.quality
+            bloomQuality = preset.quality
+            enableSelfShadow = preset.selfShadow
+            enableMetalFXSU = preset.metalFx
+            enableHalfResTransparent = preset.halfRes
+            dlssQuality = preset.dlss
+            aaMode = preset.aaMode
+            particleTrailSmoothness = preset.particleTrail
         }
-        setupUI()
-        Toast.makeText(this, getString(R.string.preset_applied, preset.uppercase()), Toast.LENGTH_SHORT).show()
+        
+        refreshUI()
+        showToast(getString(R.string.preset_applied, preset.name))
+    }
+    
+    private fun refreshUI() {
+        setupFpsControl()
+        setupSwitchControls()
+        setupQualitySliders()
+        setupSpecialSliders()
     }
     
     private fun confirmApply() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.apply_settings)
             .setMessage(R.string.apply_settings_message)
-            .setPositiveButton(R.string.apply) { _, _ ->
-                applySettings()
-            }
+            .setPositiveButton(R.string.apply) { _, _ -> applySettings() }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
@@ -311,12 +225,10 @@ class GraphicsEditorActivity : AppCompatActivity() {
             
             if (success) {
                 Snackbar.make(binding.root, getString(R.string.settings_applied), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.kill_game) {
-                        killGame()
-                    }
+                    .setAction(R.string.kill_game) { killGame() }
                     .show()
             } else {
-                Snackbar.make(binding.root, getString(R.string.apply_failed), Snackbar.LENGTH_SHORT).show()
+                showSnackbar(getString(R.string.apply_failed))
             }
         }
     }
@@ -342,23 +254,60 @@ class GraphicsEditorActivity : AppCompatActivity() {
             val success = withContext(Dispatchers.IO) {
                 gameManager.saveBackup(name, settings)
             }
-            
-            if (success) {
-                Toast.makeText(this@GraphicsEditorActivity, R.string.backup_saved, Toast.LENGTH_SHORT).show()
-            }
+            if (success) showToast(getString(R.string.backup_saved))
         }
     }
     
     private fun killGame() {
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                gameManager.killGame()
-            }
-            Toast.makeText(this@GraphicsEditorActivity, R.string.game_killed, Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.IO) { gameManager.killGame() }
+            showToast(getString(R.string.game_killed))
         }
     }
     
+    // Extension functions for cleaner setup
+    private fun Slider.setupSlider(
+        initialValue: Float,
+        displayView: TextView,
+        formatter: (Float) -> String,
+        onValueChanged: (Float) -> Unit
+    ) {
+        value = initialValue.coerceIn(valueFrom, valueTo)
+        displayView.text = formatter(value)
+        
+        clearOnChangeListeners()
+        addOnChangeListener { _, newValue, _ ->
+            displayView.text = formatter(newValue)
+            onValueChanged(newValue)
+        }
+    }
+    
+    private fun SwitchMaterial.setupSwitch(
+        initialValue: Boolean,
+        onCheckedChanged: (Boolean) -> Unit
+    ) {
+        isChecked = initialValue
+        setOnCheckedChangeListener { _, isChecked -> onCheckedChanged(isChecked) }
+    }
+    
+    // Helper data class for quality slider configuration
+    private data class QualityConfig(
+        val initialValue: Float,
+        val formatter: (Float) -> String,
+        val setter: (Float) -> Unit
+    )
+    
+    // Utility functions
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+    
     override fun onSupportNavigateUp(): Boolean {
+        @Suppress("DEPRECATION")
         onBackPressed()
         return true
     }

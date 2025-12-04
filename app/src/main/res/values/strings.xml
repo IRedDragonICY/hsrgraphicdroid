@@ -9,12 +9,18 @@
     
     <!-- Status -->
     <string name="checking">Checking…</string>
+    <string name="loading">Loading…</string>
     <string name="root_granted">Root Access Granted</string>
     <string name="root_not_granted">Root Access Required</string>
     <string name="game_found">Game Installed</string>
     <string name="game_not_found">Game Not Found</string>
     
     <!-- Actions -->
+    <string name="launch_game">Launch Game</string>
+    <string name="app_info">App Info</string>
+    <string name="export_xml">Export</string>
+    <string name="share_xml">Share</string>
+    <string name="share_failed">Failed to share settings</string>
     <string name="read_current_settings">Read Current Settings</string>
     <string name="edit_settings">Edit Graphics Settings</string>
     <string name="create_backup">Create Backup</string>
@@ -56,6 +62,7 @@
     <string name="metalfx_super_resolution">MetalFX Super Resolution</string>
     <string name="half_res_transparent">Half Resolution Transparent</string>
     <string name="dlss_quality">DLSS Quality</string>
+    <string name="particle_trail">Particle Trail Smoothness</string>
     <string name="screen_resolution">Screen Resolution</string>
     <string name="resolution_width">Width</string>
     <string name="resolution_height">Height</string>
@@ -87,6 +94,7 @@
     <string name="metalfx_desc">Apple upscaling tech</string>
     <string name="half_res_desc">Transparent effects optimization</string>
     <string name="dlss_desc">NVIDIA AI upscaling</string>
+    <string name="particle_trail_desc">Trail effects smoothness</string>
     <string name="screen_resolution_desc">Game window resolution</string>
     <string name="overall_graphics_quality_desc">Unity master graphics quality setting</string>
     <string name="fullscreen_mode_desc">Display mode for game window</string>
@@ -124,6 +132,8 @@
     <string name="apply_failed">Failed to apply settings</string>
     <string name="error_read_settings">Failed to read settings. Make sure the game is installed and you have root access.</string>
     <string name="game_killed">Game closed</string>
+    <string name="export_success">XML file exported successfully</string>
+    <string name="export_failed">Failed to export XML file</string>
     
     <!-- Settings Screen -->
     <string name="settings">Settings</string>
@@ -143,6 +153,41 @@
     
     <!-- Menu -->
     <string name="action_settings">Settings</string>
+    <string name="action_game_prefs">Game Preferences</string>
     <string name="about">About</string>
     <string name="about_message">HSR Graphic Droid v1.0.0\n\nA premium tool for customizing Honkai: Star Rail graphics settings.\n\nFeatures:\n• Read and modify game graphics settings\n• Backup and restore configurations\n• Preset profiles (Low, Medium, High, Ultra)\n• Support for multiple languages\n• Material Design 3 interface\n\nRequires root access via Magisk or similar.\n\n© 2025 iRedDragonICY</string>
+    
+    <!-- Game Preferences -->
+    <string name="game_preferences">Game Preferences</string>
+    <string name="user_info">User Info</string>
+    <string name="user_id">User ID</string>
+    <string name="server_name">Server</string>
+    <string name="elf_order_hint">Elf Order Hint</string>
+    <string name="language_settings">Language Settings</string>
+    <string name="text_language">Text Language</string>
+    <string name="text_language_desc">In-game text and UI language</string>
+    <string name="audio_language">Audio Language</string>
+    <string name="audio_language_desc">Voice-over language for characters</string>
+    <string name="video_blacklist">Video Blacklist</string>
+    <string name="video_blacklist_desc">Skip blocked cutscene videos (.usm files)</string>
+    <string name="audio_blacklist">Audio Blacklist</string>
+    <string name="audio_blacklist_desc">Skip blocked audio files (.pck files)</string>
+    <string name="add">Add</string>
+    <string name="reset">Reset</string>
+    <string name="add_video_file">Add Video File</string>
+    <string name="add_audio_file">Add Audio File</string>
+    <string name="video_file_hint">e.g. cutscene_story_001.usm</string>
+    <string name="audio_file_hint">e.g. sound_effect_001.pck</string>
+    <string name="blacklist_item_added">Item added to blacklist</string>
+    <string name="blacklist_item_removed">Item removed from blacklist</string>
+    <string name="blacklist_item_exists">Item already exists</string>
+    <string name="preferences_saved">Preferences saved successfully</string>
+    <string name="preferences_save_failed">Failed to save preferences</string>
+    <string name="preferences_loaded">Preferences loaded</string>
+    <string name="preferences_load_failed">Failed to load preferences</string>
+    <string name="shown">Shown</string>
+    <string name="hidden">Hidden</string>
+    <string name="not_available">N/A</string>
+    <string name="videos_blocked">%d videos blocked</string>
+    <string name="audio_files_blocked">%d audio files blocked</string>
 </resources>

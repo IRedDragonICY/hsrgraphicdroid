@@ -72,6 +72,70 @@
                         android:text="@string/checking"
                         app:chipIcon="@drawable/ic_help"/>
 
+                    <!-- Game Actions -->
+                    <LinearLayout
+                        android:id="@+id/layoutGameActions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLaunchGame"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="@string/launch_game"
+                            app:icon="@drawable/ic_play"
+                            style="@style/Widget.Material3.Button.TonalButton.Icon"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnGameSettings"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/app_info"
+                            app:icon="@drawable/ic_info"
+                            style="@style/Widget.Material3.Button.OutlinedButton.Icon"/>
+
+                    </LinearLayout>
+
+                    <!-- Export & Share Buttons -->
+                    <LinearLayout
+                        android:id="@+id/layoutExportShare"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnExportXml"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            android:text="@string/export_xml"
+                            app:icon="@drawable/ic_export"
+                            style="@style/Widget.Material3.Button.OutlinedButton.Icon"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnShareXml"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            android:text="@string/share_xml"
+                            app:icon="@drawable/ic_share"
+                            style="@style/Widget.Material3.Button.OutlinedButton.Icon"/>
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -796,10 +860,28 @@
                                 android:textAppearance="?attr/textAppearanceBodySmall"
                                 android:textColor="?attr/colorOnSurfaceVariant"/>
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switchAa"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderAa"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:valueFrom="0"
+                            android:valueTo="2"
+                            android:stepSize="1"/>
+                        <TextView
+                            android:id="@+id/tvAaValue"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
+                            tools:text="TAA"/>
                     </LinearLayout>
 
                     <View
@@ -984,6 +1066,59 @@
                             android:gravity="end"
                             android:textAppearance="?attr/textAppearanceBodyLarge"
                             tools:text="Performance"/>
+                    </LinearLayout>
+
+                    <!-- Particle Trail Smoothness -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_particle"
+                            app:tint="?attr/colorPrimary"/>
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/particle_trail"
+                                android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/particle_trail_desc"
+                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:textColor="?attr/colorOnSurfaceVariant"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sliderParticleTrail"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:valueFrom="0"
+                            android:valueTo="3"
+                            android:stepSize="1"/>
+                        <TextView
+                            android:id="@+id/tvParticleTrailValue"
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
+                            tools:text="Off"/>
                     </LinearLayout>
 
                     <!-- Screen Resolution -->

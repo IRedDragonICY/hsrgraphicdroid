@@ -1,309 +1,396 @@
 package com.ireddragonicy.hsrgraphicdroid.utils
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
+import com.ireddragonicy.hsrgraphicdroid.data.GamePreferences
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
 import com.topjohnwu.superuser.Shell
-import com.topjohnwu.superuser.io.SuFile
 import java.io.File
 
+/**
+ * Manager class for interacting with Honkai: Star Rail game data.
+ * Handles game detection, graphics settings read/write, and backup management.
+ */
 class HsrGameManager(private val context: Context) {
-    
-    companion object {
-        private const val TAG = "HsrGameManager"
-        
-        // Supported game packages
-        private val GAME_PACKAGES = listOf(
-            "com.HoYoverse.hkrpgoversea",  // Global/SEA
-            "com.miHoYo.hkrpg",             // CN (China)
-            "com.HoYoverse.hkrpg",          // TW/HK/MO
-            "com.cognosphere.hkrpg"         // Alternative Global
-        )
-        
-        private const val GRAPHICS_KEY = "GraphicsSettings_Model"
-        private const val BACKUP_FILE = "hsr_backups.json"
-    }
-    
+
     private val gson = Gson()
-    private var detectedPackage: String? = null
-    
-    fun isRootAvailable(): Boolean {
-        return Shell.getShell().isRoot
-    }
-    
-    fun getAllInstalledPackages(): List<String> {
-        val packages = context.packageManager.getInstalledPackages(0)
-        return packages.map { it.packageName }
-    }
-    
-    fun findHoyoversePackages(): List<String> {
-        val allPackages = getAllInstalledPackages()
-        val hoyoversePackages = allPackages.filter { 
-            it.contains("hoyoverse", ignoreCase = true) || 
-            it.contains("mihoyo", ignoreCase = true) ||
-            it.contains("cognosphere", ignoreCase = true) ||
-            it.contains("hkrpg", ignoreCase = true) ||
-            it.contains("starrail", ignoreCase = true)
-        }
-        
-        Log.d(TAG, "Found Hoyoverse/miHoYo packages: $hoyoversePackages")
-        return hoyoversePackages
-    }
-    
-    fun isGameInstalled(): Boolean {
-        Log.d(TAG, "Checking if game is installed...")
-        
-        // First check known packages
-        for (pkg in GAME_PACKAGES) {
-            try {
-                val packageInfo = context.packageManager.getPackageInfo(pkg, 0)
-                detectedPackage = pkg
-                Log.d(TAG, "✓ Game found: $pkg (version: ${packageInfo.versionName})")
-                return true
-            } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
-                Log.d(TAG, "✗ Package not found: $pkg")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error checking package $pkg: ${e.message}")
-            }
-        }
-        
-        // If not found, search for any Hoyoverse package
-        val hoyoversePackages = findHoyoversePackages()
-        if (hoyoversePackages.isNotEmpty()) {
-            Log.w(TAG, "Game not found in known packages, but found related packages: $hoyoversePackages")
-        } else {
-            Log.w(TAG, "No Hoyoverse/miHoYo packages found at all")
-        }
-        
-        return false
-    }
-    
-    fun getInstalledGamePackage(): String? {
-        if (detectedPackage != null) return detectedPackage
-        
-        // Re-detect if not already detected
-        for (pkg in GAME_PACKAGES) {
-            try {
-                context.packageManager.getPackageInfo(pkg, 0)
-                detectedPackage = pkg
-                return pkg
-            } catch (e: Exception) {
-                // Continue checking
-            }
-        }
-        return null
-    }
-    
-    fun getGameDataPath(): String {
-        val pkg = getInstalledGamePackage() ?: GAME_PACKAGES[0]
-        return "/data/data/$pkg/shared_prefs/$pkg.v2.playerprefs.xml"
-    }
-    
-    fun getGameDataPaths(): List<String> {
-        val pkg = getInstalledGamePackage() ?: GAME_PACKAGES[0]
-        val fileName = "$pkg.v2.playerprefs.xml"
-        
-        // Try multiple possible locations for Android 11+
-        return listOf(
-            "/data_mirror/data_ce/null/0/$pkg/shared_prefs/$fileName",
-            "/data/user_de/0/$pkg/shared_prefs/$fileName",
-            "/data/user/0/$pkg/shared_prefs/$fileName",
-            "/data/data/$pkg/shared_prefs/$fileName"
-        )
-    }
-    
-    fun findActualGameDataPath(): String? {
-        Log.d(TAG, "Searching for game data file...")
-        
-        val paths = getGameDataPaths()
-        for (path in paths) {
-            val checkResult = Shell.cmd("ls -la $path 2>&1").exec()
-            if (checkResult.isSuccess && checkResult.out.isNotEmpty() && !checkResult.out[0].contains("No such file")) {
-                Log.d(TAG, "✓ Found file at: $path")
-                return path
-            } else {
-                Log.d(TAG, "✗ Not found: $path")
-            }
-        }
-        
-        // If not found, try to list shared_prefs directory
-        val pkg = getInstalledGamePackage()
-        if (pkg != null) {
-            Log.d(TAG, "Searching for shared_prefs directory...")
-            val basePaths = listOf(
-                "/data_mirror/data_ce/null/0/$pkg/shared_prefs/",
-                "/data/user_de/0/$pkg/shared_prefs/",
-                "/data/user/0/$pkg/shared_prefs/",
-                "/data/data/$pkg/shared_prefs/"
-            )
-            
-            for (basePath in basePaths) {
-                val listResult = Shell.cmd("ls -la $basePath 2>&1").exec()
-                if (listResult.isSuccess && listResult.out.isNotEmpty() && !listResult.out[0].contains("No such file")) {
-                    Log.d(TAG, "Found shared_prefs at: $basePath")
-                    listResult.out.forEach { Log.d(TAG, "  $it") }
-                }
-            }
-        }
-        
-        return null
-    }
-    
+    private var cachedPackage: String? = null
+    private var cachedPrefsPath: String? = null
+
+    // region Public API
+
+    val isRootAvailable: Boolean
+        get() = Shell.getShell().isRoot
+
+    val installedGamePackage: String?
+        get() = cachedPackage ?: detectInstalledPackage().also { cachedPackage = it }
+
+    val isGameInstalled: Boolean
+        get() = installedGamePackage != null
+
+    val gameVersionName: String
+        get() = GamePackage.fromPackageName(installedGamePackage)?.displayName ?: "Unknown"
+
     fun readCurrentSettings(): GraphicsSettings? {
-        Log.d(TAG, "Attempting to read current settings...")
-        
-        if (!isRootAvailable()) {
+        if (!isRootAvailable) {
             Log.e(TAG, "Root not available!")
             return null
         }
-        
-        // Find the actual file path
-        val prefsPath = findActualGameDataPath()
-        if (prefsPath == null) {
-            Log.e(TAG, "Could not find game preferences file in any known location")
+
+        val prefsPath = findPrefsPath() ?: run {
+            Log.e(TAG, "Could not find game preferences file")
             return null
         }
-        
-        Log.d(TAG, "Using preferences path: $prefsPath")
-        
-        return try {
+
+        return runCatching {
             val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            Log.d(TAG, "File content length: ${content.length} characters")
-            
             if (content.isEmpty()) {
-                Log.e(TAG, "File is empty!")
+                Log.e(TAG, "Preferences file is empty")
                 return null
             }
             
-            // Parse XML to find GraphicsSettings_Model value
-            val regex = "<string name=\"$GRAPHICS_KEY\">(.*?)</string>".toRegex()
-            val match = regex.find(content)
-            
-            if (match == null) {
-                Log.e(TAG, "GraphicsSettings_Model key not found in XML")
-                // Log first 500 chars of content to see what's there
-                Log.d(TAG, "Content preview: ${content.take(500)}")
+            Log.d(TAG, "File content length: ${content.length}")
+
+            val encoded = GRAPHICS_REGEX.find(content)?.groupValues?.get(1) ?: run {
+                Log.e(TAG, "GraphicsSettings_Model key not found in content")
+                Log.d(TAG, "Content preview: ${content.take(1000)}")
                 return null
             }
             
-            val encoded = match.groupValues[1]
-            Log.d(TAG, "Found encoded settings (length: ${encoded.length})")
-            
-            val settings = GraphicsSettings.fromEncodedString(encoded)
-            Log.d(TAG, "Successfully parsed settings!")
-            settings
-        } catch (e: Exception) {
-            Log.e(TAG, "Error reading settings: ${e.message}", e)
-            e.printStackTrace()
-            null
-        }
+            Log.d(TAG, "Found encoded string length: ${encoded.length}")
+
+            GraphicsSettings.fromEncodedString(encoded).also {
+                if (it == null) {
+                    Log.e(TAG, "Failed to parse encoded string: ${encoded.take(200)}")
+                } else {
+                    Log.d(TAG, "Successfully parsed settings - FPS: ${it.fps}, Quality: ${it.graphicsQuality}")
+                }
+            }
+        }.onFailure { e ->
+            Log.e(TAG, "Error reading settings", e)
+        }.getOrNull()
     }
-    
+
     fun writeSettings(settings: GraphicsSettings): Boolean {
-        if (!isRootAvailable()) return false
-        
-        val prefsPath = findActualGameDataPath()
-        if (prefsPath == null) {
-            Log.e(TAG, "Could not find game preferences file")
-            return false
-        }
-        
-        return try {
+        if (!isRootAvailable) return false
+
+        val prefsPath = findPrefsPath() ?: return false
+        val pkg = installedGamePackage ?: return false
+
+        return runCatching {
             val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
             val encoded = GraphicsSettings.toEncodedString(settings)
-            
-            // Replace the GraphicsSettings_Model value
-            val regex = "(<string name=\"$GRAPHICS_KEY\">)(.*?)(</string>)".toRegex()
-            val newContent = content.replace(regex, "$1$encoded$3")
-            
-            // Create temp file
-            val tempFile = File(context.cacheDir, "temp_prefs.xml")
-            tempFile.writeText(newContent)
-            
-            // Copy to game data with root
-            val pkg = getInstalledGamePackage() ?: return false
-            val result = Shell.cmd(
+            val newContent = content.replace(GRAPHICS_REGEX) {
+                """<string name="$GRAPHICS_KEY">$encoded</string>"""
+            }
+
+            val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
+                writeText(newContent)
+            }
+
+            Shell.cmd(
                 "cp ${tempFile.absolutePath} $prefsPath",
                 "chmod 660 $prefsPath",
                 "chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
-            ).exec()
-            
-            tempFile.delete()
-            
-            result.isSuccess
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+            ).exec().isSuccess.also { tempFile.delete() }
+        }.getOrDefault(false)
     }
-    
-    fun saveBackup(name: String, settings: GraphicsSettings): Boolean {
-        return try {
-            val backups = loadBackups().toMutableList()
-            backups.add(BackupData(System.currentTimeMillis(), settings, name))
-            
-            val json = gson.toJson(backups)
-            val file = File(context.filesDir, BACKUP_FILE)
-            file.writeText(json)
-            
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-    
-    fun loadBackups(): List<BackupData> {
-        return try {
-            val file = File(context.filesDir, BACKUP_FILE)
-            if (!file.exists()) return emptyList()
-            
-            val json = file.readText()
-            val type = object : TypeToken<List<BackupData>>() {}.type
-            gson.fromJson(json, type)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
-    }
-    
-    fun deleteBackup(backup: BackupData): Boolean {
-        return try {
-            val backups = loadBackups().toMutableList()
-            backups.removeIf { it.timestamp == backup.timestamp }
-            
-            val json = gson.toJson(backups)
-            val file = File(context.filesDir, BACKUP_FILE)
-            file.writeText(json)
-            
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-    
+
     fun killGame(): Boolean {
-        if (!isRootAvailable()) return false
-        
-        return try {
-            val pkg = getInstalledGamePackage() ?: return false
-            Shell.cmd("am force-stop $pkg").exec().isSuccess
-        } catch (e: Exception) {
-            false
-        }
+        if (!isRootAvailable) return false
+        val pkg = installedGamePackage ?: return false
+        return Shell.cmd("am force-stop $pkg").exec().isSuccess
     }
-    
-    fun getGameVersionName(): String {
-        val pkg = getInstalledGamePackage() ?: return "Unknown"
-        return when (pkg) {
-            "com.HoYoverse.hkrpgoversea" -> "Global/SEA"
-            "com.miHoYo.hkrpg" -> "CN (China)"
-            "com.HoYoverse.hkrpg" -> "TW/HK/MO"
-            else -> "Unknown"
+
+    /**
+     * Export the game preferences XML file to specified output file
+     */
+    fun exportPrefsFile(outputFile: File): Boolean {
+        if (!isRootAvailable) return false
+        
+        val prefsPath = findPrefsPath() ?: return false
+        
+        return runCatching {
+            val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            if (content.isEmpty()) {
+                Log.e(TAG, "Preferences file is empty")
+                return false
+            }
+            
+            outputFile.writeText(content)
+            Log.d(TAG, "Exported prefs to: ${outputFile.absolutePath}")
+            true
+        }.onFailure { e ->
+            Log.e(TAG, "Error exporting preferences", e)
+        }.getOrDefault(false)
+    }
+
+    /**
+     * Get the raw content of game preferences file
+     */
+    fun getPrefsContent(): String? {
+        if (!isRootAvailable) return null
+        
+        val prefsPath = findPrefsPath() ?: return null
+        
+        return runCatching {
+            Shell.cmd("cat $prefsPath").exec().out.joinToString("\n").takeIf { it.isNotEmpty() }
+        }.getOrNull()
+    }
+
+    // endregion
+
+    // region Game Preferences (Language, Audio, Blacklist)
+
+    /**
+     * Read game preferences (user info, language settings, blacklists)
+     */
+    fun readGamePreferences(): GamePreferences? {
+        if (!isRootAvailable) return null
+        
+        val prefsPath = findPrefsPath() ?: return null
+        
+        return runCatching {
+            val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            if (content.isEmpty()) return null
+            
+            // Parse Elf Order hint - look for User_*_ElfOrderNeedShowNewHint
+            val elfHintRegex = """<int name="User_\d+_ElfOrderNeedShowNewHint" value="(\d+)" />""".toRegex()
+            val elfOrderHint = elfHintRegex.find(content)?.groupValues?.get(1)?.toIntOrNull() == 1
+            
+            GamePreferences(
+                lastUserId = LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull(),
+                lastServerName = LAST_SERVER_REGEX.find(content)?.groupValues?.get(1),
+                textLanguage = TEXT_LANGUAGE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 2,
+                audioLanguage = AUDIO_LANGUAGE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 2,
+                elfOrderNeedShowNewHint = elfOrderHint,
+                videoBlacklist = GamePreferences.parseBlacklistFromEncoded(
+                    VIDEO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
+                ),
+                audioBlacklist = GamePreferences.parseBlacklistFromEncoded(
+                    AUDIO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
+                )
+            )
+        }.onFailure { e ->
+            Log.e(TAG, "Error reading game preferences", e)
+        }.getOrNull()
+    }
+
+    /**
+     * Write language settings to game preferences
+     */
+    fun writeLanguageSettings(textLanguage: Int, audioLanguage: Int): Boolean {
+        if (!isRootAvailable) return false
+        val prefsPath = findPrefsPath() ?: return false
+        
+        return runCatching {
+            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            
+            // Update or add text language
+            content = if (TEXT_LANGUAGE_REGEX.containsMatchIn(content)) {
+                content.replace(TEXT_LANGUAGE_REGEX) {
+                    """<int name="$TEXT_LANGUAGE_KEY" value="$textLanguage" />"""
+                }
+            } else {
+                content.replace("</map>", """    <int name="$TEXT_LANGUAGE_KEY" value="$textLanguage" />
+</map>""")
+            }
+            
+            // Update or add audio language
+            content = if (AUDIO_LANGUAGE_REGEX.containsMatchIn(content)) {
+                content.replace(AUDIO_LANGUAGE_REGEX) {
+                    """<int name="$AUDIO_LANGUAGE_KEY" value="$audioLanguage" />"""
+                }
+            } else {
+                content.replace("</map>", """    <int name="$AUDIO_LANGUAGE_KEY" value="$audioLanguage" />
+</map>""")
+            }
+            
+            writePrefsContent(content)
+        }.getOrDefault(false)
+    }
+
+    /**
+     * Write video blacklist to skip cutscenes
+     */
+    fun writeVideoBlacklist(blacklist: List<String>): Boolean {
+        if (!isRootAvailable) return false
+        val prefsPath = findPrefsPath() ?: return false
+        
+        return runCatching {
+            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            val encoded = GamePreferences.encodeBlacklistToString(blacklist)
+            
+            content = if (VIDEO_BLACKLIST_REGEX.containsMatchIn(content)) {
+                content.replace(VIDEO_BLACKLIST_REGEX) {
+                    """<string name="$VIDEO_BLACKLIST_KEY">$encoded</string>"""
+                }
+            } else {
+                content.replace("</map>", """    <string name="$VIDEO_BLACKLIST_KEY">$encoded</string>
+</map>""")
+            }
+            
+            writePrefsContent(content)
+        }.getOrDefault(false)
+    }
+
+    /**
+     * Write audio blacklist
+     */
+    fun writeAudioBlacklist(blacklist: List<String>): Boolean {
+        if (!isRootAvailable) return false
+        val prefsPath = findPrefsPath() ?: return false
+        
+        return runCatching {
+            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            val encoded = GamePreferences.encodeBlacklistToString(blacklist)
+            
+            content = if (AUDIO_BLACKLIST_REGEX.containsMatchIn(content)) {
+                content.replace(AUDIO_BLACKLIST_REGEX) {
+                    """<string name="$AUDIO_BLACKLIST_KEY">$encoded</string>"""
+                }
+            } else {
+                content.replace("</map>", """    <string name="$AUDIO_BLACKLIST_KEY">$encoded</string>
+</map>""")
+            }
+            
+            writePrefsContent(content)
+        }.getOrDefault(false)
+    }
+
+    private fun writePrefsContent(content: String): Boolean {
+        val prefsPath = findPrefsPath() ?: return false
+        
+        val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
+            writeText(content)
+        }
+        
+        return Shell.cmd(
+            "cp ${tempFile.absolutePath} $prefsPath",
+            "chmod 660 $prefsPath",
+            "chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
+        ).exec().isSuccess.also { tempFile.delete() }
+    }
+
+    // endregion
+
+    // region Backup Management
+
+    fun saveBackup(name: String, settings: GraphicsSettings): Boolean = runCatching {
+        val backups = loadBackups().toMutableList()
+        backups.add(BackupData(System.currentTimeMillis(), settings, name))
+        backupFile.writeText(gson.toJson(backups))
+        true
+    }.getOrDefault(false)
+
+    fun loadBackups(): List<BackupData> = runCatching {
+        if (!backupFile.exists()) return emptyList()
+        val type = object : TypeToken<List<BackupData>>() {}.type
+        gson.fromJson<List<BackupData>>(backupFile.readText(), type)
+    }.getOrDefault(emptyList())
+
+    fun deleteBackup(backup: BackupData): Boolean = runCatching {
+        val backups = loadBackups().filterNot { it.timestamp == backup.timestamp }
+        backupFile.writeText(gson.toJson(backups))
+        true
+    }.getOrDefault(false)
+
+    // endregion
+
+    // region Private Helpers
+
+    private val backupFile: File
+        get() = File(context.filesDir, BACKUP_FILE)
+
+    private fun detectInstalledPackage(): String? {
+        for (pkg in GamePackage.entries) {
+            runCatching {
+                context.packageManager.getPackageInfo(pkg.packageName, 0)
+                Log.d(TAG, "Game found: ${pkg.packageName}")
+                return pkg.packageName
+            }
+        }
+        Log.w(TAG, "No HSR package found")
+        return null
+    }
+
+    private fun findPrefsPath(): String? {
+        cachedPrefsPath?.let { return it }
+
+        val pkg = installedGamePackage ?: return null
+        val fileName = "$pkg.v2.playerprefs.xml"
+
+        val paths = PREFS_PATH_TEMPLATES.map { it.format(pkg, fileName) }
+
+        for (path in paths) {
+            val result = Shell.cmd("[ -f '$path' ] && echo exists").exec()
+            if (result.out.firstOrNull() == "exists") {
+                Log.d(TAG, "Found prefs at: $path")
+                cachedPrefsPath = path
+                return path
+            }
+        }
+
+        Log.e(TAG, "Preferences file not found in any location")
+        return null
+    }
+
+    // endregion
+
+    companion object {
+        private const val TAG = "HsrGameManager"
+        private const val GRAPHICS_KEY = "GraphicsSettings_Model"
+        private const val BACKUP_FILE = "hsr_backups.json"
+
+        // Game Preferences Keys
+        private const val LAST_USER_ID_KEY = "App_LastUserID"
+        private const val LAST_SERVER_KEY = "App_LastServerName"
+        private const val TEXT_LANGUAGE_KEY = "LanguageSettings_LocalTextLanguage"
+        private const val AUDIO_LANGUAGE_KEY = "LanguageSettings_LocalAudioLanguage"
+        private const val VIDEO_BLACKLIST_KEY = "App_VideoBlacklist"
+        private const val AUDIO_BLACKLIST_KEY = "App_AudioBlacklist"
+
+        private val GRAPHICS_REGEX = 
+            """<string name="$GRAPHICS_KEY">([^<]+)</string>""".toRegex()
+
+        // Game Preferences Regex patterns
+        private val LAST_USER_ID_REGEX =
+            """<int name="$LAST_USER_ID_KEY" value="(\d+)" />""".toRegex()
+        private val LAST_SERVER_REGEX =
+            """<string name="$LAST_SERVER_KEY">([^<]*)</string>""".toRegex()
+        private val TEXT_LANGUAGE_REGEX =
+            """<int name="$TEXT_LANGUAGE_KEY" value="(\d+)" />""".toRegex()
+        private val AUDIO_LANGUAGE_REGEX =
+            """<int name="$AUDIO_LANGUAGE_KEY" value="(\d+)" />""".toRegex()
+        private val VIDEO_BLACKLIST_REGEX =
+            """<string name="$VIDEO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
+        private val AUDIO_BLACKLIST_REGEX =
+            """<string name="$AUDIO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
+
+        private val PREFS_PATH_TEMPLATES = listOf(
+            "/data_mirror/data_ce/null/0/%s/shared_prefs/%s",
+            "/data/user_de/0/%s/shared_prefs/%s",
+            "/data/user/0/%s/shared_prefs/%s",
+            "/data/data/%s/shared_prefs/%s"
+        )
+    }
+
+    /**
+     * Enum representing supported HSR game packages
+     */
+    private enum class GamePackage(val packageName: String, val displayName: String) {
+        GLOBAL("com.HoYoverse.hkrpgoversea", "Global/SEA"),
+        CHINA("com.miHoYo.hkrpg", "CN (China)"),
+        TW_HK_MO("com.HoYoverse.hkrpg", "TW/HK/MO"),
+        COGNOSPHERE("com.cognosphere.hkrpg", "Alternative Global");
+
+        companion object {
+            fun fromPackageName(name: String?): GamePackage? =
+                entries.find { it.packageName == name }
         }
     }
 }
