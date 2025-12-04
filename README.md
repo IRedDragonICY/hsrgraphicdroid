@@ -1,236 +1,163 @@
 # HSR Graphic Droid
 
+![Banner](https://capsule-render.vercel.app/api?type=waving&color=6750A4&height=220&section=header&text=HSR%20Graphic%20Droid&fontSize=70&fontColor=ffffff&desc=Advanced%20Graphics%20Configuration%20Tool%20for%20Honkai:%20Star%20Rail&descAlignY=65&descAlign=50)
+
 <div align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="HSR Graphic Droid Logo" width="128"/>
-  
-  ### Premium Graphics Customization Tool for Honkai: Star Rail
-  
-  [![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com/)
-  [![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg)](https://kotlinlang.org/)
-  [![Material Design 3](https://img.shields.io/badge/Design-Material%203-blue.svg)](https://m3.material.io/)
-  [![Root Required](https://img.shields.io/badge/Root-Required-red.svg)](https://magiskmanager.com/)
+
+[![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.android.com)
+[![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Root](https://img.shields.io/badge/Requirement-Root_Access-FF5722?style=for-the-badge&logo=magisk&logoColor=white)](https://github.com/topjohnwu/Magisk)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue?style=for-the-badge&logo=apache&logoColor=white)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/iRedDragonICY/HsrGraphicDroid/android-build.yml?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/iRedDragonICY/HsrGraphicDroid/actions)
+
 </div>
 
-## 🌟 Features
+## Overview
 
-### 🎮 Game Settings Management
-- **Read Current Settings**: View your current graphics configuration
-- **Advanced Editor**: Modify all graphics parameters with real-time preview
-- **Smart Presets**: Quick apply Low, Medium, High, and Ultra presets
-- **Backup & Restore**: Save unlimited configurations and restore anytime
+**HSR Graphic Droid** is a sophisticated utility application engineered for the Android ecosystem, designed to bypass the standard limitations of the *Honkai: Star Rail* graphics configuration menu. By leveraging root privileges (KernelSU, Magisk, or APatch), it directly interacts with the Unity engine's preference files (`playerprefs.xml`), unlocking granular control over rendering pipelines, resolution scaling, and asset management.
 
-### 🎨 Modern Design
-- **Material Design 3**: Beautiful, flat, modern Google-style interface
-- **Dark/Light Mode**: Automatic theme switching with system preference
-- **Smooth Animations**: Fluid transitions and interactions
-- **Modern Icons**: Clean, professional Material Design icons
+This tool is intended for power users, developers, and enthusiasts seeking to optimize performance on low-end hardware or push graphical fidelity on flagship devices beyond the game's official "Ultra" presets.
 
-### 🌍 Multi-Language Support
-- 🇺🇸 English
-- 🇮🇩 Bahasa Indonesia
-- 🇨🇳 中文 (Chinese)
-- 🇯🇵 日本語 (Japanese)
+## Key Features
 
-### ⚙️ Graphics Settings
-All settings from `GraphicsSettings_Model`:
+### 🛠 Core Engineering
+*   **Direct Config Manipulation:** Bypasses in-game UI restrictions by reading/writing directly to the Unity `GraphicsSettings_Model` serialized JSON.
+*   **Root-Level File Operations:** Utilizes `libsu` for atomic file operations, ensuring configuration integrity even when the game processes are suspended.
+*   **Safety Backup System:** Automated JSON-based backup and restore functionality with timestamping, allowing instant rollback to stable configurations.
 
-| Setting | Range | Description |
-|---------|-------|-------------|
-| **FPS** | 30-120 | Frame rate limit |
-| **VSync** | On/Off | Vertical synchronization |
-| **Render Scale** | 0.5-2.0x | Resolution multiplier |
-| **Resolution Quality** | 0-5 | Overall resolution quality |
-| **Shadow Quality** | 0-5 | Shadow detail level |
-| **Light Quality** | 0-5 | Lighting quality |
-| **Character Quality** | 0-5 | Character model detail |
-| **Environment Quality** | 0-5 | Environment detail |
-| **Reflection Quality** | 0-5 | Reflection detail |
-| **SFX Quality** | 0-5 | Special effects quality |
-| **Bloom Quality** | 0-5 | Bloom effect quality |
-| **Anti-Aliasing** | On/Off | Edge smoothing |
-| **Self Shadow** | 0-2 | Character self-shadow |
+### ⚡ Performance & Quality
+*   **Unlocked Framerates:** Force enabling of 120 FPS modes on devices not officially whitelisted.
+*   **Custom Resolution Scaling:** Decouples rendering resolution from screen resolution (0.5x to 2.0x) for precise PPI targeting.
+*   **Advanced Upscaling Injection:** Toggles for hidden Unity engine parameters including MetalFX Super Resolution, DLSS Quality, and Half-Res Transparencies.
 
-## 📋 Requirements
+### 🔧 Asset Management
+*   **Blacklist Engine:** A specialized module to identify and block `.usm` (Video) and `.pck` (Audio) assets. This significantly reduces storage footprint and speeds up game loading by skipping intro/cutscene files.
+*   **Locale Force-Switch:** Modify Text and Audio language integers directly, bypassing region lock logic.
 
-- **Android 8.0+** (API 26+)
-- **Root Access** (Magisk or similar)
-- **Honkai: Star Rail** installed (`com.HoYoverse.hkrpgoversea`)
-- **Storage**: ~10MB
+## Technical Architecture
 
-## 🚀 Installation
+The application follows strictly typed Clean Architecture principles using MVVM patterns and modern Android Jetpack libraries.
 
-1. Download the latest APK from [Releases](https://github.com/yourusername/hsrgraphicdroid/releases)
-2. Install the APK on your rooted Android device
-3. Launch the app and grant root permissions when prompted
-4. Start customizing your game graphics!
-
-## 📱 Screenshots
-
-| Home Screen | Graphics Editor | Backup Manager |
-|-------------|----------------|----------------|
-| ![Home](screenshots/home.png) | ![Editor](screenshots/editor.png) | ![Backup](screenshots/backup.png) |
-
-## 🔧 How to Use
-
-### First Time Setup
-1. Open HSR Graphic Droid
-2. Grant root permission when prompted
-3. App will verify Honkai: Star Rail installation
-
-### Reading Current Settings
-1. Tap "Read Current Settings"
-2. View your current graphics configuration
-3. Settings are displayed in a formatted dialog
-
-### Editing Graphics
-1. Tap "Edit Graphics Settings"
-2. Use sliders to adjust each parameter
-3. Apply presets for quick configuration
-4. Tap "Apply" to save changes to game
-5. Restart the game to see effects
-
-### Backup & Restore
-1. **Create Backup**: Read current settings → Tap "Create Backup" → Enter name
-2. **Restore Backup**: Tap "Restore" on any saved backup
-3. **Delete Backup**: Tap delete icon on unwanted backups
-
-### Changing Theme
-1. Open Settings from menu
-2. Select Light, Dark, or System Default
-3. Theme changes immediately
-
-### Changing Language
-1. Open Settings from menu
-2. Select your preferred language
-3. App will restart with new language
-
-## 🛠️ Technical Details
-
-### Architecture
-- **MVVM Pattern**: Clean separation of concerns
-- **Kotlin Coroutines**: Async operations
-- **Material Design 3**: Latest design system
-- **LibSU**: Root access management
-- **DataStore**: Modern preference storage
-
-### Key Components
-- `HsrGameManager`: Handles game data read/write operations
-- `GraphicsSettings`: Data model for game settings
-- `BackupAdapter`: RecyclerView adapter for backup list
-- `PreferenceManager`: App settings management
-
-### File Structure
-```
-app/
-├── data/
-│   ├── GraphicsSettings.kt      # Settings data model
-│   └── BackupData.kt            # Backup data model
-├── ui/
-│   ├── MainActivity.kt          # Main screen
-│   ├── GraphicsEditorActivity.kt # Settings editor
-│   ├── SettingsActivity.kt      # App settings
-│   └── BackupAdapter.kt         # Backup list adapter
-└── utils/
-    ├── HsrGameManager.kt        # Game data manager
-    └── PreferenceManager.kt     # App preferences
+```mermaid
+graph TD
+    User[User Interaction] --> UI["UI Layer (Activity/Fragment)"]
+    UI --> ViewModel[ViewModel]
+    ViewModel --> Repository[GameManager Repository]
+    
+    subgraph "Data Layer"
+        Repository --> Serializer[Gson Serializer/Deserializer]
+        Repository --> RootShell[LibSU / Shell Interface]
+        Repository --> DataStore[Jetpack DataStore]
+    end
+    
+    subgraph "System / Root Context"
+        RootShell -->|su rights| FileSystem[Android File System]
+        FileSystem -->|Read/Write| XML[Game Config XML]
+    end
+    
+    XML -->|Contains| JSON[Serialized Graphics Model]
+    Serializer -->|Parse| JSON
 ```
 
-### Game Data Location
+## Configuration Reference
+
+HSR Graphic Droid exposes the complete array of Unity rendering parameters. Below is the technical specification of every modifiable setting.
+
+### Rendering & Performance
+
+| Parameter | Type | Range | Description |
+| :--- | :--- | :--- | :--- |
+| **FPS** | `int` | `30` - `120` | Target frame rate cap. Setting to 120 overrides device whitelisting. |
+| **Render Scale** | `float` | `0.5` - `2.0` | Internal rendering resolution multiplier relative to the window size. |
+| **Resolution Quality** | `int` | `0` - `5` | Preset quality level for texture resolution and mipmaps. |
+| **VSync** | `bool` | `On` / `Off` | Synchronizes frame rate with display refresh rate to prevent tearing. |
+| **Anti-Aliasing Mode** | `enum` | `0` (Off), `1` (TAA), `2` (SMAA) | Post-processing edge smoothing technique. |
+| **MetalFX SU** | `bool` | `On` / `Off` | **Experimental:** Apple's upscaling tech. May cause artifacts on Android (Snapdragon/Mali). |
+| **DLSS Quality** | `int` | `0` - `4` | **Experimental:** Deep Learning Super Sampling level. Primarily for non-mobile platforms. |
+| **Half Res Transparent** | `bool` | `On` / `Off` | Renders transparency effects (smoke, magic) at 50% resolution for performance. |
+
+### Visual Fidelity
+
+| Parameter | Type | Range | Description |
+| :--- | :--- | :--- | :--- |
+| **Graphics Quality** | `int` | `0` - `5` | Master switch for the overall Unity quality preset. |
+| **Shadow Quality** | `int` | `0` - `5` | Resolution of shadow maps and cascade distance. |
+| **Light Quality** | `int` | `0` - `5` | Complexity of dynamic lighting and volumetric fog. |
+| **Character Quality** | `int` | `0` - `5` | LOD (Level of Detail) bias for character models. |
+| **Env Detail Quality** | `int` | `0` - `5` | LOD bias for world geometry and draw distance. |
+| **Reflection Quality** | `int` | `0` - `5` | Resolution and update rate of screen-space reflections (SSR). |
+| **SFX Quality** | `int` | `0` - `5` | Density and lifetime of particle systems. |
+| **Bloom Quality** | `int` | `0` - `5` | Intensity and spread of the light bloom post-processing effect. |
+| **Self Shadow** | `int` | `0` - `2` | Computation of shadows cast by character onto themselves. |
+| **Particle Trail** | `int` | `0` - `3` | Smoothness and segments of moving particle trails. |
+
+### System & Windowing
+
+| Parameter | Type | Range | Description |
+| :--- | :--- | :--- | :--- |
+| **Resolution Width** | `int` | `1` - `7680` | Horizontal resolution of the viewport. |
+| **Resolution Height** | `int` | `1` - `4320` | Vertical resolution of the viewport. |
+| **Fullscreen Mode** | `enum` | `0`-`3` | `0`: Window, `1`: Exclusive, `2`: Maximized, `3`: Windowed. |
+| **Speed Up Open** | `int` | `0` / `1` | Optimization flag to potentially skip integrity checks on launch. |
+
+## Game Preferences (Non-Graphics)
+
+Beyond visual settings, the app modifies `GamePreferences` for utility purposes:
+
+*   **Video Blacklist:** Add filenames (e.g., `Cutscene_01.usm`) to prevent them from playing/loading.
+*   **Audio Blacklist:** Block specific `.pck` audio containers.
+*   **Language Injection:**
+    *   **Text:** `0` (CN), `1` (TW), `2` (EN), `3` (JP), `4` (KR), `8` (ID), `9` (RU), etc.
+    *   **Audio:** `0` (CN), `1` (EN), `2` (JP), `3` (KR).
+
+## Installation & Prerequisites
+
+### Requirements
+1.  **Android OS:** 8.0 (Oreo) or higher.
+2.  **Root Access:** Magisk, KernelSU, or APatch is **mandatory**.
+3.  **Installed Game:** *Honkai: Star Rail* must be installed and initialized at least once.
+
+### Installation
+1.  Download the latest signed APK from the [Releases](https://github.com/iRedDragonICY/HsrGraphicDroid/releases) page.
+2.  Install the APK on your device.
+3.  Launch **HSR Graphic Droid**.
+4.  When prompted, grant **Superuser** permissions via your root manager.
+
+## Building from Source
+
+To build this project locally, ensure you have Android Studio Koala or newer installed.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/iRedDragonICY/HsrGraphicDroid.git
+
+# 2. Navigate to project directory
+cd HsrGraphicDroid
+
+# 3. Build Debug APK
+./gradlew assembleDebug
+
+# 4. Output location
+# app/build/outputs/apk/debug/app-debug.apk
 ```
-/data/data/com.HoYoverse.hkrpgoversea/shared_prefs/
-└── com.HoYoverse.hkrpgoversea.v2.playerprefs.xml
-```
 
-### Settings Format
-Settings are stored as URL-encoded JSON:
-```xml
-<string name="GraphicsSettings_Model">%7B%22FPS%22%3A120%2C%22EnableVSync%22%3Afalse...</string>
-```
+## Tech Stack
 
-Decoded format:
-```json
-{
-  "FPS": 120,
-  "EnableVSync": false,
-  "RenderScale": 1.4,
-  "ResolutionQuality": 5,
-  ...
-}
-```
+*   **Language:** [Kotlin](https://kotlinlang.org/)
+*   **UI Framework:** [XML / Material Design 3](https://m3.material.io/)
+*   **Root Interface:** [LibSU](https://github.com/topjohnwu/libsu) (by topjohnwu)
+*   **Concurrency:** [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines)
+*   **Serialization:** [Gson](https://github.com/google/gson)
+*   **Architecture:** MVVM, Repository Pattern
 
-## ⚠️ Important Notes
+## License
 
-### Safety
-- **Always backup** your settings before making changes
-- **Close the game** before applying new settings
-- Settings take effect after game restart
-- Invalid settings may cause game crashes
+Copyright © 2025 iRedDragonICY.
 
-### Permissions
-- **Root Access**: Required to read/write game data
-- **Storage**: For backup file management
-
-### Compatibility
-- Tested on Android 8.0 - 15.0
-- Works with Honkai: Star Rail Global version
-- Requires active internet for first-time setup
-
-## 🐛 Troubleshooting
-
-### Root access denied
-- Make sure your device is properly rooted
-- Check Magisk/SuperSU app for permission grants
-- Try reinstalling the app
-
-### Game not found
-- Verify Honkai: Star Rail is installed
-- Check package name: `com.HoYoverse.hkrpgoversea`
-- Try reinstalling the game
-
-### Settings not applying
-- Make sure game is completely closed
-- Verify root permissions are granted
-- Check if game data path exists
-- Try force-closing the game using app button
-
-### Backup restore failed
-- Check root permissions
-- Ensure game is not running
-- Verify backup file is not corrupted
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Developer
-
-**iRedDragonICY**
-
-## ⚖️ Disclaimer
-
-This is an unofficial tool and is not affiliated with, endorsed by, or connected to HoYoverse or Honkai: Star Rail. Use at your own risk. The developers are not responsible for any bans or issues that may arise from using this tool.
-
-## 🙏 Acknowledgments
-
-- [HoYoverse](https://www.hoyoverse.com/) for Honkai: Star Rail
-- [TopJohnWu](https://github.com/topjohnwu) for LibSU
-- [Material Design](https://material.io/) for design guidelines
-- Android community for support and feedback
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  Made with ❤️ for the Honkai: Star Rail community
-  
-  ⭐ Star this repo if you find it useful!
+    <sub>Disclaimer: This software is not affiliated with, endorsed, sponsored, or specifically approved by HoYoverse/Cognosphere. Use at your own risk. Modifying game files may violate Terms of Service.</sub>
 </div>
