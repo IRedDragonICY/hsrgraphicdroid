@@ -26,6 +26,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -36,6 +41,9 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        aidl = false
+        renderScript = false
+        shaders = false
     }
 
     packaging {
@@ -54,7 +62,15 @@ android {
                 "META-INF/notice.txt",
                 "META-INF/AL2.0",
                 "META-INF/LGPL2.1",
-                "META-INF/*.kotlin_module"
+                "META-INF/*.kotlin_module",
+                "META-INF/versions/**",
+                "META-INF/*.version",
+                "META-INF/proguard/**",
+                "DebugProbesKt.bin",
+                "kotlin/**",
+                "kotlin-tooling-metadata.json",
+                "**.properties",
+                "**.proto"
             )
         }
     }
@@ -80,9 +96,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
-    kotlinOptions {
-        jvmTarget = "17"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 

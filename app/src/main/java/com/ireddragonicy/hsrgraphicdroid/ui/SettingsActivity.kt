@@ -1,5 +1,6 @@
 package com.ireddragonicy.hsrgraphicdroid.ui
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -71,9 +72,8 @@ class SettingsActivity : AppCompatActivity() {
         val intent = intent
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         finish()
-        overridePendingTransition(0, 0)
-        startActivity(intent)
-        overridePendingTransition(0, 0)
+        val options = ActivityOptions.makeCustomAnimation(this, 0, 0)
+        startActivity(intent, options.toBundle())
     }
 
     private fun setupWindowInsets() {
