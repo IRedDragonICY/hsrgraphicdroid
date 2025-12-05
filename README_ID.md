@@ -19,9 +19,26 @@
 
 ## Ringkasan
 
+<table>
+<tr>
+<td width="70%">
+
 **HSR Graphic Droid** adalah aplikasi utilitas canggih yang dirancang untuk ekosistem Android, dibuat untuk melewati batasan standar menu konfigurasi grafis *Honkai: Star Rail*. Dengan memanfaatkan hak akses root (KernelSU, Magisk, atau APatch), aplikasi ini berinteraksi langsung dengan file preferensi Unity engine (`playerprefs.xml`), membuka kontrol granular atas pipeline rendering, skala resolusi, dan manajemen aset.
 
 Alat ini ditujukan untuk pengguna tingkat lanjut, developer, dan penggemar yang ingin mengoptimalkan performa di perangkat low-end atau mendorong kualitas grafis di perangkat flagship melampaui preset "Ultra" resmi game.
+
+</td>
+<td width="30%" align="center">
+
+<img src="docs/ic_launcher.png" alt="HSR Graphic Droid" width="180"/>
+
+**HSR Graphic Droid**
+
+*Kontrol Grafis Lanjutan*
+
+</td>
+</tr>
+</table>
 
 ## Fitur Utama
 

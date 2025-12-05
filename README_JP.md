@@ -19,9 +19,26 @@
 
 ## 概要
 
+<table>
+<tr>
+<td width="70%">
+
 **HSR Graphic Droid**は、Androidエコシステム向けに設計された高度なユーティリティアプリケーションで、*崩壊：スターレイル*のグラフィック設定メニューの標準的な制限を回避するために開発されました。Root権限（KernelSU、Magisk、またはAPatch）を活用することで、Unityエンジンの設定ファイル（`playerprefs.xml`）に直接アクセスし、レンダリングパイプライン、解像度スケーリング、アセット管理の詳細な制御を可能にします。
 
 このツールは、ローエンドハードウェアでのパフォーマンス最適化や、フラッグシップデバイスでゲームの公式「ウルトラ」プリセットを超えるグラフィック品質を追求するパワーユーザー、開発者、愛好家を対象としています。
+
+</td>
+<td width="30%" align="center">
+
+<img src="docs/ic_launcher.png" alt="HSR Graphic Droid" width="180"/>
+
+**HSR Graphic Droid**
+
+*高度なグラフィック制御*
+
+</td>
+</tr>
+</table>
 
 ## 主な機能
 

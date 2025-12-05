@@ -19,9 +19,26 @@
 
 ## 概述
 
+<table>
+<tr>
+<td width="70%">
+
 **HSR Graphic Droid** 是一款专为Android生态系统设计的高级实用工具应用，旨在绕过*崩坏：星穹铁道*图形配置菜单的标准限制。通过利用root权限（KernelSU、Magisk或APatch），它直接与Unity引擎的偏好设置文件（`playerprefs.xml`）交互，解锁对渲染管线、分辨率缩放和资源管理的精细控制。
 
 此工具面向希望在低端硬件上优化性能或在旗舰设备上将图形保真度推向超越游戏官方"极致"预设的高级用户、开发者和爱好者。
+
+</td>
+<td width="30%" align="center">
+
+<img src="docs/ic_launcher.png" alt="HSR Graphic Droid" width="180"/>
+
+**HSR Graphic Droid**
+
+*高级图形控制*
+
+</td>
+</tr>
+</table>
 
 ## 核心功能
 
