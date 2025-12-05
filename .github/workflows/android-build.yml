@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main, master ]
 
+env:
+  KEYSTORE_PASSWORD: hsrgraphicdroid
+  KEY_ALIAS: hsrgraphicdroid
+  KEY_PASSWORD: hsrgraphicdroid
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,28 +29,28 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Decode Keystore
-      if: ${{ secrets.SIGNING_KEY != '' }}
+    - name: Generate Keystore
       run: |
-        echo "${{ secrets.SIGNING_KEY }}" | base64 -d > app/keystore.jks
-        echo "✅ Keystore decoded successfully"
+        keytool -genkeypair -v \
+          -keystore ${{ github.workspace }}/keystore.jks \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 10000 \
+          -alias ${{ env.KEY_ALIAS }} \
+          -storepass ${{ env.KEYSTORE_PASSWORD }} \
+          -keypass ${{ env.KEY_PASSWORD }} \
+          -dname "CN=HSRGraphicDroid, OU=Development, O=IRedDragonICY, L=Indonesia, ST=Indonesia, C=ID"
+        echo "✅ Keystore generated"
       
-    - name: Build Release APK with Signing
-      if: ${{ secrets.SIGNING_KEY != '' }}
+    - name: Build Release APK
       run: |
         ./gradlew assembleRelease \
-          -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/keystore.jks \
-          -Pandroid.injected.signing.store.password=${{ secrets.KEY_STORE_PASSWORD }} \
-          -Pandroid.injected.signing.key.alias=${{ secrets.ALIAS }} \
-          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
+          -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }} \
           --stacktrace
         echo "✅ Signed Release APK built"
-        
-    - name: Build Release APK (Unsigned fallback)
-      if: ${{ secrets.SIGNING_KEY == '' }}
-      run: |
-        ./gradlew assembleRelease --stacktrace
-        echo "⚠️ Built unsigned APK (no signing keys configured)"
 
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
@@ -168,7 +173,7 @@ jobs:
         
     - name: Cleanup keystore
       if: always()
-      run: rm -f app/keystore.jks
+      run: rm -f ${{ github.workspace }}/keystore.jks
         
     - name: Build Summary
       if: always()
