@@ -89,7 +89,7 @@
     <string name="half_res_desc">Оптимизация прозрачных эффектов</string>
     <string name="dlss_desc">AI-апскейлинг NVIDIA</string>
     <string name="screen_resolution_desc">Разрешение окна игры</string>
-    <string name="overall_graphics_quality_desc">Основной параметр качества графики Unity</string>
+    <string name="overall_graphics_quality_desc">0 = Пользоват. (свободная настройка). 1-5 = Пресеты игры (стандартные значения)</string>
     <string name="fullscreen_mode_desc">Режим отображения игрового окна</string>
     <string name="speed_up_open_desc">Ускоряет запуск и загрузку игры</string>
     

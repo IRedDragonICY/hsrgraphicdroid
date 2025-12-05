@@ -1,60 +1,62 @@
 package com.ireddragonicy.hsrgraphicdroid.data
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 import java.net.URLDecoder
 import java.net.URLEncoder
 
 data class GraphicsSettings(
-    @SerializedName("FPS")
+    @Expose @SerializedName("FPS")
     var fps: Int = 60,
     
-    @SerializedName("EnableVSync")
+    @Expose @SerializedName("EnableVSync")
     var enableVSync: Boolean = true,
     
-    @SerializedName("RenderScale")
+    @Expose @SerializedName("RenderScale")
     var renderScale: Double = 1.0,
     
-    @SerializedName("ResolutionQuality")
+    @Expose @SerializedName("ResolutionQuality")
     var resolutionQuality: Int = 3,
     
-    @SerializedName("ShadowQuality")
+    @Expose @SerializedName("ShadowQuality")
     var shadowQuality: Int = 3,
     
-    @SerializedName("LightQuality")
+    @Expose @SerializedName("LightQuality")
     var lightQuality: Int = 3,
     
-    @SerializedName("CharacterQuality")
+    @Expose @SerializedName("CharacterQuality")
     var characterQuality: Int = 3,
     
-    @SerializedName("EnvDetailQuality")
+    @Expose @SerializedName("EnvDetailQuality")
     var envDetailQuality: Int = 3,
     
-    @SerializedName("ReflectionQuality")
+    @Expose @SerializedName("ReflectionQuality")
     var reflectionQuality: Int = 3,
     
-    @SerializedName("SFXQuality")
+    @Expose @SerializedName("SFXQuality")
     var sfxQuality: Int = 3,
     
-    @SerializedName("BloomQuality")
+    @Expose @SerializedName("BloomQuality")
     var bloomQuality: Int = 3,
     
-    @SerializedName("AAMode")
+    @Expose @SerializedName("AAMode")
     var aaMode: Int = 1,
     
-    @SerializedName("EnableMetalFXSU")
+    @Expose @SerializedName("EnableMetalFXSU")
     var enableMetalFXSU: Boolean = false,
     
-    @SerializedName("EnableHalfResTransparent")
+    @Expose @SerializedName("EnableHalfResTransparent")
     var enableHalfResTransparent: Boolean = false,
     
-    @SerializedName("EnableSelfShadow")
+    @Expose @SerializedName("EnableSelfShadow")
     var enableSelfShadow: Int = 1,
     
-    @SerializedName("DlssQuality")
+    @Expose @SerializedName("DlssQuality")
     var dlssQuality: Int = 0,
     
-    @SerializedName("ParticleTrailSmoothness")
+    @Expose @SerializedName("ParticleTrailSmoothness")
     var particleTrailSmoothness: Int = 0,
     
     @SerializedName("Screenmanager Resolution Width")
@@ -74,22 +76,47 @@ data class GraphicsSettings(
 ) {
     companion object {
         private val gson = Gson()
+        private val modelGson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
         
         fun fromEncodedString(encoded: String): GraphicsSettings? {
             return try {
                 val decoded = URLDecoder.decode(encoded, "UTF-8")
-                gson.fromJson(decoded, GraphicsSettings::class.java)
+                modelGson.fromJson(decoded, GraphicsSettings::class.java)
             } catch (e: Exception) {
                 null
             }
         }
         
         fun toEncodedString(settings: GraphicsSettings): String {
-            val json = gson.toJson(settings)
+            // Use LinkedHashMap to preserve order exactly as the game expects
+            val map = LinkedHashMap<String, Any>()
+            map["FPS"] = settings.fps
+            map["EnableVSync"] = settings.enableVSync
+            map["RenderScale"] = settings.renderScale
+            map["ResolutionQuality"] = settings.resolutionQuality
+            map["ShadowQuality"] = settings.shadowQuality
+            map["LightQuality"] = settings.lightQuality
+            map["CharacterQuality"] = settings.characterQuality
+            map["EnvDetailQuality"] = settings.envDetailQuality
+            map["ReflectionQuality"] = settings.reflectionQuality
+            map["SFXQuality"] = settings.sfxQuality
+            map["BloomQuality"] = settings.bloomQuality
+            map["AAMode"] = settings.aaMode
+            map["EnableMetalFXSU"] = settings.enableMetalFXSU
+            map["EnableHalfResTransparent"] = settings.enableHalfResTransparent
+            map["EnableSelfShadow"] = settings.enableSelfShadow
+            map["DlssQuality"] = settings.dlssQuality
+            map["ParticleTrailSmoothness"] = settings.particleTrailSmoothness
+            
+            val json = gson.toJson(map)
             return URLEncoder.encode(json, "UTF-8")
         }
     }
     
+    /**
+     * Get quality name for individual settings sliders (Resolution, Shadow, etc.)
+     * 0=Very Low, 1=Low, 2=Medium, 3=High, 4=Very High, 5=Ultra
+     */
     fun getQualityName(quality: Int): String {
         return when(quality) {
             0 -> "Very Low"
@@ -99,6 +126,40 @@ data class GraphicsSettings(
             4 -> "Very High"
             5 -> "Ultra"
             else -> "Unknown"
+        }
+    }
+    
+    /**
+     * Get SFX quality name - SFX uses different scale
+     * 0 = Not used (will reset to default)
+     * 1=Very Low, 2=Low, 3=Medium, 4=High, 5=Very High
+     */
+    fun getSfxQualityName(quality: Int): String {
+        return when(quality) {
+            0 -> "Invalid"
+            1 -> "Very Low"
+            2 -> "Low"
+            3 -> "Medium"
+            4 -> "High"
+            5 -> "Very High"
+            else -> "Unknown"
+        }
+    }
+    
+    /**
+     * Get the master quality name for GraphicsSettings_GraphicsQuality
+     * 0 = Custom (user can modify extended settings)
+     * 1-5 = Game presets (Very Low to Very High)
+     */
+    fun getMasterQualityName(quality: Int): String {
+        return when(quality) {
+            0 -> "Custom"
+            1 -> "Very Low"
+            2 -> "Low"
+            3 -> "Medium"
+            4 -> "High"
+            5 -> "Very High"
+            else -> "Custom"
         }
     }
     

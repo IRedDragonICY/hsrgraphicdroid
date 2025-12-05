@@ -14,6 +14,8 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue?style=for-the-badge&logo=apache&logoColor=white)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/iRedDragonICY/HsrGraphicDroid/android-build.yml?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/iRedDragonICY/HsrGraphicDroid/actions)
 
+**English** | **[Indonesia](README_ID.md)** | **[中文](README_CN.md)** | **[日本語](README_JP.md)**
+
 </div>
 
 ## Overview
@@ -33,9 +35,10 @@ This tool is intended for power users, developers, and enthusiasts seeking to op
 *   **Unlocked Framerates:** Force enabling of 120 FPS modes on devices not officially whitelisted.
 *   **Custom Resolution Scaling:** Decouples rendering resolution from screen resolution (0.5x to 2.0x) for precise PPI targeting.
 *   **Advanced Upscaling Injection:** Toggles for hidden Unity engine parameters including MetalFX Super Resolution, DLSS Quality, and Half-Res Transparencies.
+*   **Dual Quality System:** Separate controls for Unity Master Quality (game presets) and Extended Settings (custom values that can exceed game limits).
 
 ### 🔧 Asset Management
-*   **Blacklist Engine:** A specialized module to identify and block `.usm` (Video) and `.pck` (Audio) assets. This significantly reduces storage footprint and speeds up game loading by skipping intro/cutscene files.
+*   **Blacklist Viewer:** View blocked `.usm` (Video) and `.pck` (Audio) assets. (View-only to prevent accidental game data re-downloads)
 *   **Locale Force-Switch:** Modify Text and Audio language integers directly, bypassing region lock logic.
 
 ## Technical Architecture
@@ -84,35 +87,39 @@ HSR Graphic Droid exposes the complete array of Unity rendering parameters. Belo
 
 | Parameter | Type | Range | Description |
 | :--- | :--- | :--- | :--- |
-| **Graphics Quality** | `int` | `0` - `5` | Master switch for the overall Unity quality preset. |
+| **Graphics Quality** | `int` | `0` - `5` | Master switch. `0`=Custom (uses Extended Settings below), `1`-`5`=Game presets (overrides individual settings). |
 | **Shadow Quality** | `int` | `0` - `5` | Resolution of shadow maps and cascade distance. |
 | **Light Quality** | `int` | `0` - `5` | Complexity of dynamic lighting and volumetric fog. |
 | **Character Quality** | `int` | `0` - `5` | LOD (Level of Detail) bias for character models. |
 | **Env Detail Quality** | `int` | `0` - `5` | LOD bias for world geometry and draw distance. |
 | **Reflection Quality** | `int` | `0` - `5` | Resolution and update rate of screen-space reflections (SSR). |
-| **SFX Quality** | `int` | `0` - `5` | Density and lifetime of particle systems. |
+| **SFX Quality** | `int` | `1` - `5` | Density and lifetime of particle systems. Note: `0` is invalid, minimum is `1` (Very Low). |
 | **Bloom Quality** | `int` | `0` - `5` | Intensity and spread of the light bloom post-processing effect. |
 | **Self Shadow** | `int` | `0` - `2` | Computation of shadows cast by character onto themselves. |
 | **Particle Trail** | `int` | `0` - `3` | Smoothness and segments of moving particle trails. |
 
-### System & Windowing
+### System & Windowing (View Only)
 
-| Parameter | Type | Range | Description |
-| :--- | :--- | :--- | :--- |
-| **Resolution Width** | `int` | `1` - `7680` | Horizontal resolution of the viewport. |
-| **Resolution Height** | `int` | `1` - `4320` | Vertical resolution of the viewport. |
-| **Fullscreen Mode** | `enum` | `0`-`3` | `0`: Window, `1`: Exclusive, `2`: Maximized, `3`: Windowed. |
-| **Speed Up Open** | `int` | `0` / `1` | Optimization flag to potentially skip integrity checks on launch. |
+These settings are **read-only** and displayed for informational purposes. The game uses the device's native screen resolution and cannot be modified through this app.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| **Resolution Width** | `int` | Horizontal resolution of the viewport (read from game). |
+| **Resolution Height** | `int` | Vertical resolution of the viewport (read from game). |
+| **Fullscreen Mode** | `enum` | `0`: Fullscreen Window, `1`: Exclusive, `2`: Maximized, `3`: Windowed (read from game). |
+| **Speed Up Open** | `int` | Optimization flag to potentially skip integrity checks on launch. |
 
 ## Game Preferences (Non-Graphics)
 
-Beyond visual settings, the app modifies `GamePreferences` for utility purposes:
+Beyond visual settings, the app displays `GamePreferences` for utility purposes:
 
-*   **Video Blacklist:** Add filenames (e.g., `Cutscene_01.usm`) to prevent them from playing/loading.
-*   **Audio Blacklist:** Block specific `.pck` audio containers.
-*   **Language Injection:**
+*   **Video Blacklist (View Only):** Displays blocked video filenames (e.g., `Cutscene_01.usm`). Editing is disabled to prevent game data re-download.
+*   **Audio Blacklist (View Only):** Displays blocked `.pck` audio containers. Editing is disabled to prevent game data re-download.
+*   **Language Settings:**
     *   **Text:** `0` (CN), `1` (TW), `2` (EN), `3` (JP), `4` (KR), `8` (ID), `9` (RU), etc.
     *   **Audio:** `0` (CN), `1` (EN), `2` (JP), `3` (KR).
+
+> **Note:** Blacklist editing has been disabled because modifying these lists can cause the game to re-download data files. Only language settings can be changed in the Game Preferences screen.
 
 ## Installation & Prerequisites
 

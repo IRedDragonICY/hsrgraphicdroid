@@ -68,6 +68,12 @@ class HsrGameManager(private val context: Context) {
                     Log.e(TAG, "Failed to parse encoded string: ${encoded.take(200)}")
                 } else {
                     Log.d(TAG, "Successfully parsed settings - FPS: ${it.fps}, Quality: ${it.graphicsQuality}")
+                    
+                    // Parse other fields from XML content
+                    it.screenWidth = RESOLUTION_WIDTH_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1920
+                    it.screenHeight = RESOLUTION_HEIGHT_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1080
+                    it.fullscreenMode = FULLSCREEN_MODE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                    it.graphicsQuality = GRAPHICS_QUALITY_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 3
                 }
             }
         }.onFailure { e ->
@@ -84,18 +90,49 @@ class HsrGameManager(private val context: Context) {
         return runCatching {
             val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
             val encoded = GraphicsSettings.toEncodedString(settings)
-            val newContent = content.replace(GRAPHICS_REGEX) {
-                """<string name="$GRAPHICS_KEY">$encoded</string>"""
+            
+            var newContent = content
+            if (GRAPHICS_REGEX.containsMatchIn(content)) {
+                newContent = content.replace(GRAPHICS_REGEX) {
+                    """<string name="$GRAPHICS_KEY">$encoded</string>"""
+                }
+            } else {
+                // Insert if missing
+                newContent = content.replace("</map>", """    <string name="$GRAPHICS_KEY">$encoded</string>
+</map>""")
             }
+
+            // Helper to update int values
+            // Note: XML format can be either <int ... /> or <int .../>
+            fun updateInt(key: String, value: Int, xml: String): String {
+                // Escape special regex characters in key (like % in URL-encoded names)
+                val escapedKey = Regex.escape(key)
+                // Match both formats: with or without space before />
+                val regex = """<int name="$escapedKey" value="(-?\d+)"\s*/>""".toRegex()
+                return if (regex.containsMatchIn(xml)) {
+                    xml.replace(regex, """<int name="$key" value="$value" />""")
+                } else {
+                    xml.replace("</map>", """    <int name="$key" value="$value" />
+</map>""")
+                }
+            }
+            
+            newContent = updateInt("Screenmanager%20Resolution%20Width", settings.screenWidth, newContent)
+            newContent = updateInt("Screenmanager%20Resolution%20Height", settings.screenHeight, newContent)
+            newContent = updateInt("Screenmanager%20Fullscreen%20mode", settings.fullscreenMode, newContent)
+            // GraphicsSettings_GraphicsQuality is Unity's master quality:
+            // 0 = Custom (allows modifying extended settings not in game UI)
+            // 1-5 = Game presets (Very Low to Very High) - game will use its default values
+            // If user selected a game preset (1-5), game will override GraphicsSettings_Model values
+            // If user selected Custom (0), game will use the values from GraphicsSettings_Model
+            newContent = updateInt("GraphicsSettings_GraphicsQuality", settings.graphicsQuality, newContent)
 
             val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
                 writeText(newContent)
             }
 
             Shell.cmd(
-                "cp ${tempFile.absolutePath} $prefsPath",
-                "chmod 660 $prefsPath",
-                "chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
+                "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
             ).exec().isSuccess.also { tempFile.delete() }
         }.getOrDefault(false)
     }
@@ -165,8 +202,12 @@ class HsrGameManager(private val context: Context) {
             GamePreferences(
                 lastUserId = LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull(),
                 lastServerName = LAST_SERVER_REGEX.find(content)?.groupValues?.get(1),
-                textLanguage = TEXT_LANGUAGE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 2,
-                audioLanguage = AUDIO_LANGUAGE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 2,
+                textLanguage = GamePreferences.getTextLanguageFromCode(
+                    TEXT_LANGUAGE_REGEX.find(content)?.groupValues?.get(1) ?: "en"
+                ),
+                audioLanguage = GamePreferences.getAudioLanguageFromCode(
+                    AUDIO_LANGUAGE_REGEX.find(content)?.groupValues?.get(1) ?: "jp"
+                ),
                 elfOrderNeedShowNewHint = elfOrderHint,
                 videoBlacklist = GamePreferences.parseBlacklistFromEncoded(
                     VIDEO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
@@ -190,23 +231,26 @@ class HsrGameManager(private val context: Context) {
         return runCatching {
             var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
             
+            val textCode = GamePreferences.getCodeFromTextLanguage(textLanguage)
+            val audioCode = GamePreferences.getCodeFromAudioLanguage(audioLanguage)
+            
             // Update or add text language
             content = if (TEXT_LANGUAGE_REGEX.containsMatchIn(content)) {
                 content.replace(TEXT_LANGUAGE_REGEX) {
-                    """<int name="$TEXT_LANGUAGE_KEY" value="$textLanguage" />"""
+                    """<string name="$TEXT_LANGUAGE_KEY">$textCode</string>"""
                 }
             } else {
-                content.replace("</map>", """    <int name="$TEXT_LANGUAGE_KEY" value="$textLanguage" />
+                content.replace("</map>", """    <string name="$TEXT_LANGUAGE_KEY">$textCode</string>
 </map>""")
             }
             
             // Update or add audio language
             content = if (AUDIO_LANGUAGE_REGEX.containsMatchIn(content)) {
                 content.replace(AUDIO_LANGUAGE_REGEX) {
-                    """<int name="$AUDIO_LANGUAGE_KEY" value="$audioLanguage" />"""
+                    """<string name="$AUDIO_LANGUAGE_KEY">$audioCode</string>"""
                 }
             } else {
-                content.replace("</map>", """    <int name="$AUDIO_LANGUAGE_KEY" value="$audioLanguage" />
+                content.replace("</map>", """    <string name="$AUDIO_LANGUAGE_KEY">$audioCode</string>
 </map>""")
             }
             
@@ -270,9 +314,7 @@ class HsrGameManager(private val context: Context) {
         }
         
         return Shell.cmd(
-            "cp ${tempFile.absolutePath} $prefsPath",
-            "chmod 660 $prefsPath",
-            "chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
+            "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
         ).exec().isSuccess.also { tempFile.delete() }
     }
 
@@ -355,7 +397,7 @@ class HsrGameManager(private val context: Context) {
         private const val AUDIO_BLACKLIST_KEY = "App_AudioBlacklist"
 
         private val GRAPHICS_REGEX = 
-            """<string name="$GRAPHICS_KEY">([^<]+)</string>""".toRegex()
+            """<string name="$GRAPHICS_KEY">([^<]*)</string>""".toRegex()
 
         // Game Preferences Regex patterns
         private val LAST_USER_ID_REGEX =
@@ -363,19 +405,28 @@ class HsrGameManager(private val context: Context) {
         private val LAST_SERVER_REGEX =
             """<string name="$LAST_SERVER_KEY">([^<]*)</string>""".toRegex()
         private val TEXT_LANGUAGE_REGEX =
-            """<int name="$TEXT_LANGUAGE_KEY" value="(\d+)" />""".toRegex()
+            """<string name="$TEXT_LANGUAGE_KEY">([^<]+)</string>""".toRegex()
         private val AUDIO_LANGUAGE_REGEX =
-            """<int name="$AUDIO_LANGUAGE_KEY" value="(\d+)" />""".toRegex()
+            """<string name="$AUDIO_LANGUAGE_KEY">([^<]+)</string>""".toRegex()
         private val VIDEO_BLACKLIST_REGEX =
             """<string name="$VIDEO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
         private val AUDIO_BLACKLIST_REGEX =
             """<string name="$AUDIO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
+            
+        private val RESOLUTION_WIDTH_REGEX = 
+            """<int name="Screenmanager%20Resolution%20Width" value="(\d+)" />""".toRegex()
+        private val RESOLUTION_HEIGHT_REGEX = 
+            """<int name="Screenmanager%20Resolution%20Height" value="(\d+)" />""".toRegex()
+        private val FULLSCREEN_MODE_REGEX = 
+            """<int name="Screenmanager%20Fullscreen%20mode" value="(-?\d+)" />""".toRegex()
+        private val GRAPHICS_QUALITY_REGEX = 
+            """<int name="GraphicsSettings_GraphicsQuality" value="(\d+)" />""".toRegex()
 
         private val PREFS_PATH_TEMPLATES = listOf(
-            "/data_mirror/data_ce/null/0/%s/shared_prefs/%s",
-            "/data/user_de/0/%s/shared_prefs/%s",
+            "/data/data/%s/shared_prefs/%s",
             "/data/user/0/%s/shared_prefs/%s",
-            "/data/data/%s/shared_prefs/%s"
+            "/data_mirror/data_ce/null/0/%s/shared_prefs/%s",
+            "/data/user_de/0/%s/shared_prefs/%s"
         )
     }
 

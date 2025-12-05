@@ -50,20 +50,13 @@ class GamePreferencesActivity : AppCompatActivity() {
     private val gameManager by lazy { HsrGameManager(this) }
     
     // Adapters - lazy init untuk mencegah lag saat onCreate
+    // NOTE: Blacklist is VIEW ONLY - editing will cause game to re-download data!
     private val videoBlacklistAdapter by lazy {
-        BlacklistAdapter(isVideo = true) { fileName ->
-            videoBlacklist.remove(fileName)
-            updateVideoBlacklistUI()
-            showSnackbar(R.string.blacklist_item_removed)
-        }
+        BlacklistAdapter(isVideo = true, onDelete = null) // View only, no delete
     }
     
     private val audioBlacklistAdapter by lazy {
-        BlacklistAdapter(isVideo = false) { fileName ->
-            audioBlacklist.remove(fileName)
-            updateAudioBlacklistUI()
-            showSnackbar(R.string.blacklist_item_removed)
-        }
+        BlacklistAdapter(isVideo = false, onDelete = null) // View only, no delete
     }
     
     private var currentPreferences: GamePreferences? = null
@@ -154,8 +147,9 @@ class GamePreferencesActivity : AppCompatActivity() {
     
     private fun setupClickListeners() {
         with(binding) {
-            btnAddVideo.setOnClickListener { showAddDialog(isVideo = true) }
-            btnAddAudio.setOnClickListener { showAddDialog(isVideo = false) }
+            // NOTE: Add buttons hidden - blacklist is view only to prevent re-download bug
+            // btnAddVideo.setOnClickListener { showAddDialog(isVideo = true) }
+            // btnAddAudio.setOnClickListener { showAddDialog(isVideo = false) }
             btnReset.setOnClickListener { 
                 updateUiState(UiState.Loading)
                 loadPreferences() 
@@ -375,11 +369,11 @@ class GamePreferencesActivity : AppCompatActivity() {
             updateUiState(UiState.Saving)
             
             val result = withContext(Dispatchers.IO) {
+                // NOTE: Only save language settings
+                // Blacklists are VIEW ONLY - editing will cause game to re-download data!
                 val langSuccess = gameManager.writeLanguageSettings(textLanguage, audioLanguage)
-                val videoSuccess = gameManager.writeVideoBlacklist(videoBlacklist)
-                val audioSuccess = gameManager.writeAudioBlacklist(audioBlacklist)
                 
-                buildSaveResult(langSuccess, videoSuccess, audioSuccess)
+                if (langSuccess) SaveResult.Success else SaveResult.Failure(listOf("Language"))
             }
             
             binding.progressIndicator.hide()
@@ -388,6 +382,7 @@ class GamePreferencesActivity : AppCompatActivity() {
             when (result) {
                 is SaveResult.Success -> {
                     Snackbar.make(binding.root, R.string.preferences_saved, Snackbar.LENGTH_LONG)
+                        .setAnchorView(binding.bottomActionBar)
                         .setAction(R.string.kill_game) { killGame() }
                         .show()
                 }
@@ -431,7 +426,9 @@ class GamePreferencesActivity : AppCompatActivity() {
     }
     
     private fun showSnackbar(message: String, isError: Boolean = false) {
-        Snackbar.make(binding.root, message, if (isError) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, message, if (isError) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT)
+            .setAnchorView(binding.bottomActionBar)
+            .show()
     }
     
     private fun <K, V> Map<K, V>.findKeyByValue(value: V): K? = entries.find { it.value == value }?.key

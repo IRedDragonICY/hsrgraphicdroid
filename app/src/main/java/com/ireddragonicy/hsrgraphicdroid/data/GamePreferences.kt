@@ -53,12 +53,45 @@ data class GamePreferences(
             2 to "日本語",    // Japanese
             3 to "한국어"     // Korean
         )
+
+        // Mapping for XML string codes
+        val TEXT_LANGUAGE_CODES = mapOf(
+            0 to "cn",
+            1 to "cht",
+            2 to "en",
+            3 to "jp",
+            4 to "kr",
+            5 to "de",
+            6 to "es",
+            7 to "fr",
+            8 to "id",
+            9 to "ru",
+            10 to "pt",
+            11 to "th",
+            12 to "vi"
+        )
+
+        val AUDIO_LANGUAGE_CODES = mapOf(
+            0 to "cn",
+            1 to "en",
+            2 to "jp",
+            3 to "kr"
+        )
         
         fun getTextLanguageName(code: Int): String =
             TEXT_LANGUAGES[code] ?: "Unknown"
         
         fun getAudioLanguageName(code: Int): String =
             AUDIO_LANGUAGES[code] ?: "Unknown"
+
+        fun getCodeFromTextLanguage(language: Int): String = TEXT_LANGUAGE_CODES[language] ?: "en"
+        fun getCodeFromAudioLanguage(language: Int): String = AUDIO_LANGUAGE_CODES[language] ?: "jp"
+        
+        fun getTextLanguageFromCode(code: String): Int = 
+            TEXT_LANGUAGE_CODES.entries.find { it.value == code }?.key ?: 2
+            
+        fun getAudioLanguageFromCode(code: String): Int = 
+            AUDIO_LANGUAGE_CODES.entries.find { it.value == code }?.key ?: 2
             
         /**
          * Parse URL-encoded JSON array string to List<String>

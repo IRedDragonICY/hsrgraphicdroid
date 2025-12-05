@@ -26,6 +26,7 @@ class GraphicsEditorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGraphicsEditorBinding
     private lateinit var gameManager: HsrGameManager
     private lateinit var settings: GraphicsSettings
+    private var isApplyingPreset = false  // Flag to prevent clearing preset during programmatic changes
     
     // Preset configurations
     private enum class Preset(
@@ -173,30 +174,6 @@ class GraphicsEditorActivity : AppCompatActivity() {
         binding.btnSaveBackup.setOnClickListener { showBackupDialog() }
     }
     
-    private fun applyPreset(preset: Preset) {
-        settings.apply {
-            fps = preset.fps
-            renderScale = preset.renderScale
-            resolutionQuality = preset.quality
-            shadowQuality = preset.quality
-            lightQuality = preset.quality
-            characterQuality = preset.quality
-            envDetailQuality = preset.quality
-            reflectionQuality = preset.quality
-            sfxQuality = preset.quality
-            bloomQuality = preset.quality
-            enableSelfShadow = preset.selfShadow
-            enableMetalFXSU = preset.metalFx
-            enableHalfResTransparent = preset.halfRes
-            dlssQuality = preset.dlss
-            aaMode = preset.aaMode
-            particleTrailSmoothness = preset.particleTrail
-        }
-        
-        refreshUI()
-        showToast(getString(R.string.preset_applied, preset.name))
-    }
-    
     private fun refreshUI() {
         setupFpsControl()
         setupSwitchControls()
@@ -224,11 +201,9 @@ class GraphicsEditorActivity : AppCompatActivity() {
             binding.progressIndicator.hide()
             
             if (success) {
-                Snackbar.make(binding.root, getString(R.string.settings_applied), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.kill_game) { killGame() }
-                    .show()
+                showMessage(getString(R.string.settings_applied), getString(R.string.kill_game)) { killGame() }
             } else {
-                showSnackbar(getString(R.string.apply_failed))
+                showMessage(getString(R.string.apply_failed))
             }
         }
     }
@@ -254,17 +229,45 @@ class GraphicsEditorActivity : AppCompatActivity() {
             val success = withContext(Dispatchers.IO) {
                 gameManager.saveBackup(name, settings)
             }
-            if (success) showToast(getString(R.string.backup_saved))
+            if (success) showMessage(getString(R.string.backup_saved))
         }
     }
     
     private fun killGame() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) { gameManager.killGame() }
-            showToast(getString(R.string.game_killed))
+            showMessage(getString(R.string.game_killed))
         }
     }
     
+    private fun applyPreset(preset: Preset) {
+        isApplyingPreset = true  // Prevent clearing selection during UI update
+        
+        settings.apply {
+            fps = preset.fps
+            renderScale = preset.renderScale
+            resolutionQuality = preset.quality
+            shadowQuality = preset.quality
+            lightQuality = preset.quality
+            characterQuality = preset.quality
+            envDetailQuality = preset.quality
+            reflectionQuality = preset.quality
+            sfxQuality = preset.quality
+            bloomQuality = preset.quality
+            enableSelfShadow = preset.selfShadow
+            enableMetalFXSU = preset.metalFx
+            enableHalfResTransparent = preset.halfRes
+            dlssQuality = preset.dlss
+            aaMode = preset.aaMode
+            particleTrailSmoothness = preset.particleTrail
+        }
+        
+        refreshUI()
+        isApplyingPreset = false  // Re-enable preset clearing
+        
+        showMessage(getString(R.string.preset_applied, preset.name))
+    }
+
     // Extension functions for cleaner setup
     private fun Slider.setupSlider(
         initialValue: Float,
@@ -276,9 +279,10 @@ class GraphicsEditorActivity : AppCompatActivity() {
         displayView.text = formatter(value)
         
         clearOnChangeListeners()
-        addOnChangeListener { _, newValue, _ ->
+        addOnChangeListener { _, newValue, fromUser ->
             displayView.text = formatter(newValue)
             onValueChanged(newValue)
+            if (fromUser && !isApplyingPreset) clearPresetSelection()
         }
     }
     
@@ -287,7 +291,14 @@ class GraphicsEditorActivity : AppCompatActivity() {
         onCheckedChanged: (Boolean) -> Unit
     ) {
         isChecked = initialValue
-        setOnCheckedChangeListener { _, isChecked -> onCheckedChanged(isChecked) }
+        setOnCheckedChangeListener { _, isChecked -> 
+            onCheckedChanged(isChecked)
+            if (!isApplyingPreset) clearPresetSelection()
+        }
+    }
+    
+    private fun clearPresetSelection() {
+        binding.toggleGroupPresets.clearChecked()
     }
     
     // Helper data class for quality slider configuration
@@ -298,12 +309,26 @@ class GraphicsEditorActivity : AppCompatActivity() {
     )
     
     // Utility functions
+    private fun showMessage(message: String, actionText: String? = null, action: (() -> Unit)? = null) {
+        val snackbar = Snackbar.make(binding.root, message, if (action != null) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT)
+        val view = snackbar.view
+        val params = view.layoutParams as androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
+        params.gravity = android.view.Gravity.TOP
+        params.topMargin = binding.appBarLayout.bottom + 20
+        view.layoutParams = params
+        
+        if (actionText != null && action != null) {
+            snackbar.setAction(actionText) { action() }
+        }
+        snackbar.show()
+    }
+
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        showMessage(message)
     }
     
     private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        showMessage(message)
     }
     
     override fun onSupportNavigateUp(): Boolean {

@@ -30,12 +30,17 @@
     
     <!-- Graphics Editor -->
     <string name="graphics_editor">Editor Grafis</string>
-    <string name="graphics_settings">Pengaturan Grafis</string>
-    <string name="presets">Preset</string>
+    <string name="graphics_settings">Pengaturan Grafis Extended</string>
+    <string name="graphics_settings_desc">Pengaturan kustom yang bisa melebihi batas game. Hanya bekerja jika Unity Quality = Custom (0)</string>
+    <string name="unity_master_quality">Kualitas Master Unity</string>
+    <string name="unity_master_quality_desc">Kontrol kualitas bawaan game. Set ke Custom (0) untuk pakai Extended Settings</string>
+    <string name="presets">Preset Cepat</string>
+    <string name="presets_desc">Isi cepat extended settings (Low → Ultra). Ini melebihi batas game!</string>
     <string name="preset_low">Rendah</string>
     <string name="preset_medium">Sedang</string>
     <string name="preset_high">Tinggi</string>
     <string name="preset_ultra">Ultra</string>
+    <string name="preset_max">MAKS</string>
     <string name="preset_applied">Preset %1$s diterapkan</string>
     
     <!-- Settings -->
@@ -89,7 +94,7 @@
     <string name="half_res_desc">Optimasi efek transparan</string>
     <string name="dlss_desc">Upscaling AI NVIDIA</string>
     <string name="screen_resolution_desc">Resolusi jendela game</string>
-    <string name="overall_graphics_quality_desc">Pengaturan kualitas grafis master Unity</string>
+    <string name="overall_graphics_quality_desc">0 = Kustom (bebas modif pengaturan). 1-5 = Preset game (ikuti default game)</string>
     <string name="fullscreen_mode_desc">Mode tampilan jendela game</string>
     <string name="speed_up_open_desc">Aktifkan startup dan loading game lebih cepat</string>
     

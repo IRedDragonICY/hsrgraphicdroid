@@ -2,6 +2,7 @@ package com.ireddragonicy.hsrgraphicdroid.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -10,10 +11,12 @@ import com.ireddragonicy.hsrgraphicdroid.databinding.ItemBlacklistBinding
 
 /**
  * Adapter for displaying blacklist items (video/audio files)
+ * NOTE: onDelete is nullable - if null, the adapter is in VIEW ONLY mode
+ * This prevents users from editing blacklist which would cause game to re-download data
  */
 class BlacklistAdapter(
     private val isVideo: Boolean,
-    private val onDelete: (String) -> Unit
+    private val onDelete: ((String) -> Unit)? = null  // Nullable for view-only mode
 ) : ListAdapter<String, BlacklistAdapter.ViewHolder>(BlacklistDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -36,8 +39,13 @@ class BlacklistAdapter(
             binding.ivIcon.setImageResource(
                 if (isVideo) R.drawable.ic_videocam_off else R.drawable.ic_volume_off
             )
-            binding.btnDelete.setOnClickListener {
-                onDelete(fileName)
+            
+            // Hide delete button in view-only mode
+            binding.btnDelete.isVisible = onDelete != null
+            onDelete?.let { callback ->
+                binding.btnDelete.setOnClickListener {
+                    callback(fileName)
+                }
             }
         }
     }

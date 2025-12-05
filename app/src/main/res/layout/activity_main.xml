@@ -140,7 +140,81 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Graphics Settings Editor -->
+            <!-- Unity Master Quality Card - IMPORTANT: Must be set to 0 (Custom) for Extended Settings to work -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="?attr/colorPrimary"
+                app:strokeWidth="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:background="?attr/colorPrimaryContainer">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_star"
+                            app:tint="?attr/colorOnPrimaryContainer"
+                            android:layout_marginEnd="12dp"/>
+                        
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/overall_graphics_quality"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorOnPrimaryContainer"/>
+                        
+                        <TextView
+                            android:id="@+id/tvGraphicsQualityValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                            android:textColor="?attr/colorOnPrimaryContainer"
+                            android:textStyle="bold"
+                            tools:text="Custom"/>
+                    </LinearLayout>
+                    
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/overall_graphics_quality_desc"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:alpha="0.8"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="12dp"/>
+                    
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/sliderGraphicsQuality"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0"
+                        android:valueTo="5"
+                        android:stepSize="1"
+                        android:value="0"
+                        app:thumbColor="?attr/colorOnPrimaryContainer"
+                        app:trackColorActive="?attr/colorOnPrimaryContainer"
+                        app:trackColorInactive="?attr/colorPrimary"/>
+                        
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Extended Graphics Settings Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -160,119 +234,111 @@
                         android:text="@string/graphics_settings"
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:drawableStart="@drawable/ic_edit"
-                        android:drawablePadding="8dp"
-                        android:layout_marginBottom="12dp"/>
+                        android:drawablePadding="8dp"/>
+                    
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/graphics_settings_desc"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="16dp"/>
 
-                    <!-- Presets -->
+                    <!-- Quick Presets for Extended Settings -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/presets"
                         android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_marginBottom="4dp"/>
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/presets_desc"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="12dp"/>
 
-                    <com.google.android.material.chip.ChipGroup
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleGroupPresets"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:singleSelection="false">
+                        app:singleSelection="true"
+                        app:selectionRequired="false">
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetLow"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_low"
-                            app:chipIcon="@drawable/ic_low"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_medium"
-                            app:chipIcon="@drawable/ic_medium"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetHigh"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_high"
-                            app:chipIcon="@drawable/ic_high"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetUltra"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_ultra"
-                            app:chipIcon="@drawable/ic_star"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                    </com.google.android.material.chip.ChipGroup>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPresetMax"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:text="@string/preset_max"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                    <!-- Overall Graphics Quality -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:background="?attr/colorSurfaceContainerHighest"
-                        android:padding="12dp"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:clipToOutline="true">
-                        
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_star"
-                                app:tint="?attr/colorPrimary"
-                                android:layout_marginEnd="12dp"/>
-                            
-                            <TextView
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="@string/overall_graphics_quality"
-                                android:textAppearance="?attr/textAppearanceTitleSmall"
-                                android:textColor="?attr/colorOnSurface"/>
-                            
-                            <TextView
-                                android:id="@+id/tvGraphicsQualityValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textAppearance="?attr/textAppearanceTitleMedium"
-                                android:textColor="?attr/colorPrimary"
-                                android:minWidth="80dp"
-                                android:gravity="end"
-                                tools:text="Ultra"/>
-                        </LinearLayout>
-                        
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/overall_graphics_quality_desc"
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:layout_marginStart="36dp"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="8dp"/>
-                        
-                        <com.google.android.material.slider.Slider
-                            android:id="@+id/sliderGraphicsQuality"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:valueFrom="0"
-                            android:valueTo="5"
-                            android:stepSize="1"
-                            android:value="3"/>
-                    </LinearLayout>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
                     <!-- FPS -->
                     <LinearLayout
@@ -766,7 +832,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:valueFrom="0"
+                            android:valueFrom="1"
                             android:valueTo="5"
                             android:stepSize="1"/>
                         <TextView
@@ -1153,194 +1219,65 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Resolution Presets -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/resolution_presets"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="8dp"/>
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupResolution"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:singleSelection="true"
-                        app:selectionRequired="false">
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip360p"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="360p"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip720p"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="720p"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip1080p"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1080p"
-                            android:checked="true"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip1440p"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="1440p"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip4k"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="4K"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip8k"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="8K"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                    </com.google.android.material.chip.ChipGroup>
-
-                    <!-- Custom Resolution Input -->
+                    <!-- Current Resolution Display (View Only) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="8dp">
-                        
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:hint="@string/resolution_width"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etResolutionWidth"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:maxLength="4"/>
-                        </com.google.android.material.textfield.TextInputLayout>
+                        android:background="?attr/colorSurfaceContainerHighest"
+                        android:padding="16dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="16dp">
                         
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="×"
-                            android:textSize="20sp"
-                            android:paddingHorizontal="4dp"/>
-                        
-                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:hint="@string/resolution_height"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etResolutionHeight"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:maxLength="4"/>
-                        </com.google.android.material.textfield.TextInputLayout>
+                            android:text="@string/current_resolution"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"/>
+                        
+                        <TextView
+                            android:id="@+id/tvCurrentResolution"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorPrimary"
+                            tools:text="1920×1080"/>
                     </LinearLayout>
 
-                    <!-- Current Resolution Display -->
-                    <TextView
-                        android:id="@+id/tvCurrentResolution"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="16dp"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?attr/colorPrimary"
-                        tools:text="Current: 1920×1080"/>
-
-                    <!-- Fullscreen Mode -->
+                    <!-- Fullscreen Mode (View Only) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="16dp">
+                        android:background="?attr/colorSurfaceContainerHighest"
+                        android:padding="16dp"
+                        android:layout_marginBottom="16dp">
+                        
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_fullscreen"
-                            app:tint="?attr/colorPrimary"/>
-                        <LinearLayout
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp"/>
+                        
+                        <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/fullscreen_mode"
-                                android:textAppearance="?attr/textAppearanceLabelLarge"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/fullscreen_mode_desc"
-                                android:textAppearance="?attr/textAppearanceBodySmall"
-                                android:textColor="?attr/colorOnSurfaceVariant"/>
-                        </LinearLayout>
+                            android:text="@string/fullscreen_mode"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"/>
+                        
+                        <TextView
+                            android:id="@+id/tvFullscreenMode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorPrimary"
+                            tools:text="Exclusive"/>
                     </LinearLayout>
-
-                    <!-- Fullscreen Mode Options -->
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupFullscreen"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="16dp"
-                        app:singleSelection="true"
-                        app:selectionRequired="true">
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipFullscreenWindow"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/fullscreen_window"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipExclusiveFullscreen"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/exclusive_fullscreen"
-                            android:checked="true"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipMaximizedWindow"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/maximized_window"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                        
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipWindowed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/windowed"
-                            style="@style/Widget.Material3.Chip.Filter"/>
-                    </com.google.android.material.chip.ChipGroup>
 
                     <!-- Speed Up Open -->
                     <LinearLayout
@@ -1445,6 +1382,7 @@
 
     <!-- Sticky Bottom Action Bar - Material You Design -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottomActionBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"

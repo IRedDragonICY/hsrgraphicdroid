@@ -37,12 +37,17 @@
     
     <!-- Graphics Editor -->
     <string name="graphics_editor">Graphics Editor</string>
-    <string name="graphics_settings">Graphics Settings</string>
-    <string name="presets">Presets</string>
+    <string name="graphics_settings">Extended Graphics Settings</string>
+    <string name="graphics_settings_desc">Custom settings that can exceed game limits. Only works when Unity Quality = Custom (0)</string>
+    <string name="unity_master_quality">Unity Master Quality</string>
+    <string name="unity_master_quality_desc">Controls game\'s built-in quality. Set to Custom (0) to use Extended Settings below</string>
+    <string name="presets">Quick Presets</string>
+    <string name="presets_desc">Quick-fill extended settings (Low → Ultra). These exceed game\'s limits!</string>
     <string name="preset_low">Low</string>
     <string name="preset_medium">Medium</string>
     <string name="preset_high">High</string>
     <string name="preset_ultra">Ultra</string>
+    <string name="preset_max">MAX</string>
     <string name="preset_applied">Preset %1$s applied</string>
     
     <!-- Settings -->
@@ -68,6 +73,7 @@
     <string name="resolution_height">Height</string>
     <string name="resolution_presets">Resolution Presets</string>
     <string name="custom_resolution">Custom</string>
+    <string name="current_resolution">Current Resolution</string>
     <string name="overall_graphics_quality">Overall Graphics Quality</string>
     <string name="fullscreen_mode">Fullscreen Mode</string>
     <string name="fullscreen_window">Fullscreen Window</string>
@@ -96,7 +102,7 @@
     <string name="dlss_desc">NVIDIA AI upscaling</string>
     <string name="particle_trail_desc">Trail effects smoothness</string>
     <string name="screen_resolution_desc">Game window resolution</string>
-    <string name="overall_graphics_quality_desc">Unity master graphics quality setting</string>
+    <string name="overall_graphics_quality_desc">0=Custom (uses extended settings below), 1-5=Game presets (ignores extended)</string>
     <string name="fullscreen_mode_desc">Display mode for game window</string>
     <string name="speed_up_open_desc">Enable faster game startup and loading</string>
     
@@ -132,6 +138,8 @@
     <string name="apply_failed">Failed to apply settings</string>
     <string name="error_read_settings">Failed to read settings. Make sure the game is installed and you have root access.</string>
     <string name="game_killed">Game closed</string>
+    <string name="settings_loaded">Settings loaded successfully</string>
+    <string name="error_read_settings_default">Failed to read settings, loaded defaults</string>
     <string name="export_success">XML file exported successfully</string>
     <string name="export_failed">Failed to export XML file</string>
     

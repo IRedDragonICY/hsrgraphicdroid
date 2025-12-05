@@ -53,44 +53,70 @@
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:layout_marginBottom="12dp"/>
 
-                    <com.google.android.material.chip.ChipGroup
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleGroupPresets"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:singleSelection="false">
+                        app:singleSelection="true"
+                        app:selectionRequired="false">
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetLow"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_low"
-                            app:chipIcon="@drawable/ic_low"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetMedium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_medium"
-                            app:chipIcon="@drawable/ic_medium"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetHigh"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_high"
-                            app:chipIcon="@drawable/ic_high"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                        <com.google.android.material.chip.Chip
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPresetUltra"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
                             android:text="@string/preset_ultra"
-                            app:chipIcon="@drawable/ic_star"
-                            style="@style/Widget.Material3.Chip.Assist"/>
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:paddingStart="4dp"
+                            android:paddingEnd="4dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"/>
 
-                    </com.google.android.material.chip.ChipGroup>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 </LinearLayout>
 
