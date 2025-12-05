@@ -1,9 +1,5 @@
 # HSR Graphic Droid
 
-<div align="center">
-  <img src="docs/ic_launcher.png" alt="HSR Graphic Droid Logo" width="128"/>
-</div>
-
 ![Banner](https://capsule-render.vercel.app/api?type=waving&color=6750A4&height=220&section=header&text=HSR%20Graphic%20Droid&fontSize=70&fontColor=ffffff&desc=崩坏：星穹铁道高级图形配置工具&descAlignY=65&descAlign=50)
 
 <div align="center">
