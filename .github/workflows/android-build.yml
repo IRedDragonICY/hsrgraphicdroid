@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ main, master ]
 
-env:
-  KEYSTORE_PASSWORD: hsrgraphicdroid
-  KEY_ALIAS: hsrgraphicdroid
-  KEY_PASSWORD: hsrgraphicdroid
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,14 +23,19 @@ jobs:
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
+    - name: Decode Keystore
+      run: |
+        echo "${{ secrets.SIGNING_KEY }}" | base64 -d > ${{ github.workspace }}/keystore.jks
+        echo "✅ Keystore decoded"
       
     - name: Build Release APK
       run: |
         ./gradlew assembleRelease \
-          -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/keystore.jks \
-          -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
-          -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
-          -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }} \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEY_STORE_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
           --stacktrace
         echo "✅ Signed Release APK built"
 
@@ -157,6 +157,10 @@ jobs:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
         retention-days: 90
+
+    - name: Cleanup Keystore
+      if: always()
+      run: rm -f ${{ github.workspace }}/keystore.jks
         
     - name: Build Summary
       if: always()
