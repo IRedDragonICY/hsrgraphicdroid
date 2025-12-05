@@ -34,6 +34,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            isCrunchPngs = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -44,6 +45,8 @@ android {
         aidl = false
         renderScript = false
         shaders = false
+        resValues = false
+        compose = false
     }
 
     packaging {
@@ -53,24 +56,48 @@ android {
 
         resources {
             excludes += setOf(
+                // META-INF
                 "META-INF/DEPENDENCIES",
                 "META-INF/LICENSE",
                 "META-INF/LICENSE.txt",
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
                 "META-INF/license.txt",
                 "META-INF/NOTICE",
                 "META-INF/NOTICE.txt",
+                "META-INF/NOTICE.md",
                 "META-INF/notice.txt",
+                "META-INF/ASL2.0",
                 "META-INF/AL2.0",
                 "META-INF/LGPL2.1",
                 "META-INF/*.kotlin_module",
                 "META-INF/versions/**",
                 "META-INF/*.version",
                 "META-INF/proguard/**",
+                "META-INF/com.android.tools/**",
+                "META-INF/maven/**",
+                "META-INF/services/**",
+                
+                // Kotlin
                 "DebugProbesKt.bin",
                 "kotlin/**",
                 "kotlin-tooling-metadata.json",
+                
+                // Other
                 "**.properties",
-                "**.proto"
+                "**.proto",
+                "**.bin",
+                "**.txt",
+                "LICENSE",
+                "LICENSE.txt",
+                "NOTICE",
+                "NOTICE.txt",
+                "androidsupportmultidexversion.txt",
+                
+                // Unused
+                "okhttp3/internal/publicsuffix/NOTICE",
+                "org/bouncycastle/**",
+                "org/conscrypt/**"
             )
         }
     }

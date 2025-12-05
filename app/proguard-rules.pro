@@ -5,76 +5,125 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# ==================== SIZE OPTIMIZATION ====================
+# ==================== EXTREME SIZE OPTIMIZATION ====================
 
-# Aggressive optimization
--optimizationpasses 5
+# Maximum optimization passes
+-optimizationpasses 10
 -allowaccessmodification
 -repackageclasses ''
 -mergeinterfacesaggressively
+-overloadaggressively
+-dontpreverify
 
-# Remove logging in release
+# Aggressive optimizations
+-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*,!code/allocation/variable
+
+# Remove all debug info
+-dontwarn **
+-dontusemixedcaseclassnames
+-flattenpackagehierarchy ''
+
+# Remove ALL logging (including warnings and errors for max size reduction)
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
     public static int i(...);
+    public static int w(...);
+    public static int e(...);
+    public static int wtf(...);
+    public static boolean isLoggable(...);
 }
 
-# Remove Kotlin intrinsics for null checks (saves some bytes)
+# Remove System.out/err prints
+-assumenosideeffects class java.io.PrintStream {
+    public void println(...);
+    public void print(...);
+    public void printf(...);
+}
+
+# Remove Kotlin intrinsics completely
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
     public static void checkNotNull(...);
     public static void checkNotNullParameter(...);
     public static void checkNotNullExpressionValue(...);
+    public static void checkParameterIsNotNull(...);
+    public static void checkExpressionValueIsNotNull(...);
+    public static void checkReturnedValueIsNotNull(...);
+    public static void checkFieldIsNotNull(...);
+    public static void throwNpe(...);
+    public static void throwJavaNpe(...);
+    public static void throwUninitializedProperty(...);
+    public static void throwUninitializedPropertyAccessException(...);
+    public static void throwAssert(...);
+    public static void throwIllegalArgument(...);
+    public static void throwIllegalState(...);
 }
 
-# Keep only necessary attributes
+# Remove Kotlin preconditions
+-assumenosideeffects class kotlin.PreconditionsKt {
+    public static void check(...);
+    public static void checkNotNull(...);
+    public static void require(...);
+    public static void requireNotNull(...);
+}
+
+# Remove toString() for non-data classes (aggressive)
+-assumenosideeffects class java.lang.Object {
+    java.lang.String toString();
+}
+
+# Strip Kotlin metadata completely
+-dontwarn kotlin.**
+-dontwarn kotlinx.**
+-keep class kotlin.Metadata { *; }
+
+# Minimal attributes - only keep what's absolutely necessary
 -keepattributes Signature
 -keepattributes *Annotation*
--keepattributes InnerClasses
--keepattributes EnclosingMethod
+-keepattributes Exceptions
 
-# ==================== LIBRARY RULES ====================
+# ==================== LIBRARY RULES (MINIMAL) ====================
 
-# LibSU rules
--keep class com.topjohnwu.superuser.** { *; }
+# LibSU - minimal keep
+-keep class com.topjohnwu.superuser.Shell { *; }
+-keep class com.topjohnwu.superuser.Shell$* { *; }
+-keep interface com.topjohnwu.superuser.** { *; }
 -keepclassmembers class * extends com.topjohnwu.superuser.Shell$Initializer { *; }
 
-# Gson rules
--keepattributes Signature
--keep class com.google.gson.** { *; }
--keep class * implements com.google.gson.TypeAdapterFactory
--keep class * implements com.google.gson.JsonSerializer
--keep class * implements com.google.gson.JsonDeserializer
+# Gson - minimal keep (only what's needed for serialization)
+-keep,allowobfuscation class com.google.gson.** { *; }
 -keepclassmembers,allowobfuscation class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
-# Keep data classes used with Gson
--keep class com.ireddragonicy.hsrgraphicdroid.model.** { *; }
--keep class com.ireddragonicy.hsrgraphicdroid.data.** { *; }
-
-# DataStore
--keep class androidx.datastore.** { *; }
-
-# ==================== ANDROID RULES ====================
-
-# Keep ViewBinding classes
--keep class * implements androidx.viewbinding.ViewBinding {
-    public static * inflate(android.view.LayoutInflater);
-    public static * inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+# Keep ONLY the fields in data classes, allow obfuscation of class names
+-keepclassmembers class com.ireddragonicy.hsrgraphicdroid.model.** {
+    <fields>;
+}
+-keepclassmembers class com.ireddragonicy.hsrgraphicdroid.data.** {
+    <fields>;
 }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# DataStore - minimal
+-keep class androidx.datastore.preferences.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ==================== ANDROID RULES (MINIMAL) ====================
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ViewBinding - minimal
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static *** inflate(android.view.LayoutInflater);
+    public static *** inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
+    public *** getRoot();
+}
+
+# Remove unused resources aggressively
+-dontwarn org.xmlpull.**
+-dontwarn org.kxml2.**
+
+# ==================== COROUTINES OPTIMIZATION ====================
+-dontwarn kotlinx.coroutines.**
+-keep class kotlinx.coroutines.android.AndroidDispatcherFactory { *; }
+
+# ==================== REMOVE REFLECTION OVERHEAD ====================
+-dontwarn java.lang.invoke.**
+-dontwarn sun.misc.**
