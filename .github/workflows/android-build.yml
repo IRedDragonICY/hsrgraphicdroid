@@ -28,24 +28,11 @@ jobs:
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-
-    - name: Generate Keystore
-      run: |
-        keytool -genkeypair -v \
-          -keystore ${{ github.workspace }}/keystore.jks \
-          -keyalg RSA \
-          -keysize 2048 \
-          -validity 10000 \
-          -alias ${{ env.KEY_ALIAS }} \
-          -storepass ${{ env.KEYSTORE_PASSWORD }} \
-          -keypass ${{ env.KEY_PASSWORD }} \
-          -dname "CN=HSRGraphicDroid, OU=Development, O=IRedDragonICY, L=Indonesia, ST=Indonesia, C=ID"
-        echo "✅ Keystore generated"
       
     - name: Build Release APK
       run: |
         ./gradlew assembleRelease \
-          -Pandroid.injected.signing.store.file=${{ github.workspace }}/keystore.jks \
+          -Pandroid.injected.signing.store.file=${{ github.workspace }}/app/keystore.jks \
           -Pandroid.injected.signing.store.password=${{ env.KEYSTORE_PASSWORD }} \
           -Pandroid.injected.signing.key.alias=${{ env.KEY_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ env.KEY_PASSWORD }} \
@@ -170,10 +157,6 @@ jobs:
         name: release-apk
         path: app/build/outputs/apk/release/*.apk
         retention-days: 90
-        
-    - name: Cleanup keystore
-      if: always()
-      run: rm -f ${{ github.workspace }}/keystore.jks
         
     - name: Build Summary
       if: always()
