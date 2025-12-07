@@ -32,7 +32,8 @@ data class StatusState(
     val isRootGranted: Boolean = false,
     val isGameInstalled: Boolean = false,
     val gameVersion: String? = null,
-    val gamePackage: String? = null
+    val gamePackage: String? = null,
+    val isChecking: Boolean = true
 )
 
 data class GameInfo(
@@ -67,6 +68,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun refreshStatus() {
+        _status.value = _status.value.copy(isChecking = true)
         val isRoot = withContext(Dispatchers.IO) { gameManager.isRootAvailable }
         val installedPackage = withContext(Dispatchers.IO) { gameManager.installedGamePackage }
         val installed = installedPackage != null
@@ -80,7 +82,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             isRootGranted = isRoot,
             isGameInstalled = installed,
             gameVersion = version,
-            gamePackage = installedPackage
+            gamePackage = installedPackage,
+            isChecking = false
         )
     }
 

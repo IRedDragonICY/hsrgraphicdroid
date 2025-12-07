@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Vibration permission for haptic feedback -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
     <!-- Queries for detecting installed HSR game packages -->
     <queries>
         <package android:name="com.HoYoverse.hkrpgoversea"/>

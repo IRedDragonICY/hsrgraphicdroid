@@ -12,6 +12,7 @@
     <string name="loading">Loading…</string>
     <string name="root_granted">Root Access Granted</string>
     <string name="root_not_granted">Root Access Required</string>
+    <string name="root_check_failed">Root Access Failed (Tap to Retry)</string>
     <string name="game_found">Game Installed</string>
     <string name="game_not_found">Game Not Found</string>
     

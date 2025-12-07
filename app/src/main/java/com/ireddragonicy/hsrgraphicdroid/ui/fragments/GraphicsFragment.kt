@@ -22,7 +22,6 @@ import com.ireddragonicy.hsrgraphicdroid.ui.BackupAdapter
 import com.ireddragonicy.hsrgraphicdroid.ui.base.BaseFragment
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
-import androidx.navigation.fragment.findNavController
 
 class GraphicsFragment :
     BaseFragment<FragmentGraphicsBinding>(FragmentGraphicsBinding::inflate) {
@@ -62,34 +61,49 @@ class GraphicsFragment :
 
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.graphics_editor)
-        binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
+        // No navigation back button needed - this is now a tab in ViewPager
     }
 
     private fun observeStatus() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 mainViewModel.status.collect { status ->
-                    binding.chipRootStatus.text = if (status.isRootGranted) {
+                    binding.chipRootStatus.text = if (status.isChecking) {
+                        getString(R.string.checking)
+                    } else if (status.isRootGranted) {
                         getString(R.string.root_granted)
                     } else {
-                        getString(R.string.root_not_granted)
+                        getString(R.string.root_check_failed)
                     }
-                    binding.chipRootStatus.setChipIconResource(
-                        if (status.isRootGranted) R.drawable.ic_check else R.drawable.ic_close
-                    )
+                    
+                    val rootIcon = if (status.isChecking) R.drawable.ic_help
+                    else if (status.isRootGranted) R.drawable.ic_check
+                    else R.drawable.ic_close
+                    
+                    binding.chipRootStatus.setChipIconResource(rootIcon)
+                    
+                    binding.chipRootStatus.setOnClickListener {
+                        if (!status.isRootGranted && !status.isChecking) {
+                            promptRootAccess()
+                        }
+                    }
 
-                    binding.chipGameStatus.text = if (status.isGameInstalled) {
+                    binding.chipGameStatus.text = if (status.isChecking) {
+                        getString(R.string.checking)
+                    } else if (status.isGameInstalled) {
                         getString(R.string.game_found) + status.gameVersion?.let { " ($it)" }
                     } else {
                         getString(R.string.game_not_found)
                     }
-                    binding.chipGameStatus.setChipIconResource(
-                        if (status.isGameInstalled) R.drawable.ic_check else R.drawable.ic_close
-                    )
+                    
+                    val gameIcon = if (status.isChecking) R.drawable.ic_help
+                    else if (status.isGameInstalled) R.drawable.ic_check
+                    else R.drawable.ic_close
+                    
+                    binding.chipGameStatus.setChipIconResource(gameIcon)
 
-                    binding.layoutGameActions.isVisible = status.isGameInstalled
-                    binding.layoutExportShare.isVisible = status.isGameInstalled && status.isRootGranted
-                    if (!status.isRootGranted) promptRootAccess()
+                    binding.layoutGameActions.isVisible = status.isGameInstalled && !status.isChecking
+                    binding.layoutExportShare.isVisible = status.isGameInstalled && status.isRootGranted && !status.isChecking
                 }
             }
         }

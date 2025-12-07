@@ -6,7 +6,6 @@ import android.view.ViewPropertyAnimator
 import android.widget.EditText
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -87,7 +86,7 @@ class GamePrefsFragment :
 
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.game_preferences)
-        binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
+        // No navigation back button needed - this is now a tab in ViewPager
     }
 
     private fun setupRecyclerViews() {

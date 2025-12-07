@@ -6,25 +6,27 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/navHostFragment"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+    <!-- ViewPager2 for swipeable navigation like WhatsApp -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="?attr/actionBarSize"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/main_nav_graph"
-        tools:layout="@layout/fragment_home" />
+        android:background="?attr/colorSurface" />
 
+    <!-- Bottom Navigation with smooth indicator animation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="?attr/colorSurface"
+        app:elevation="8dp"
+        app:itemActiveIndicatorStyle="@style/App.BottomNav.ActiveIndicator"
         app:itemIconTint="@color/nav_bar_item_selector"
-        app:itemRippleColor="?attr/colorPrimary"
+        app:itemRippleColor="?attr/colorPrimaryContainer"
         app:itemTextColor="@color/nav_bar_item_selector"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/menu_bottom_nav" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

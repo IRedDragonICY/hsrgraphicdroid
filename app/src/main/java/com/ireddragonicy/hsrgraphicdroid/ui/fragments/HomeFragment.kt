@@ -8,8 +8,9 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
+import com.ireddragonicy.hsrgraphicdroid.ui.adapters.MainPagerAdapter
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.databinding.FragmentHomeBinding
 import com.ireddragonicy.hsrgraphicdroid.ui.base.BaseFragment
@@ -36,7 +37,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.btnQuickLaunch.setOnClickListener { launchGame() }
         binding.btnQuickKill.setOnClickListener { killGame() }
         binding.btnOpenGraphics.setOnClickListener {
-            findNavController().navigate(R.id.graphicsFragment)
+            // Navigate to Graphics tab using ViewPager
+            (requireActivity().findViewById<ViewPager2>(R.id.viewPager))?.setCurrentItem(MainPagerAdapter.PAGE_GRAPHICS, true)
         }
         binding.btnOpenGameInfo.setOnClickListener { openGameAppInfo() }
     }

@@ -17,7 +17,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/game_preferences"
-            app:navigationIcon="?attr/homeAsUpIndicator"
             app:titleCentered="true"/>
 
     </com.google.android.material.appbar.AppBarLayout>
