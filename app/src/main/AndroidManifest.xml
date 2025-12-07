@@ -25,32 +25,13 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:configChanges="locale|layoutDirection|uiMode"
+            android:configChanges="locale|layoutDirection"
             android:theme="@style/Theme.HsrGraphicDroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
-            android:configChanges="locale|layoutDirection|uiMode|screenSize|smallestScreenSize|screenLayout"
-            android:theme="@style/Theme.HsrGraphicDroid.Settings"
-            android:parentActivityName=".ui.MainActivity"/>
-        
-        <activity
-            android:name=".ui.GraphicsEditorActivity"
-            android:exported="false"
-            android:configChanges="locale|layoutDirection|uiMode"
-            android:parentActivityName=".ui.MainActivity"/>
-        
-        <activity
-            android:name=".ui.GamePreferencesActivity"
-            android:exported="false"
-            android:configChanges="locale|layoutDirection|uiMode"
-            android:parentActivityName=".ui.MainActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -126,6 +126,7 @@
     <string name="delete_backup">Delete Backup</string>
     <string name="delete_backup_message">Delete backup "%1$s"?</string>
     <string name="kill_game">Force Close Game</string>
+    <string name="backup_details_format">FPS %1$d • Render %2$s× • %3$s</string>
     
     <!-- Messages -->
     <string name="backup_created">Backup created successfully</string>
@@ -158,10 +159,19 @@
     <string name="language_japanese">日本語</string>
     <string name="language_russian">Русский</string>
     <string name="language_system">System Default</string>
+    <string name="game_version">Game Version</string>
+    <string name="apk_name">Package</string>
+    <string name="storage_overview">Storage</string>
+    <string name="storage_detail_format">Data %1$s • Cache %2$s</string>
+    <string name="permission_required">Permission required</string>
     
     <!-- Menu -->
     <string name="action_settings">Settings</string>
     <string name="action_game_prefs">Game Preferences</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_graphics">Graphics</string>
+    <string name="nav_game_prefs">Game Prefs</string>
+    <string name="nav_settings">Settings</string>
     <string name="about">About</string>
     <string name="about_message">HSR Graphic Droid v1.0.0\n\nA premium tool for customizing Honkai: Star Rail graphics settings.\n\nFeatures:\n• Read and modify game graphics settings\n• Backup and restore configurations\n• Preset profiles (Low, Medium, High, Ultra)\n• Support for multiple languages\n• Material Design 3 interface\n\nRequires root access via Magisk or similar.\n\n© 2025 iRedDragonICY</string>
     
