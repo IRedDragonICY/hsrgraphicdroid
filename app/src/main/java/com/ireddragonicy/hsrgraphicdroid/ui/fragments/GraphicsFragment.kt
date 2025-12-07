@@ -50,7 +50,6 @@ class GraphicsFragment :
         binding.bottomActionBar.applyBottomInsetPadding()
 
         setupToolbar()
-        setupRecyclerView()
         setupButtons()
         setupGraphicsEditor()
         observeStatus()
@@ -64,10 +63,6 @@ class GraphicsFragment :
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.graphics_editor)
         binding.toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
-    }
-
-    private fun setupRecyclerView() {
-        binding.recyclerBackups.adapter = backupAdapter
     }
 
     private fun observeStatus() {
@@ -113,6 +108,7 @@ class GraphicsFragment :
         binding.btnGameSettings.setOnClickListener { openGameAppInfo() }
         binding.btnExportXml.setOnClickListener { exportXmlFile() }
         binding.btnShareXml.setOnClickListener { shareXmlFile() }
+        binding.btnShowBackups.setOnClickListener { showBackupsSheet() }
     }
 
     private fun setupGraphicsEditor() {
@@ -493,9 +489,8 @@ class GraphicsFragment :
     }
 
     private suspend fun loadBackups() {
-        val backups = mainViewModel.loadBackups()
-        backupAdapter.submitList(backups.reversed())
-        binding.tvBackupCount.text = getString(R.string.backup_count, backups.size)
+        val backups = mainViewModel.loadBackups().reversed()
+        backupAdapter.submitList(backups)
     }
 
     private fun restoreBackup(backup: BackupData) {
@@ -551,6 +546,26 @@ class GraphicsFragment :
                     .show()
             }
         }
+    }
+
+    private fun showBackupsSheet() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_backups, null)
+        val recycler = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerBackupsSheet)
+        val countView = dialogView.findViewById<android.widget.TextView>(R.id.tvBackupCountSheet)
+        recycler.adapter = backupAdapter
+        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val backups = mainViewModel.loadBackups().reversed()
+            backupAdapter.submitList(backups)
+            countView.text = getString(R.string.backup_count, backups.size)
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.saved_backups)
+            .setView(dialogView)
+            .setPositiveButton(R.string.ok, null)
+            .show()
     }
 
     private fun killGame() {
