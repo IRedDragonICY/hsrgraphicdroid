@@ -175,4 +175,28 @@ Fitur:
 Memerlukan akses root melalui Magisk atau sejenisnya.
 
 © 2025 iRedDragonICY</string>
+    
+    <!-- Undo/Redo and Change Tracking -->
+    <string name="undo">Urungkan</string>
+    <string name="redo">Ulangi</string>
+    <string name="pending_changes">%d perubahan tertunda</string>
+    <string name="no_pending_changes">Tidak ada perubahan tertunda</string>
+    <string name="changes_detected">Perubahan Terdeteksi!</string>
+    <string name="external_changes_detected">Pengaturan game berubah dari luar</string>
+    <string name="external_changes_message">Pengaturan berikut telah diubah di game:\n\n%1$s\n\nApakah Anda ingin memuat pengaturan game baru atau tetap dengan edit saat ini?</string>
+    <string name="load_game_settings">Muat Pengaturan Game</string>
+    <string name="keep_current">Tetap Saat Ini</string>
+    <string name="setting_modified">Diubah</string>
+    <string name="reset_all_changes">Reset Semua Perubahan</string>
+    <string name="reset_changes_message">Ini akan membuang semua perubahan tertunda dan memuat ulang pengaturan dari game. Lanjutkan?</string>
+    <string name="changes_discarded">Semua perubahan dibuang</string>
+    <string name="undo_performed">Urungkan: %s</string>
+    <string name="redo_performed">Ulangi: %s</string>
+    <string name="nothing_to_undo">Tidak ada yang bisa diurungkan</string>
+    <string name="nothing_to_redo">Tidak ada yang bisa diulangi</string>
+    <string name="view_pending_changes">Lihat Perubahan</string>
+    <string name="pending_changes_title">Perubahan Tertunda (%d)</string>
+    <string name="change_from_to">%1$s: %2$s → %3$s</string>
+    <string name="apply_pending_changes">Terapkan %d Perubahan</string>
+    <string name="no_changes_to_apply">Tidak ada perubahan untuk diterapkan</string>
 </resources>

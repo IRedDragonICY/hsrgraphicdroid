@@ -69,4 +69,26 @@
     <string name="system_default">系统默认</string>
     <string name="light">浅色</string>
     <string name="dark">深色</string>
+    
+    <!-- Undo/Redo and Change Tracking -->
+    <string name="undo">撤销</string>
+    <string name="redo">重做</string>
+    <string name="pending_changes">%d 个待应用的更改</string>
+    <string name="no_pending_changes">没有待应用的更改</string>
+    <string name="changes_detected">检测到更改！</string>
+    <string name="external_changes_detected">游戏设置在外部被更改</string>
+    <string name="external_changes_message">游戏中的以下设置已更改:\n\n%1$s\n\n您要加载新的游戏设置还是保持当前编辑？</string>
+    <string name="load_game_settings">加载游戏设置</string>
+    <string name="keep_current">保持当前</string>
+    <string name="setting_modified">已修改</string>
+    <string name="reset_all_changes">重置所有更改</string>
+    <string name="reset_changes_message">这将丢弃所有待应用的更改并从游戏重新加载设置。是否继续？</string>
+    <string name="changes_discarded">所有更改已丢弃</string>
+    <string name="nothing_to_undo">没有可撤销的操作</string>
+    <string name="nothing_to_redo">没有可重做的操作</string>
+    <string name="view_pending_changes">查看更改</string>
+    <string name="pending_changes_title">待应用的更改 (%d)</string>
+    <string name="change_from_to">%1$s: %2$s → %3$s</string>
+    <string name="apply_pending_changes">应用 %d 个更改</string>
+    <string name="no_changes_to_apply">没有可应用的更改</string>
 </resources>

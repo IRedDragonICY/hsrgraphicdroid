@@ -1,11 +1,17 @@
 package com.ireddragonicy.hsrgraphicdroid.ui.fragments
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
@@ -17,10 +23,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
+import com.ireddragonicy.hsrgraphicdroid.data.SettingsChangeManager
+import com.ireddragonicy.hsrgraphicdroid.data.SettingChange
 import com.ireddragonicy.hsrgraphicdroid.databinding.FragmentGraphicsBinding
 import com.ireddragonicy.hsrgraphicdroid.ui.BackupAdapter
 import com.ireddragonicy.hsrgraphicdroid.ui.base.BaseFragment
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class GraphicsFragment :
@@ -36,6 +45,11 @@ class GraphicsFragment :
     private var currentSettings: GraphicsSettings? = null
     private var pendingXmlContent: String? = null
     private var isApplyingPreset = false
+    private var isUpdatingUI = false  // Prevent recording changes during UI updates
+    
+    // Professional Change Management
+    private val changeManager = SettingsChangeManager()
+    private var lastGameSettings: GraphicsSettings? = null  // Settings last read from game
 
     private val createXmlFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/xml")
@@ -49,9 +63,12 @@ class GraphicsFragment :
         binding.bottomActionBar.applyBottomInsetPadding()
 
         setupToolbar()
+        setupUndoRedo()
+        setupPendingChangesBanner()
         setupButtons()
         setupGraphicsEditor()
         observeStatus()
+        observeChangeManager()
 
         viewLifecycleOwner.lifecycleScope.launch {
             loadCurrentSettings()
@@ -61,7 +78,347 @@ class GraphicsFragment :
 
     private fun setupToolbar() {
         binding.toolbar.title = getString(R.string.graphics_editor)
-        // No navigation back button needed - this is now a tab in ViewPager
+        binding.toolbar.inflateMenu(R.menu.menu_graphics_editor)
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_reset -> {
+                    confirmResetChanges()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupUndoRedo() {
+        binding.btnUndo.setOnClickListener {
+            performUndo()
+        }
+        
+        binding.btnRedo.setOnClickListener {
+            performRedo()
+        }
+    }
+
+    private fun setupPendingChangesBanner() {
+        binding.btnViewChanges.setOnClickListener {
+            showPendingChangesDialog()
+        }
+        
+        binding.btnDismissExternalChanges.setOnClickListener {
+            changeManager.clearExternalChanges()
+            binding.externalChangesBanner.isVisible = false
+        }
+    }
+
+    private fun observeChangeManager() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Observe undo/redo state
+                launch {
+                    changeManager.canUndo.collect { canUndo ->
+                        binding.btnUndo.isEnabled = canUndo
+                        binding.btnUndo.alpha = if (canUndo) 1f else 0.38f
+                    }
+                }
+                
+                launch {
+                    changeManager.canRedo.collect { canRedo ->
+                        binding.btnRedo.isEnabled = canRedo
+                        binding.btnRedo.alpha = if (canRedo) 1f else 0.38f
+                    }
+                }
+                
+                // Observe pending changes count
+                launch {
+                    changeManager.pendingChangesCount.collect { count ->
+                        updatePendingChangesBanner(count)
+                    }
+                }
+                
+                // Observe modified fields for highlighting
+                launch {
+                    changeManager.modifiedFields.collect { modifiedFields ->
+                        updateModifiedIndicators(modifiedFields)
+                    }
+                }
+                
+                // Observe external changes
+                launch {
+                    changeManager.externalChanges.collect { changes ->
+                        if (changes.isNotEmpty()) {
+                            showExternalChangesBanner(changes)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updatePendingChangesBanner(count: Int) {
+        if (count > 0) {
+            binding.pendingChangesBanner.isVisible = true
+            binding.tvPendingChanges.text = getString(R.string.pending_changes, count)
+            
+            // Update apply button text
+            binding.btnApply.text = getString(R.string.apply_pending_changes, count)
+            
+            // Animate banner appearance
+            if (binding.pendingChangesBanner.alpha == 0f) {
+                binding.pendingChangesBanner.alpha = 0f
+                binding.pendingChangesBanner.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .start()
+            }
+        } else {
+            binding.pendingChangesBanner.isVisible = false
+            binding.btnApply.text = getString(R.string.apply_settings_now)
+        }
+    }
+
+    private fun updateModifiedIndicators(modifiedFields: Set<String>) {
+        // Update each setting's modified badge visibility - Performance
+        binding.badgeFpsModified?.isVisible = modifiedFields.contains("fps")
+        binding.badgeVsyncModified?.isVisible = modifiedFields.contains("vsync")
+        binding.badgeRenderScaleModified?.isVisible = modifiedFields.contains("renderScale")
+        
+        // Visual Fidelity badges
+        binding.badgeResolutionModified?.isVisible = modifiedFields.contains("resolution")
+        binding.badgeShadowModified?.isVisible = modifiedFields.contains("shadow")
+        binding.badgeLightModified?.isVisible = modifiedFields.contains("light")
+        binding.badgeCharacterModified?.isVisible = modifiedFields.contains("character")
+        binding.badgeEnvironmentModified?.isVisible = modifiedFields.contains("environment")
+        binding.badgeReflectionModified?.isVisible = modifiedFields.contains("reflection")
+        
+        // Effects & Post-processing badges
+        binding.badgeSfxModified?.isVisible = modifiedFields.contains("sfx")
+        binding.badgeBloomModified?.isVisible = modifiedFields.contains("bloom")
+        binding.badgeAaModified?.isVisible = modifiedFields.contains("aa")
+        binding.badgeSelfShadowModified?.isVisible = modifiedFields.contains("selfShadow")
+        
+        // Upscaling & Transparency badges
+        binding.badgeMetalFxModified?.isVisible = modifiedFields.contains("metalFx")
+        binding.badgeHalfResModified?.isVisible = modifiedFields.contains("halfRes")
+        binding.badgeDlssModified?.isVisible = modifiedFields.contains("dlss")
+        
+        // Display badges
+        binding.badgeParticleTrailModified?.isVisible = modifiedFields.contains("particleTrail")
+        
+        // Launch optimization badges
+        binding.badgeSpeedUpOpenModified?.isVisible = modifiedFields.contains("speedUpOpen")
+        
+        // Update container backgrounds for modified items - Performance
+        updateContainerHighlight(binding.containerFps, modifiedFields.contains("fps"))
+        updateContainerHighlight(binding.containerVsync, modifiedFields.contains("vsync"))
+        updateContainerHighlight(binding.containerRenderScale, modifiedFields.contains("renderScale"))
+        
+        // Visual Fidelity containers
+        updateContainerHighlight(binding.containerResolution, modifiedFields.contains("resolution"))
+        updateContainerHighlight(binding.containerShadow, modifiedFields.contains("shadow"))
+        updateContainerHighlight(binding.containerLight, modifiedFields.contains("light"))
+        updateContainerHighlight(binding.containerCharacter, modifiedFields.contains("character"))
+        updateContainerHighlight(binding.containerEnvironment, modifiedFields.contains("environment"))
+        updateContainerHighlight(binding.containerReflection, modifiedFields.contains("reflection"))
+        
+        // Effects & Post-processing containers
+        updateContainerHighlight(binding.containerSfx, modifiedFields.contains("sfx"))
+        updateContainerHighlight(binding.containerBloom, modifiedFields.contains("bloom"))
+        updateContainerHighlight(binding.containerAa, modifiedFields.contains("aa"))
+        updateContainerHighlight(binding.containerSelfShadow, modifiedFields.contains("selfShadow"))
+        
+        // Upscaling & Transparency containers
+        updateContainerHighlight(binding.containerMetalFx, modifiedFields.contains("metalFx"))
+        updateContainerHighlight(binding.containerHalfRes, modifiedFields.contains("halfRes"))
+        updateContainerHighlight(binding.containerDlss, modifiedFields.contains("dlss"))
+        
+        // Display containers
+        updateContainerHighlight(binding.containerParticleTrail, modifiedFields.contains("particleTrail"))
+        
+        // Launch optimization containers
+        updateContainerHighlight(binding.containerSpeedUpOpen, modifiedFields.contains("speedUpOpen"))
+    }
+
+    private fun updateContainerHighlight(container: View?, isModified: Boolean) {
+        container ?: return
+        if (isModified) {
+            container.setBackgroundResource(R.drawable.bg_setting_modified_fill)
+        } else {
+            // Use proper theme-aware color attribute for dark mode support
+            val typedValue = android.util.TypedValue()
+            requireContext().theme.resolveAttribute(
+                com.google.android.material.R.attr.colorSurfaceContainerHighest,
+                typedValue,
+                true
+            )
+            container.setBackgroundColor(typedValue.data)
+        }
+    }
+
+    private fun showExternalChangesBanner(changes: List<SettingChange>) {
+        binding.externalChangesBanner.isVisible = true
+        
+        val changedFields = changes.take(3).joinToString(", ") { it.fieldName }
+        val suffix = if (changes.size > 3) " +${changes.size - 3} more" else ""
+        binding.tvExternalChanges.text = "$changedFields$suffix changed"
+        
+        // Animate banner with attention effect
+        binding.externalChangesBanner.alpha = 0f
+        binding.externalChangesBanner.animate()
+            .alpha(1f)
+            .setDuration(300)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+        
+        // Haptic feedback
+        binding.root.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        
+        // Show dialog for user decision
+        showExternalChangesDialog(changes)
+    }
+
+    private fun showExternalChangesDialog(changes: List<SettingChange>) {
+        val changesText = changes.joinToString("\n") { "• ${it.getDisplayText()}" }
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.changes_detected)
+            .setMessage(getString(R.string.external_changes_message, changesText))
+            .setPositiveButton(R.string.load_game_settings) { _, _ ->
+                lastGameSettings?.let { gameSettings ->
+                    isUpdatingUI = true
+                    currentSettings = gameSettings.copy()
+                    updateUIWithSettings(gameSettings)
+                    changeManager.setBaseline(gameSettings)
+                    isUpdatingUI = false
+                    binding.externalChangesBanner.isVisible = false
+                    
+                    Snackbar.make(binding.root, R.string.settings_loaded, Snackbar.LENGTH_SHORT)
+                        .setAnchorView(binding.bottomActionBar)
+                        .show()
+                }
+            }
+            .setNegativeButton(R.string.keep_current) { _, _ ->
+                changeManager.clearExternalChanges()
+                binding.externalChangesBanner.isVisible = false
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun showPendingChangesDialog() {
+        val currentUI = getCurrentSettingsFromUI()
+        val changes = changeManager.getModifiedFieldsDetails(currentUI)
+        
+        if (changes.isEmpty()) {
+            Snackbar.make(binding.root, R.string.no_changes_to_apply, Snackbar.LENGTH_SHORT)
+                .setAnchorView(binding.bottomActionBar)
+                .show()
+            return
+        }
+        
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pending_changes, null)
+        val recycler = dialogView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recyclerChanges)
+        val adapter = PendingChangesAdapter(changes)
+        recycler.adapter = adapter
+        recycler.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.pending_changes_title, changes.size))
+            .setView(dialogView)
+            .setPositiveButton(getString(R.string.apply_pending_changes, changes.size)) { _, _ ->
+                applySettings()
+            }
+            .setNeutralButton(R.string.reset_all_changes) { _, _ ->
+                confirmResetChanges()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun confirmResetChanges() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.reset_all_changes)
+            .setMessage(R.string.reset_changes_message)
+            .setPositiveButton(R.string.reset) { _, _ ->
+                changeManager.resetToBaseline()?.let { baseline ->
+                    isUpdatingUI = true
+                    currentSettings = baseline.copy()
+                    updateUIWithSettings(baseline)
+                    isUpdatingUI = false
+                    
+                    Snackbar.make(binding.root, R.string.changes_discarded, Snackbar.LENGTH_SHORT)
+                        .setAnchorView(binding.bottomActionBar)
+                        .show()
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun performUndo() {
+        val previousSettings = changeManager.undo()
+        if (previousSettings != null) {
+            isUpdatingUI = true
+            currentSettings = previousSettings.copy()
+            updateUIWithSettings(previousSettings)
+            isUpdatingUI = false
+            
+            // Haptic feedback
+            binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            
+            Snackbar.make(binding.root, R.string.undo, Snackbar.LENGTH_SHORT)
+                .setAnchorView(binding.bottomActionBar)
+                .show()
+        } else {
+            Snackbar.make(binding.root, R.string.nothing_to_undo, Snackbar.LENGTH_SHORT)
+                .setAnchorView(binding.bottomActionBar)
+                .show()
+        }
+    }
+
+    private fun performRedo() {
+        val redoSettings = changeManager.redo()
+        if (redoSettings != null) {
+            isUpdatingUI = true
+            currentSettings = redoSettings.copy()
+            updateUIWithSettings(redoSettings)
+            isUpdatingUI = false
+            
+            // Haptic feedback
+            binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+            
+            Snackbar.make(binding.root, R.string.redo, Snackbar.LENGTH_SHORT)
+                .setAnchorView(binding.bottomActionBar)
+                .show()
+        } else {
+            Snackbar.make(binding.root, R.string.nothing_to_redo, Snackbar.LENGTH_SHORT)
+                .setAnchorView(binding.bottomActionBar)
+                .show()
+        }
+    }
+
+    // Inner adapter class for pending changes
+    private inner class PendingChangesAdapter(
+        private val changes: List<SettingChange>
+    ) : androidx.recyclerview.widget.RecyclerView.Adapter<PendingChangesAdapter.ViewHolder>() {
+        
+        inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+            val tvChange: TextView = view.findViewById(android.R.id.text1)
+        }
+        
+        override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): ViewHolder {
+            val view = android.view.LayoutInflater.from(parent.context)
+                .inflate(android.R.layout.simple_list_item_1, parent, false)
+            return ViewHolder(view)
+        }
+        
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val change = changes[position]
+            holder.tvChange.text = getString(R.string.change_from_to, change.fieldName, change.localValue, change.gameValue)
+            holder.tvChange.setTextColor(requireContext().getColor(com.google.android.material.R.color.m3_sys_color_dynamic_light_tertiary))
+        }
+        
+        override fun getItemCount() = changes.size
     }
 
     private fun observeStatus() {
@@ -135,10 +492,6 @@ class GraphicsFragment :
         setupSliderListeners()
         setupSwitchListeners()
 
-        binding.switchSpeedUpOpen.setOnCheckedChangeListener { _, isChecked ->
-            currentSettings?.speedUpOpen = if (isChecked) 1 else 0
-        }
-
         binding.btnApply.setOnClickListener { applySettings() }
         binding.btnSaveBackup.setOnClickListener { showSaveBackupDialog() }
     }
@@ -163,6 +516,21 @@ class GraphicsFragment :
             )
 
         sliderConfigs.forEach { (slider, textView, formatter) ->
+            var previousValue = slider.value
+            
+            slider.addOnSliderTouchListener(object : com.google.android.material.slider.Slider.OnSliderTouchListener {
+                override fun onStartTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                    previousValue = slider.value
+                }
+                
+                override fun onStopTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                    if (!isUpdatingUI && !isApplyingPreset && previousValue != slider.value) {
+                        val fieldName = getSliderFieldName(slider)
+                        changeManager.recordChange(fieldName, previousValue, slider.value, getCurrentSettingsFromUI())
+                    }
+                }
+            })
+            
             slider.addOnChangeListener { _, value, fromUser ->
                 textView.text = formatter(value)
                 if (fromUser) setCustomMode()
@@ -176,33 +544,99 @@ class GraphicsFragment :
             if (fromUser && quality == 0) {
                 binding.toggleGroupPresets.clearChecked()
             }
+            if (fromUser && !isUpdatingUI) {
+                changeManager.recordChange("graphicsQuality", currentSettings?.graphicsQuality, quality, getCurrentSettingsFromUI())
+            }
+        }
+    }
+
+    private fun getSliderFieldName(slider: com.google.android.material.slider.Slider): String {
+        return when (slider) {
+            binding.sliderFps -> "fps"
+            binding.sliderRenderScale -> "renderScale"
+            binding.sliderResolution -> "resolution"
+            binding.sliderShadow -> "shadow"
+            binding.sliderLight -> "light"
+            binding.sliderCharacter -> "character"
+            binding.sliderEnvironment -> "environment"
+            binding.sliderReflection -> "reflection"
+            binding.sliderSfx -> "sfx"
+            binding.sliderBloom -> "bloom"
+            binding.sliderAa -> "aa"
+            binding.sliderSelfShadow -> "selfShadow"
+            binding.sliderDlss -> "dlss"
+            binding.sliderParticleTrail -> "particleTrail"
+            binding.sliderGraphicsQuality -> "graphicsQuality"
+            else -> "unknown"
         }
     }
 
     private fun setupSwitchListeners() {
-        listOf(binding.switchVsync, binding.switchMetalFx, binding.switchHalfResTransparent).forEach { switch ->
-            switch.setOnCheckedChangeListener { _, _ ->
-                setCustomMode()
+        binding.switchVsync.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI && !isApplyingPreset) {
+                changeManager.recordChange("vsync", !isChecked, isChecked, getCurrentSettingsFromUI())
             }
+            setCustomMode()
+        }
+        
+        binding.switchMetalFx.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI && !isApplyingPreset) {
+                changeManager.recordChange("metalFx", !isChecked, isChecked, getCurrentSettingsFromUI())
+            }
+            setCustomMode()
+        }
+        
+        binding.switchHalfResTransparent.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI && !isApplyingPreset) {
+                changeManager.recordChange("halfRes", !isChecked, isChecked, getCurrentSettingsFromUI())
+            }
+            setCustomMode()
+        }
+        
+        binding.switchSpeedUpOpen.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingUI && !isApplyingPreset) {
+                changeManager.recordChange("speedUpOpen", !isChecked, isChecked, getCurrentSettingsFromUI())
+            }
+            currentSettings?.speedUpOpen = if (isChecked) 1 else 0
         }
     }
 
     private suspend fun loadCurrentSettings() {
         binding.progressIndicator.show()
 
-        val settings = mainViewModel.readGraphicsSettings()
+        val gameSettings = mainViewModel.readGraphicsSettings()
 
         binding.progressIndicator.hide()
 
-        if (settings != null) {
-            currentSettings = settings
-            updateUIWithSettings(settings)
+        if (gameSettings != null) {
+            // Check for external changes if we already have local settings
+            if (currentSettings != null && lastGameSettings != null) {
+                val externalChanges = changeManager.detectExternalChanges(gameSettings, currentSettings!!)
+                if (externalChanges.isNotEmpty()) {
+                    lastGameSettings = gameSettings.copy()
+                    // External changes will be shown via the observeChangeManager flow
+                    return
+                }
+            }
+            
+            isUpdatingUI = true
+            lastGameSettings = gameSettings.copy()
+            currentSettings = gameSettings.copy()
+            changeManager.setBaseline(gameSettings)
+            updateUIWithSettings(gameSettings)
+            isUpdatingUI = false
+            
             Snackbar.make(binding.root, getString(R.string.settings_loaded), Snackbar.LENGTH_SHORT)
                 .setAnchorView(binding.bottomActionBar)
                 .show()
         } else {
-            currentSettings = GraphicsSettings()
-            updateUIWithSettings(currentSettings!!)
+            val defaultSettings = GraphicsSettings()
+            isUpdatingUI = true
+            currentSettings = defaultSettings
+            changeManager.setBaseline(defaultSettings)
+            updateUIWithSettings(defaultSettings)
+            isUpdatingUI = false
+            
             Snackbar.make(binding.root, getString(R.string.error_read_settings_default), Snackbar.LENGTH_SHORT)
                 .setAnchorView(binding.bottomActionBar)
                 .show()
@@ -210,6 +644,9 @@ class GraphicsFragment :
     }
 
     private fun updateUIWithSettings(settings: GraphicsSettings) {
+        val wasUpdating = isUpdatingUI
+        isUpdatingUI = true
+        
         binding.sliderGraphicsQuality.value = settings.graphicsQuality.toFloat()
         binding.tvGraphicsQualityValue.text = settings.getMasterQualityName(settings.graphicsQuality)
 
@@ -263,6 +700,8 @@ class GraphicsFragment :
         binding.tvCurrentResolution.text = "${settings.screenWidth}×${settings.screenHeight}"
         binding.tvFullscreenMode.text = settings.getFullscreenModeName()
         binding.switchSpeedUpOpen.isChecked = settings.speedUpOpen == 1
+        
+        isUpdatingUI = wasUpdating
     }
 
     private fun applyExtendedPreset(level: Int) {
@@ -368,9 +807,13 @@ class GraphicsFragment :
             }
 
             updateSliderDisplays()
+            
+            // Record the preset as a single change for undo/redo
+            val presetNames = arrayOf("Low", "Medium", "High", "Ultra", "MAX")
+            changeManager.recordChange("preset", "previous", presetNames[level], getCurrentSettingsFromUI())
+            
             isApplyingPreset = false
 
-            val presetNames = arrayOf("Low", "Medium", "High", "Ultra", "MAX")
             Snackbar.make(
                 binding.root,
                 "Extended preset: ${presetNames[level]} applied (Custom mode)",
@@ -453,7 +896,10 @@ class GraphicsFragment :
             binding.progressIndicator.hide()
 
             if (success) {
-                currentSettings = settings
+                currentSettings = settings.copy()
+                lastGameSettings = settings.copy()
+                changeManager.setBaseline(settings)  // Reset baseline after successful apply
+                
                 Snackbar.make(binding.root, getString(R.string.settings_applied), Snackbar.LENGTH_LONG)
                     .setAnchorView(binding.bottomActionBar)
                     .setAction(R.string.kill_game) { killGame() }

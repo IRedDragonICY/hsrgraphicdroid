@@ -17,7 +17,131 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/app_name"
-            app:titleCentered="true"/>
+            app:titleCentered="true">
+
+            <!-- Undo Button -->
+            <ImageButton
+                android:id="@+id/btnUndo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/undo"
+                android:src="@drawable/ic_undo"
+                android:alpha="0.38"
+                android:enabled="false"
+                app:tint="?attr/colorOnSurface" />
+
+            <!-- Redo Button -->
+            <ImageButton
+                android:id="@+id/btnRedo"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/redo"
+                android:src="@drawable/ic_redo"
+                android:alpha="0.38"
+                android:enabled="false"
+                app:tint="?attr/colorOnSurface" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- Pending Changes Banner - Shows when there are unapplied changes -->
+        <LinearLayout
+            android:id="@+id/pendingChangesBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:background="?attr/colorTertiaryContainer"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_edit"
+                app:tint="?attr/colorOnTertiaryContainer" />
+
+            <TextView
+                android:id="@+id/tvPendingChanges"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="?attr/colorOnTertiaryContainer"
+                tools:text="3 pending changes" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewChanges"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/view_pending_changes"
+                android:textSize="12sp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="32dp"
+                style="@style/Widget.Material3.Button.TextButton" />
+
+        </LinearLayout>
+
+        <!-- External Changes Warning Banner -->
+        <LinearLayout
+            android:id="@+id/externalChangesBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:background="?attr/colorErrorContainer"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_warning"
+                app:tint="?attr/colorOnErrorContainer" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/changes_detected"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?attr/colorOnErrorContainer"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvExternalChanges"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnErrorContainer"
+                    tools:text="FPS, Shadow Quality changed" />
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnDismissExternalChanges"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cancel"
+                android:src="@drawable/ic_close"
+                app:tint="?attr/colorOnErrorContainer" />
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -373,6 +497,7 @@
 
                             <!-- FPS -->
                             <LinearLayout
+                                android:id="@+id/containerFps"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
@@ -402,6 +527,21 @@
                                         android:textAppearance="?attr/textAppearanceTitleSmall"
                                         android:textColor="?attr/colorOnSurface"/>
 
+                                    <!-- Modified Badge -->
+                                    <TextView
+                                        android:id="@+id/badgeFpsModified"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
                                         android:id="@+id/tvFpsValue"
                                         android:layout_width="wrap_content"
@@ -424,6 +564,7 @@
 
                             <!-- VSync -->
                             <LinearLayout
+                                android:id="@+id/containerVsync"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
@@ -448,6 +589,21 @@
                                     android:textAppearance="?attr/textAppearanceTitleSmall"
                                     android:textColor="?attr/colorOnSurface"/>
 
+                                <!-- Modified Badge -->
+                                <TextView
+                                    android:id="@+id/badgeVsyncModified"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_modified"
+                                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                                    android:textColor="?attr/colorTertiary"
+                                    android:background="@drawable/bg_setting_modified"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="2dp"
+                                    android:layout_marginEnd="8dp"
+                                    android:visibility="gone"
+                                    tools:visibility="visible"/>
+
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                     android:id="@+id/switchVsync"
                                     android:layout_width="wrap_content"
@@ -456,6 +612,7 @@
 
                             <!-- Render Scale -->
                             <LinearLayout
+                                android:id="@+id/containerRenderScale"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
@@ -483,6 +640,21 @@
                                         android:text="@string/render_scale"
                                         android:textAppearance="?attr/textAppearanceTitleSmall"
                                         android:textColor="?attr/colorOnSurface"/>
+
+                                    <!-- Modified Badge -->
+                                    <TextView
+                                        android:id="@+id/badgeRenderScaleModified"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
 
                                     <TextView
                                         android:id="@+id/tvRenderScaleValue"
@@ -541,6 +713,7 @@
 
                             <!-- Resolution Quality -->
                             <LinearLayout
+                                android:id="@+id/containerResolution"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
@@ -571,6 +744,20 @@
                                         android:textColor="?attr/colorOnSurface"/>
 
                                     <TextView
+                                        android:id="@+id/badgeResolutionModified"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
+                                    <TextView
                                         android:id="@+id/tvResolutionValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
@@ -592,266 +779,396 @@
 
                             <!-- Shadow Quality -->
                             <LinearLayout
+                                android:id="@+id/containerShadow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_shadow"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_shadow"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/shadow_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/shadow_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeShadowModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/shadow_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvShadowValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/shadow_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderShadow"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvShadowValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Light Quality -->
                             <LinearLayout
+                                android:id="@+id/containerLight"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_light"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_light"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/light_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/light_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeLightModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/light_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvLightValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/light_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderLight"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvLightValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Character Quality -->
                             <LinearLayout
+                                android:id="@+id/containerCharacter"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_person"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_person"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/character_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/character_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeCharacterModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/character_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvCharacterValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/character_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderCharacter"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvCharacterValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Environment Quality -->
                             <LinearLayout
+                                android:id="@+id/containerEnvironment"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_landscape"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_landscape"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/environment_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/environment_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeEnvironmentModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/environment_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvEnvironmentValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/environment_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderEnvironment"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvEnvironmentValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Reflection Quality -->
                             <LinearLayout
+                                android:id="@+id/containerReflection"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_reflection"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_reflection"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/reflection_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/reflection_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeReflectionModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/reflection_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvReflectionValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/reflection_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderReflection"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvReflectionValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                         </LinearLayout>
@@ -891,213 +1208,317 @@
 
                             <!-- SFX Quality -->
                             <LinearLayout
+                                android:id="@+id/containerSfx"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_particle"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_particle"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/sfx_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/sfx_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeSfxModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/sfx_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvSfxValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/sfx_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderSfx"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="1"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvSfxValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Bloom Quality -->
                             <LinearLayout
+                                android:id="@+id/containerBloom"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_waves"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_waves"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/bloom_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/bloom_quality_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeBloomModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/bloom_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvBloomValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/bloom_quality_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderBloom"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="5"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvBloomValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                             <!-- Anti-Aliasing -->
                             <LinearLayout
+                                android:id="@+id/containerAa"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_filter"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_filter"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/anti_aliasing"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/anti_aliasing_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeAaModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/anti_aliasing"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvAaValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/anti_aliasing_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="TAA"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderAa"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="2"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvAaValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="TAA"/>
                             </LinearLayout>
 
                             <!-- Self Shadow -->
                             <LinearLayout
+                                android:id="@+id/containerSelfShadow"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_shadow"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_shadow"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/self_shadow"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/self_shadow_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeSelfShadowModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/self_shadow"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvSelfShadowValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/self_shadow_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="High"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderSelfShadow"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="2"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvSelfShadowValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="High"/>
                             </LinearLayout>
 
                         </LinearLayout>
@@ -1137,27 +1558,36 @@
 
                             <!-- MetalFX Super Resolution -->
                             <LinearLayout
+                                android:id="@+id/containerMetalFx"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
                                 android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <ImageView
                                     android:layout_width="24dp"
                                     android:layout_height="24dp"
                                     android:src="@drawable/ic_auto_awesome"
-                                    app:tint="?attr/colorPrimary"/>
+                                    app:tint="?attr/colorPrimary"
+                                    android:layout_marginEnd="12dp"/>
+
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
                                     android:orientation="vertical">
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="@string/metalfx_super_resolution"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                                        android:textColor="?attr/colorOnSurface"/>
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
@@ -1165,6 +1595,21 @@
                                         android:textAppearance="?attr/textAppearanceBodySmall"
                                         android:textColor="?attr/colorOnSurfaceVariant"/>
                                 </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/badgeMetalFxModified"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_modified"
+                                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                                    android:textColor="?attr/colorTertiary"
+                                    android:background="@drawable/bg_setting_modified"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="2dp"
+                                    android:layout_marginEnd="8dp"
+                                    android:visibility="gone"
+                                    tools:visibility="visible"/>
+
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                     android:id="@+id/switchMetalFx"
                                     android:layout_width="wrap_content"
@@ -1173,27 +1618,36 @@
 
                             <!-- Half Resolution Transparent -->
                             <LinearLayout
+                                android:id="@+id/containerHalfRes"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
                                 android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="8dp"
+                                android:clipToOutline="true">
+
                                 <ImageView
                                     android:layout_width="24dp"
                                     android:layout_height="24dp"
                                     android:src="@drawable/ic_half_resolution"
-                                    app:tint="?attr/colorPrimary"/>
+                                    app:tint="?attr/colorPrimary"
+                                    android:layout_marginEnd="12dp"/>
+
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
                                     android:orientation="vertical">
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="@string/half_res_transparent"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                                        android:textColor="?attr/colorOnSurface"/>
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
@@ -1201,6 +1655,21 @@
                                         android:textAppearance="?attr/textAppearanceBodySmall"
                                         android:textColor="?attr/colorOnSurfaceVariant"/>
                                 </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/badgeHalfResModified"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_modified"
+                                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                                    android:textColor="?attr/colorTertiary"
+                                    android:background="@drawable/bg_setting_modified"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="2dp"
+                                    android:layout_marginEnd="8dp"
+                                    android:visibility="gone"
+                                    tools:visibility="visible"/>
+
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                     android:id="@+id/switchHalfResTransparent"
                                     android:layout_width="wrap_content"
@@ -1209,54 +1678,80 @@
 
                             <!-- DLSS Quality -->
                             <LinearLayout
+                                android:id="@+id/containerDlss"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_upscale"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_upscale"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/dlss_quality"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/dlss_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
                                     <TextView
+                                        android:id="@+id/badgeDlssModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/dlss_quality"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvDlssValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/dlss_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="80dp"
+                                        android:gravity="end"
+                                        tools:text="Quality"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderDlss"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="4"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvDlssValue"
-                                    android:layout_width="120dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="Performance"/>
                             </LinearLayout>
 
                         </LinearLayout>
@@ -1296,55 +1791,82 @@
 
                             <!-- Particle Trail Smoothness -->
                             <LinearLayout
+                                android:id="@+id/containerParticleTrail"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical">
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:src="@drawable/ic_particle"
-                                    app:tint="?attr/colorPrimary"/>
+                                android:orientation="vertical"
+                                android:background="?attr/colorSurfaceContainerHighest"
+                                android:padding="12dp"
+                                android:layout_marginBottom="12dp"
+                                android:clipToOutline="true">
+
                                 <LinearLayout
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:layout_marginStart="12dp"
-                                    android:orientation="vertical">
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:layout_width="24dp"
+                                        android:layout_height="24dp"
+                                        android:src="@drawable/ic_particle"
+                                        app:tint="?attr/colorPrimary"
+                                        android:layout_marginEnd="12dp"/>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/particle_trail"
+                                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                                            android:textColor="?attr/colorOnSurface"/>
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/particle_trail_desc"
+                                            android:textAppearance="?attr/textAppearanceBodySmall"
+                                            android:textColor="?attr/colorOnSurfaceVariant"/>
+                                    </LinearLayout>
+
+                                    <!-- Modified Badge -->
                                     <TextView
+                                        android:id="@+id/badgeParticleTrailModified"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/particle_trail"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:text="@string/setting_modified"
+                                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                                        android:textColor="?attr/colorTertiary"
+                                        android:background="@drawable/bg_setting_modified"
+                                        android:paddingHorizontal="8dp"
+                                        android:paddingVertical="2dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:visibility="gone"
+                                        tools:visibility="visible"/>
+
                                     <TextView
+                                        android:id="@+id/tvParticleTrailValue"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="@string/particle_trail_desc"
-                                        android:textAppearance="?attr/textAppearanceBodySmall"
-                                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                                        android:textColor="?attr/colorPrimary"
+                                        android:minWidth="50dp"
+                                        android:gravity="end"
+                                        tools:text="Low"/>
                                 </LinearLayout>
-                            </LinearLayout>
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginBottom="12dp">
+
                                 <com.google.android.material.slider.Slider
                                     android:id="@+id/sliderParticleTrail"
-                                    android:layout_width="0dp"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_weight="1"
                                     android:valueFrom="0"
                                     android:valueTo="3"
                                     android:stepSize="1"/>
-                                <TextView
-                                    android:id="@+id/tvParticleTrailValue"
-                                    android:layout_width="80dp"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    tools:text="Off"/>
                             </LinearLayout>
 
                             <!-- Screen Resolution -->
@@ -1473,6 +1995,7 @@
 
                             <!-- Speed Up Open -->
                             <LinearLayout
+                                android:id="@+id/containerSpeedUpOpen"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal"
@@ -1493,11 +2016,14 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:orientation="vertical">
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="@string/speed_up_open"
-                                        android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                                        android:textColor="?attr/colorOnSurface"/>
+
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
@@ -1505,6 +2031,20 @@
                                         android:textAppearance="?attr/textAppearanceBodySmall"
                                         android:textColor="?attr/colorOnSurfaceVariant"/>
                                 </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/badgeSpeedUpOpenModified"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/setting_modified"
+                                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                                    android:textColor="?attr/colorTertiary"
+                                    android:background="@drawable/bg_setting_modified"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="2dp"
+                                    android:layout_marginEnd="8dp"
+                                    android:visibility="gone"
+                                    tools:visibility="visible"/>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                     android:id="@+id/switchSpeedUpOpen"

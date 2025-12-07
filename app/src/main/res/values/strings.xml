@@ -221,4 +221,28 @@
     <string name="not_available">N/A</string>
     <string name="videos_blocked">%d videos blocked</string>
     <string name="audio_files_blocked">%d audio files blocked</string>
+    
+    <!-- Undo/Redo and Change Tracking -->
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="pending_changes">%d pending changes</string>
+    <string name="no_pending_changes">No pending changes</string>
+    <string name="changes_detected">Changes Detected!</string>
+    <string name="external_changes_detected">Game settings changed externally</string>
+    <string name="external_changes_message">The following settings were changed in the game:\n\n%1$s\n\nDo you want to load the new game settings or keep your current edits?</string>
+    <string name="load_game_settings">Load Game Settings</string>
+    <string name="keep_current">Keep Current</string>
+    <string name="setting_modified">Modified</string>
+    <string name="reset_all_changes">Reset All Changes</string>
+    <string name="reset_changes_message">This will discard all pending changes and reload settings from the game. Continue?</string>
+    <string name="changes_discarded">All changes discarded</string>
+    <string name="undo_performed">Undo: %s</string>
+    <string name="redo_performed">Redo: %s</string>
+    <string name="nothing_to_undo">Nothing to undo</string>
+    <string name="nothing_to_redo">Nothing to redo</string>
+    <string name="view_pending_changes">View Pending Changes</string>
+    <string name="pending_changes_title">Pending Changes (%d)</string>
+    <string name="change_from_to">%1$s: %2$s → %3$s</string>
+    <string name="apply_pending_changes">Apply %d Changes</string>
+    <string name="no_changes_to_apply">No changes to apply</string>
 </resources>

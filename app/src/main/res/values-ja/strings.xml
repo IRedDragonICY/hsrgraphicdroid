@@ -69,4 +69,26 @@
     <string name="system_default">システムデフォルト</string>
     <string name="light">ライト</string>
     <string name="dark">ダーク</string>
+    
+    <!-- Undo/Redo and Change Tracking -->
+    <string name="undo">元に戻す</string>
+    <string name="redo">やり直す</string>
+    <string name="pending_changes">%d 件の保留中の変更</string>
+    <string name="no_pending_changes">保留中の変更はありません</string>
+    <string name="changes_detected">変更が検出されました！</string>
+    <string name="external_changes_detected">ゲーム設定が外部で変更されました</string>
+    <string name="external_changes_message">ゲームで以下の設定が変更されました:\n\n%1$s\n\n新しいゲーム設定を読み込みますか、それとも現在の編集を維持しますか？</string>
+    <string name="load_game_settings">ゲーム設定を読み込む</string>
+    <string name="keep_current">現在を維持</string>
+    <string name="setting_modified">変更済み</string>
+    <string name="reset_all_changes">すべての変更をリセット</string>
+    <string name="reset_changes_message">すべての保留中の変更を破棄し、ゲームから設定を再読み込みします。続行しますか？</string>
+    <string name="changes_discarded">すべての変更を破棄しました</string>
+    <string name="nothing_to_undo">元に戻すものがありません</string>
+    <string name="nothing_to_redo">やり直すものがありません</string>
+    <string name="view_pending_changes">変更を表示</string>
+    <string name="pending_changes_title">保留中の変更 (%d)</string>
+    <string name="change_from_to">%1$s: %2$s → %3$s</string>
+    <string name="apply_pending_changes">%d 件の変更を適用</string>
+    <string name="no_changes_to_apply">適用する変更はありません</string>
 </resources>

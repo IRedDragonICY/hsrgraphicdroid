@@ -158,4 +158,26 @@
 Требуется доступ root через Magisk или аналогичный инструмент.
 
 © 2025 iRedDragonICY</string>
+    
+    <!-- Undo/Redo and Change Tracking -->
+    <string name="undo">Отменить</string>
+    <string name="redo">Повторить</string>
+    <string name="pending_changes">%d ожидающих изменений</string>
+    <string name="no_pending_changes">Нет ожидающих изменений</string>
+    <string name="changes_detected">Обнаружены изменения!</string>
+    <string name="external_changes_detected">Настройки игры были изменены извне</string>
+    <string name="external_changes_message">Следующие настройки были изменены в игре:\n\n%1$s\n\nВы хотите загрузить новые настройки игры или сохранить текущие изменения?</string>
+    <string name="load_game_settings">Загрузить настройки игры</string>
+    <string name="keep_current">Оставить текущие</string>
+    <string name="setting_modified">Изменено</string>
+    <string name="reset_all_changes">Сбросить все изменения</string>
+    <string name="reset_changes_message">Это отменит все ожидающие изменения и перезагрузит настройки из игры. Продолжить?</string>
+    <string name="changes_discarded">Все изменения отменены</string>
+    <string name="nothing_to_undo">Нечего отменять</string>
+    <string name="nothing_to_redo">Нечего повторять</string>
+    <string name="view_pending_changes">Просмотр изменений</string>
+    <string name="pending_changes_title">Ожидающие изменения (%d)</string>
+    <string name="change_from_to">%1$s: %2$s → %3$s</string>
+    <string name="apply_pending_changes">Применить %d изменений</string>
+    <string name="no_changes_to_apply">Нет изменений для применения</string>
 </resources>
