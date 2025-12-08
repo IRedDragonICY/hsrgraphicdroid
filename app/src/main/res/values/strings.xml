@@ -28,6 +28,7 @@
     <string name="refresh">Refresh</string>
     <string name="restore">Restore</string>
     <string name="delete">Delete</string>
+    <string name="remove">Remove</string>
     <string name="apply">Apply</string>
     <string name="apply_settings_now">Apply Settings Now</string>
     <string name="save">Save</string>
@@ -245,4 +246,38 @@
     <string name="change_from_to">%1$s: %2$s → %3$s</string>
     <string name="apply_pending_changes">Apply %d Changes</string>
     <string name="no_changes_to_apply">No changes to apply</string>
+    
+    <!-- Compose UI Additional Strings -->
+    <string name="no_backups">No backups saved yet</string>
+    <string name="reset_prefs_message">This will discard all changes and reload preferences from the game. Continue?</string>
+    <string name="apply_prefs_message">This will save your preferences to the game. Make sure the game is closed.</string>
+    <string name="language_settings_desc">Choose your preferred text and audio languages</string>
+    <string name="blacklist_empty">No items in blacklist</string>
+    <string name="add_to_blacklist">Add to Blacklist</string>
+    <string name="blacklist_add_hint">Enter the file name to block</string>
+    <string name="item_name">Item name</string>
+    <string name="additional_preferences">Additional Preferences</string>
+    <string name="disable_ac">Disable Anti-Cheat</string>
+    <string name="disable_ac_desc">May improve performance but use at your own risk</string>
+    
+    <!-- App Settings Screen -->
+    <string name="app_settings">App Settings</string>
+    <string name="appearance">Appearance</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="dynamic_color">Dynamic Color</string>
+    <string name="dynamic_color_desc">Use Material You colors from your wallpaper (Android 12+)</string>
+    <string name="app_language">App Language</string>
+    <string name="about_app">About App</string>
+    <string name="github_repo">GitHub Repository</string>
+    <string name="view_source_code">View source code</string>
+    <string name="report_issue">Report Issue</string>
+    <string name="report_issue_desc">Report bugs or request features</string>
+    <string name="advanced">Advanced</string>
+    <string name="clear_app_data">Clear App Data</string>
+    <string name="clear_app_data_desc">Delete all app preferences and backups</string>
+    <string name="export_logs">Export Logs</string>
+    <string name="export_logs_desc">Save debug logs for troubleshooting</string>
+    <string name="about_description">A premium tool for customizing Honkai: Star Rail graphics settings. Requires root access.</string>
+    <string name="license_info">Licensed under MIT License\n© 2025 iRedDragonICY</string>
 </resources>

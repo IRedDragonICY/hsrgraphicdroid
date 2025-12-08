@@ -1,0 +1,814 @@
+package com.ireddragonicy.hsrgraphicdroid.ui.screens
+
+import androidx.compose.animation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ireddragonicy.hsrgraphicdroid.R
+import com.ireddragonicy.hsrgraphicdroid.data.BackupData
+import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
+import com.ireddragonicy.hsrgraphicdroid.ui.components.*
+import com.ireddragonicy.hsrgraphicdroid.ui.navigation.ActionBarConfig
+import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GraphicsViewModel
+import com.ireddragonicy.hsrgraphicdroid.data.SettingChange
+
+// Data class for slider configuration to reduce redundancy
+private data class SliderConfig(
+    val key: String,
+    val labelRes: Int,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val descriptionRes: Int? = null,
+    val valueRange: ClosedFloatingPointRange<Float>,
+    val steps: Int,
+    val getValue: (GraphicsSettings) -> Float,
+    val setValue: (GraphicsSettings, Float) -> GraphicsSettings,
+    val getDisplayValue: (GraphicsSettings, Float) -> String
+)
+
+// Data class for switch configuration
+private data class SwitchConfig(
+    val key: String,
+    val labelRes: Int,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val descriptionRes: Int? = null,
+    val getValue: (GraphicsSettings) -> Boolean,
+    val setValue: (GraphicsSettings, Boolean) -> GraphicsSettings
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GraphicsScreen(
+    graphicsViewModel: GraphicsViewModel,
+    useExternalBottomBar: Boolean = false,
+    onLaunchGame: () -> Unit = {},
+    onRegisterActionBar: (ActionBarConfig) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val uiState by graphicsViewModel.uiState.collectAsStateWithLifecycle()
+    val canUndo by graphicsViewModel.canUndo.collectAsStateWithLifecycle()
+    val canRedo by graphicsViewModel.canRedo.collectAsStateWithLifecycle()
+
+    var showBackupsSheet by remember { mutableStateOf(false) }
+    var showSaveBackupDialog by remember { mutableStateOf(false) }
+    var showApplyDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var showPendingDialog by remember { mutableStateOf(false) }
+    var selectedPreset by remember { mutableStateOf<Int?>(null) }
+
+    // Snackbar host
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    // Handle messages
+    LaunchedEffect(uiState.errorMessage, uiState.successMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            graphicsViewModel.clearMessage()
+        }
+        uiState.successMessage?.let { message ->
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = context.getString(R.string.launch_game)
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onLaunchGame()
+            }
+            graphicsViewModel.clearMessage()
+        }
+    }
+
+    LaunchedEffect(uiState.hasChanges, uiState.pendingChangesCount) {
+        onRegisterActionBar(
+            ActionBarConfig(
+                hasChanges = uiState.hasChanges,
+                pendingChangesCount = uiState.pendingChangesCount,
+                onOpenBackups = { showBackupsSheet = true },
+                onSaveBackup = { showSaveBackupDialog = true },
+                onApply = { showApplyDialog = true }
+            )
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.graphics_editor),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = { graphicsViewModel.undo() },
+                        enabled = canUndo
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                            contentDescription = stringResource(R.string.undo),
+                            tint = if (canUndo) MaterialTheme.colorScheme.onSurface 
+                                   else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        )
+                    }
+                    IconButton(
+                        onClick = { graphicsViewModel.redo() },
+                        enabled = canRedo
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Redo,
+                            contentDescription = stringResource(R.string.redo),
+                            tint = if (canRedo) MaterialTheme.colorScheme.onSurface 
+                                   else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        )
+                    }
+                    IconButton(
+                        onClick = { showResetDialog = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.reset)
+                        )
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = modifier
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Pending Changes Banner
+                if (uiState.pendingChangesCount > 0) {
+                    item {
+                        PendingChangesBanner(
+                            changesCount = uiState.pendingChangesCount,
+                            onViewChanges = { showPendingDialog = true }
+                        )
+                    }
+                }
+
+                // Master Quality Card
+                item {
+                    QualitySliderCard(
+                        title = stringResource(R.string.overall_graphics_quality),
+                        description = stringResource(R.string.overall_graphics_quality_desc),
+                        value = uiState.currentSettings.graphicsQuality,
+                        displayValue = uiState.currentSettings.getMasterQualityName(uiState.currentSettings.graphicsQuality),
+                        onValueChange = { value ->
+                            graphicsViewModel.updateSettings(
+                                uiState.currentSettings.copy(graphicsQuality = value)
+                            )
+                        }
+                    )
+                }
+
+                // Extended Graphics Settings Card
+                item {
+                    ExtendedSettingsCard(
+                        settings = uiState.currentSettings,
+                        modifiedFields = uiState.modifiedFields,
+                        selectedPreset = selectedPreset,
+                        onPresetSelected = { preset ->
+                            selectedPreset = preset
+                            graphicsViewModel.applyPreset(preset)
+                        },
+                        onSettingsChange = { newSettings ->
+                            selectedPreset = null
+                            graphicsViewModel.updateSettings(newSettings)
+                        }
+                    )
+                }
+
+                // Display Settings
+                item {
+                    DisplaySettingsCard(
+                        settings = uiState.currentSettings,
+                        modifiedFields = uiState.modifiedFields,
+                        onSettingsChange = { newSettings ->
+                            graphicsViewModel.updateSettings(newSettings)
+                        }
+                    )
+                }
+            }
+
+            // Loading Overlay
+            LoadingOverlay(isLoading = uiState.isLoading)
+        }
+    }
+
+    // Backups Bottom Sheet
+    if (showBackupsSheet) {
+        BackupsBottomSheet(
+            backups = uiState.backups,
+            onRestore = { backup ->
+                graphicsViewModel.restoreBackup(backup)
+                showBackupsSheet = false
+            },
+            onDelete = { backup ->
+                graphicsViewModel.deleteBackup(backup)
+            },
+            onDismiss = { showBackupsSheet = false }
+        )
+    }
+
+    // Save Backup Dialog
+    if (showSaveBackupDialog) {
+        SaveBackupDialog(
+            onSave = { name ->
+                graphicsViewModel.saveBackup(name)
+                showSaveBackupDialog = false
+            },
+            onDismiss = { showSaveBackupDialog = false }
+        )
+    }
+
+    // Apply Settings Dialog
+    if (showApplyDialog) {
+        AlertDialog(
+            onDismissRequest = { showApplyDialog = false },
+            title = { Text(stringResource(R.string.apply)) },
+            text = { Text(stringResource(R.string.apply_settings_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        graphicsViewModel.applySettings()
+                        showApplyDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.apply))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showApplyDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Pending Changes Dialog
+    if (showPendingDialog) {
+        val changes: List<SettingChange> = graphicsViewModel.getPendingChanges()
+        AlertDialog(
+            onDismissRequest = { showPendingDialog = false },
+            title = { Text(stringResource(R.string.pending_changes_title, changes.size)) },
+            text = {
+                if (changes.isEmpty()) {
+                    Text(stringResource(R.string.no_changes_to_apply))
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        changes.forEach { change ->
+                            Text(
+                                text = change.getDisplayText(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        graphicsViewModel.applySettings()
+                        showPendingDialog = false
+                    },
+                    enabled = changes.isNotEmpty()
+                ) {
+                    Text(stringResource(R.string.apply_settings_now))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPendingDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Reset Dialog
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text(stringResource(R.string.reset_all_changes)) },
+            text = { Text(stringResource(R.string.reset_changes_message)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        graphicsViewModel.resetToOriginal()
+                        selectedPreset = null
+                        showResetDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.reset))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun ExtendedSettingsCard(
+    settings: GraphicsSettings,
+    modifiedFields: Set<String>,
+    selectedPreset: Int?,
+    onPresetSelected: (Int) -> Unit,
+    onSettingsChange: (GraphicsSettings) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.graphics_settings), style = MaterialTheme.typography.titleMedium)
+            }
+
+            Text(
+                text = stringResource(R.string.graphics_settings_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Presets Section
+            SectionHeader(
+                title = stringResource(R.string.presets),
+                subtitle = stringResource(R.string.presets_desc)
+            )
+
+            PresetButtonRow(
+                selectedPreset = selectedPreset,
+                onPresetSelected = onPresetSelected,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Performance Section
+            SettingsSection(
+                title = stringResource(R.string.section_performance),
+                subtitle = stringResource(R.string.section_performance_desc)
+            ) {
+                // FPS
+                GraphicsSlider(
+                    label = stringResource(R.string.fps),
+                    value = settings.fps.toFloat(),
+                    valueRange = 30f..120f,
+                    steps = 2,
+                    displayValue = settings.fps.toString(),
+                    onValueChange = { onSettingsChange(settings.copy(fps = it.toInt())) },
+                    icon = Icons.Default.Speed,
+                    isModified = modifiedFields.contains("fps")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // VSync
+                GraphicsSwitch(
+                    label = stringResource(R.string.vsync),
+                    checked = settings.enableVSync,
+                    onCheckedChange = { onSettingsChange(settings.copy(enableVSync = it)) },
+                    icon = Icons.Default.Sync,
+                    isModified = modifiedFields.contains("vsync")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // Render Scale
+                GraphicsSlider(
+                    label = stringResource(R.string.render_scale),
+                    value = settings.renderScale.toFloat(),
+                    valueRange = 0.5f..2.0f,
+                    steps = 14,
+                    displayValue = String.format("%.1fx", settings.renderScale),
+                    onValueChange = { onSettingsChange(settings.copy(renderScale = it.toDouble())) },
+                    icon = Icons.Default.AspectRatio,
+                    isModified = modifiedFields.contains("renderScale")
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Visual Fidelity Section
+            SettingsSection(
+                title = stringResource(R.string.section_visual_fidelity),
+                subtitle = stringResource(R.string.section_visual_fidelity_desc)
+            ) {
+                QualitySliderItem(
+                    labelRes = R.string.resolution_quality,
+                    value = settings.resolutionQuality,
+                    displayValue = settings.getQualityName(settings.resolutionQuality),
+                    onValueChange = { onSettingsChange(settings.copy(resolutionQuality = it)) },
+                    icon = Icons.Default.HighQuality,
+                    isModified = modifiedFields.contains("resolution")
+                )
+
+                QualitySliderItem(
+                    labelRes = R.string.shadow_quality,
+                    value = settings.shadowQuality,
+                    displayValue = settings.getQualityName(settings.shadowQuality),
+                    onValueChange = { onSettingsChange(settings.copy(shadowQuality = it)) },
+                    icon = Icons.Default.Contrast,
+                    isModified = modifiedFields.contains("shadow"),
+                    descriptionRes = R.string.shadow_quality_desc
+                )
+
+                QualitySliderItem(
+                    labelRes = R.string.light_quality,
+                    value = settings.lightQuality,
+                    displayValue = settings.getQualityName(settings.lightQuality),
+                    onValueChange = { onSettingsChange(settings.copy(lightQuality = it)) },
+                    icon = Icons.Default.LightMode,
+                    isModified = modifiedFields.contains("light"),
+                    descriptionRes = R.string.light_quality_desc
+                )
+
+                QualitySliderItem(
+                    labelRes = R.string.character_quality,
+                    value = settings.characterQuality,
+                    displayValue = settings.getQualityName(settings.characterQuality),
+                    onValueChange = { onSettingsChange(settings.copy(characterQuality = it)) },
+                    icon = Icons.Default.Person,
+                    isModified = modifiedFields.contains("character"),
+                    descriptionRes = R.string.character_quality_desc
+                )
+
+                QualitySliderItem(
+                    labelRes = R.string.environment_quality,
+                    value = settings.envDetailQuality,
+                    displayValue = settings.getQualityName(settings.envDetailQuality),
+                    onValueChange = { onSettingsChange(settings.copy(envDetailQuality = it)) },
+                    icon = Icons.Default.Landscape,
+                    isModified = modifiedFields.contains("environment"),
+                    descriptionRes = R.string.environment_quality_desc
+                )
+
+                QualitySliderItem(
+                    labelRes = R.string.reflection_quality,
+                    value = settings.reflectionQuality,
+                    displayValue = settings.getQualityName(settings.reflectionQuality),
+                    onValueChange = { onSettingsChange(settings.copy(reflectionQuality = it)) },
+                    icon = Icons.Default.WaterDrop,
+                    isModified = modifiedFields.contains("reflection"),
+                    descriptionRes = R.string.reflection_quality_desc
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Effects Section
+            SettingsSection(
+                title = stringResource(R.string.section_effects),
+                subtitle = stringResource(R.string.section_effects_desc)
+            ) {
+                // SFX Quality (range 1-5)
+                GraphicsSlider(
+                    label = stringResource(R.string.sfx_quality),
+                    value = settings.sfxQuality.toFloat(),
+                    valueRange = 1f..5f,
+                    steps = 3,
+                    displayValue = settings.getSfxQualityName(settings.sfxQuality),
+                    onValueChange = { onSettingsChange(settings.copy(sfxQuality = it.toInt())) },
+                    icon = Icons.Default.AutoAwesome,
+                    description = stringResource(R.string.sfx_quality_desc),
+                    isModified = modifiedFields.contains("sfx")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                QualitySliderItem(
+                    labelRes = R.string.bloom_quality,
+                    value = settings.bloomQuality,
+                    displayValue = settings.getQualityName(settings.bloomQuality),
+                    onValueChange = { onSettingsChange(settings.copy(bloomQuality = it)) },
+                    icon = Icons.Default.Flare,
+                    isModified = modifiedFields.contains("bloom"),
+                    descriptionRes = R.string.bloom_quality_desc
+                )
+
+                // AA Mode (0-2)
+                GraphicsSlider(
+                    label = stringResource(R.string.anti_aliasing),
+                    value = settings.aaMode.toFloat(),
+                    valueRange = 0f..2f,
+                    steps = 1,
+                    displayValue = settings.getAAModeName(settings.aaMode),
+                    onValueChange = { onSettingsChange(settings.copy(aaMode = it.toInt())) },
+                    icon = Icons.Default.FilterHdr,
+                    description = stringResource(R.string.anti_aliasing_desc),
+                    isModified = modifiedFields.contains("aa")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // Particle Trail (0-3)
+                GraphicsSlider(
+                    label = stringResource(R.string.particle_trail),
+                    value = settings.particleTrailSmoothness.toFloat(),
+                    valueRange = 0f..3f,
+                    steps = 2,
+                    displayValue = settings.getParticleTrailName(settings.particleTrailSmoothness),
+                    onValueChange = { onSettingsChange(settings.copy(particleTrailSmoothness = it.toInt())) },
+                    icon = Icons.Default.AutoAwesome,
+                    description = stringResource(R.string.particle_trail_desc),
+                    isModified = modifiedFields.contains("particleTrail")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // Self Shadow (0-2)
+                GraphicsSlider(
+                    label = stringResource(R.string.self_shadow),
+                    value = settings.enableSelfShadow.toFloat(),
+                    valueRange = 0f..2f,
+                    steps = 1,
+                    displayValue = settings.getSelfShadowName(settings.enableSelfShadow),
+                    onValueChange = { onSettingsChange(settings.copy(enableSelfShadow = it.toInt())) },
+                    icon = Icons.Default.Contrast,
+                    description = stringResource(R.string.self_shadow_desc),
+                    isModified = modifiedFields.contains("selfShadow")
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Upscaling Section
+            SettingsSection(
+                title = stringResource(R.string.section_upscaling),
+                subtitle = stringResource(R.string.section_upscaling_desc)
+            ) {
+                GraphicsSwitch(
+                    label = stringResource(R.string.metalfx_super_resolution),
+                    checked = settings.enableMetalFXSU,
+                    onCheckedChange = { onSettingsChange(settings.copy(enableMetalFXSU = it)) },
+                    icon = Icons.Default.AutoAwesome,
+                    description = stringResource(R.string.metalfx_desc),
+                    isModified = modifiedFields.contains("metalFx")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                GraphicsSwitch(
+                    label = stringResource(R.string.half_res_transparent),
+                    checked = settings.enableHalfResTransparent,
+                    onCheckedChange = { onSettingsChange(settings.copy(enableHalfResTransparent = it)) },
+                    icon = Icons.Default.Opacity,
+                    description = stringResource(R.string.half_res_desc),
+                    isModified = modifiedFields.contains("halfRes")
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                // DLSS (0-4)
+                GraphicsSlider(
+                    label = stringResource(R.string.dlss_quality),
+                    value = settings.dlssQuality.toFloat(),
+                    valueRange = 0f..4f,
+                    steps = 3,
+                    displayValue = settings.getDlssName(settings.dlssQuality),
+                    onValueChange = { onSettingsChange(settings.copy(dlssQuality = it.toInt())) },
+                    icon = Icons.Default.Memory,
+                    description = stringResource(R.string.dlss_desc),
+                    isModified = modifiedFields.contains("dlss")
+                )
+            }
+        }
+    }
+
+}
+
+@Composable
+private fun DisplaySettingsCard(
+    settings: GraphicsSettings,
+    modifiedFields: Set<String>,
+    onSettingsChange: (GraphicsSettings) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionHeader(
+                title = stringResource(R.string.section_display),
+                subtitle = stringResource(R.string.section_display_desc)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            // Resolution Display (Read-only)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Screenshot, null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.current_resolution), style = MaterialTheme.typography.labelLarge)
+                }
+                Text(
+                    text = "${settings.screenWidth}×${settings.screenHeight}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Fullscreen Mode Display (Read-only)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Fullscreen, null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.fullscreen_mode), style = MaterialTheme.typography.labelLarge)
+                }
+                Text(
+                    text = settings.getFullscreenModeName(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Speed Up Open
+            GraphicsSwitch(
+                label = stringResource(R.string.speed_up_open),
+                checked = settings.speedUpOpen == 1,
+                onCheckedChange = { onSettingsChange(settings.copy(speedUpOpen = if (it) 1 else 0)) },
+                icon = Icons.Default.RocketLaunch,
+                description = stringResource(R.string.speed_up_open_desc),
+                isModified = modifiedFields.contains("speedUpOpen")
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSection(
+    title: String,
+    subtitle: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        SectionHeader(title = title, subtitle = subtitle)
+        Spacer(Modifier.height(12.dp))
+        content()
+    }
+}
+
+@Composable
+private fun QualitySliderItem(
+    labelRes: Int,
+    value: Int,
+    displayValue: String,
+    onValueChange: (Int) -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    isModified: Boolean,
+    descriptionRes: Int? = null
+) {
+    GraphicsSlider(
+        label = stringResource(labelRes),
+        value = value.toFloat(),
+        valueRange = 0f..5f,
+        steps = 4,
+        displayValue = displayValue,
+        onValueChange = { onValueChange(it.toInt()) },
+        icon = icon,
+        description = descriptionRes?.let { stringResource(it) },
+        isModified = isModified
+    )
+    Spacer(Modifier.height(8.dp))
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BackupsBottomSheet(
+    backups: List<BackupData>,
+    onRestore: (BackupData) -> Unit,
+    onDelete: (BackupData) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.saved_backups),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            Text(
+                text = stringResource(R.string.backup_count, backups.size),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            if (backups.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_backups),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 320.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(backups) { backup ->
+                        BackupCard(
+                            backup = backup,
+                            onRestore = { onRestore(backup) },
+                            onDelete = { onDelete(backup) }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun SaveBackupDialog(
+    onSave: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var backupName by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.save_as_backup)) },
+        text = {
+            OutlinedTextField(
+                value = backupName,
+                onValueChange = { backupName = it },
+                label = { Text(stringResource(R.string.backup_name_hint)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val name = backupName.ifEmpty { "Backup ${System.currentTimeMillis()}" }
+                    onSave(name)
+                }
+            ) {
+                Text(stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}

@@ -42,16 +42,11 @@
 
     <style name="Theme.HsrGraphicDroid" parent="Base.Theme.HsrGraphicDroid" />
     
-    <!-- Theme untuk smooth transitions tanpa window background flash -->
-    <style name="Theme.HsrGraphicDroid.Settings" parent="Theme.HsrGraphicDroid">
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowBackground">@color/md_theme_light_surface</item>
-        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
-    </style>
-    
-    <style name="WindowAnimationTransition">
-        <item name="android:windowEnterAnimation">@anim/fade_in_smooth</item>
-        <item name="android:windowExitAnimation">@anim/fade_out_smooth</item>
+    <!-- Splash Screen Theme for Compose -->
+    <style name="Theme.HsrGraphicDroid.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/md_theme_light_surface</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.HsrGraphicDroid</item>
     </style>
     
     <!-- Bottom Navigation Active Indicator Style - WhatsApp like -->
