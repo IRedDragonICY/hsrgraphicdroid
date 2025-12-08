@@ -199,4 +199,25 @@ Memerlukan akses root melalui Magisk atau sejenisnya.
     <string name="change_from_to">%1$s: %2$s → %3$s</string>
     <string name="apply_pending_changes">Terapkan %d Perubahan</string>
     <string name="no_changes_to_apply">Tidak ada perubahan untuk diterapkan</string>
+
+    <!-- App Settings Screen -->
+    <string name="app_settings">Pengaturan Aplikasi</string>
+    <string name="appearance">Tampilan</string>
+    <string name="light_theme">Terang</string>
+    <string name="dark_theme">Gelap</string>
+    <string name="dynamic_color">Warna Dinamis</string>
+    <string name="dynamic_color_desc">Gunakan warna Material You dari wallpaper (Android 12+)</string>
+    <string name="app_language">Bahasa Aplikasi</string>
+    <string name="about_app">Tentang Aplikasi</string>
+    <string name="github_repo">Repository GitHub</string>
+    <string name="view_source_code">Lihat kode sumber</string>
+    <string name="report_issue">Laporkan Masalah</string>
+    <string name="report_issue_desc">Laporkan bug atau minta fitur</string>
+    <string name="advanced">Lanjutan</string>
+    <string name="clear_app_data">Hapus Data Aplikasi</string>
+    <string name="clear_app_data_desc">Hapus semua preferensi dan backup aplikasi</string>
+    <string name="export_logs">Ekspor Log</string>
+    <string name="export_logs_desc">Simpan log debug untuk pemecahan masalah</string>
+    <string name="about_description">Alat premium untuk menyesuaikan pengaturan grafis Honkai: Star Rail. Memerlukan akses root.</string>
+    <string name="license_info">Dilisensikan di bawah Lisensi MIT\n© 2025 iRedDragonICY</string>
 </resources>

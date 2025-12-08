@@ -180,4 +180,23 @@
     <string name="change_from_to">%1$s: %2$s → %3$s</string>
     <string name="apply_pending_changes">Применить %d изменений</string>
     <string name="no_changes_to_apply">Нет изменений для применения</string>
+
+    <!-- App Settings Screen -->
+    <string name="app_settings">Настройки приложения</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="dynamic_color">Динамические цвета</string>
+    <string name="dynamic_color_desc">Использовать цвета Material You из обоев (Android 12+)</string>
+    <string name="app_language">Язык приложения</string>
+    <string name="about_app">О приложении</string>
+    <string name="github_repo">Репозиторий GitHub</string>
+    <string name="view_source_code">Посмотреть исходный код</string>
+    <string name="report_issue">Сообщить о проблеме</string>
+    <string name="report_issue_desc">Сообщить об ошибке или предложить функцию</string>
+    <string name="advanced">Дополнительно</string>
+    <string name="clear_app_data">Очистить данные приложения</string>
+    <string name="clear_app_data_desc">Удалить все настройки и резервные копии приложения</string>
+    <string name="export_logs">Экспорт логов</string>
+    <string name="export_logs_desc">Сохранить отладочные логи для устранения неполадок</string>
+    <string name="about_description">Премиальный инструмент для настройки графики Honkai: Star Rail. Требуется доступ root.</string>
+    <string name="license_info">Лицензия MIT\n© 2025 iRedDragonICY</string>
 </resources>

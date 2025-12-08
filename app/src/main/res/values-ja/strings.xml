@@ -91,4 +91,23 @@
     <string name="change_from_to">%1$s: %2$s → %3$s</string>
     <string name="apply_pending_changes">%d 件の変更を適用</string>
     <string name="no_changes_to_apply">適用する変更はありません</string>
+
+    <!-- App Settings Screen -->
+    <string name="app_settings">アプリ設定</string>
+    <string name="appearance">外観</string>
+    <string name="dynamic_color">ダイナミックカラー</string>
+    <string name="dynamic_color_desc">壁紙から Material You カラーを使用 (Android 12+)</string>
+    <string name="app_language">アプリの言語</string>
+    <string name="about_app">アプリについて</string>
+    <string name="github_repo">GitHub リポジトリ</string>
+    <string name="view_source_code">ソースコードを表示</string>
+    <string name="report_issue">問題を報告</string>
+    <string name="report_issue_desc">バグの報告や機能のリクエスト</string>
+    <string name="advanced">高度な設定</string>
+    <string name="clear_app_data">アプリデータを消去</string>
+    <string name="clear_app_data_desc">アプリの設定とバックアップをすべて削除します</string>
+    <string name="export_logs">ログをエクスポート</string>
+    <string name="export_logs_desc">トラブルシューティング用にデバッグログを保存</string>
+    <string name="about_description">Honkai: Star Rail のグラフィック設定をカスタマイズするためのプレミアムツール。Root権限が必要です。</string>
+    <string name="license_info">MIT ライセンス\n© 2025 iRedDragonICY</string>
 </resources>

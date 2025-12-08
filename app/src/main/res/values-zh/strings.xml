@@ -91,4 +91,23 @@
     <string name="change_from_to">%1$s: %2$s → %3$s</string>
     <string name="apply_pending_changes">应用 %d 个更改</string>
     <string name="no_changes_to_apply">没有可应用的更改</string>
+
+    <!-- App Settings Screen -->
+    <string name="app_settings">应用设置</string>
+    <string name="appearance">外观</string>
+    <string name="dynamic_color">动态取色</string>
+    <string name="dynamic_color_desc">使用壁纸的 Material You 颜色 (Android 12+)</string>
+    <string name="app_language">应用语言</string>
+    <string name="about_app">关于应用</string>
+    <string name="github_repo">GitHub 仓库</string>
+    <string name="view_source_code">查看源代码</string>
+    <string name="report_issue">报告问题</string>
+    <string name="report_issue_desc">报告错误或请求功能</string>
+    <string name="advanced">高级</string>
+    <string name="clear_app_data">清除应用数据</string>
+    <string name="clear_app_data_desc">删除所有应用偏好设置和备份</string>
+    <string name="export_logs">导出日志</string>
+    <string name="export_logs_desc">保存调试日志以进行故障排除</string>
+    <string name="about_description">用于自定义 Honkai: Star Rail 图形设置的高级工具。需要 Root 权限。</string>
+    <string name="license_info">MIT 许可证\n© 2025 iRedDragonICY</string>
 </resources>

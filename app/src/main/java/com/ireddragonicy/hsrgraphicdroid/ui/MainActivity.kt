@@ -1,7 +1,7 @@
 package com.ireddragonicy.hsrgraphicdroid.ui
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * This is the only Activity in the app. All UI is built using
  * Compose with Navigation Compose for screen navigation.
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     // ViewModels - using activity-level scope for shared state
     private val mainViewModel: MainViewModel by viewModels()
