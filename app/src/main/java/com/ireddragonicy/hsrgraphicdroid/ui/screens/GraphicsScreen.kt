@@ -135,7 +135,8 @@ fun GraphicsScreen(
                 hasChanges = uiState.hasChanges,
                 pendingChangesCount = uiState.pendingChangesCount,
                 onSaveBackup = { showSaveBackupDialog = true },
-                onApply = { showApplyDialog = true }
+                onApply = { showApplyDialog = true },
+                onViewChanges = { showPendingChangesDialog = true }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -151,15 +152,6 @@ fun GraphicsScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Pending Changes Banner
-                if (uiState.pendingChangesCount > 0) {
-                    item {
-                        PendingChangesBanner(
-                            changesCount = uiState.pendingChangesCount,
-                            onViewChanges = { showPendingChangesDialog = true }
-                        )
-                    }
-                }
 
                 // Master Quality Card
                 item {
@@ -787,6 +779,7 @@ private fun GraphicsBottomBar(
     pendingChangesCount: Int,
     onSaveBackup: () -> Unit,
     onApply: () -> Unit,
+    onViewChanges: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -794,36 +787,46 @@ private fun GraphicsBottomBar(
         shadowElevation = 8.dp,
         color = MaterialTheme.colorScheme.surfaceContainer
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onSaveBackup,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(painterResource(R.drawable.ic_backup), null, Modifier.size(18.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.save_as_backup))
+        Column {
+            // Sticky Pending Changes Banner
+            if (pendingChangesCount > 0) {
+                PendingChangesBanner(
+                    changesCount = pendingChangesCount,
+                    onViewChanges = onViewChanges
+                )
             }
 
-            Button(
-                onClick = onApply,
-                modifier = Modifier.weight(1f),
-                colors = if (hasChanges) ButtonDefaults.buttonColors() 
-                        else ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    if (hasChanges) stringResource(R.string.apply_pending_changes, pendingChangesCount)
-                    else stringResource(R.string.apply_settings_now)
-                )
+                OutlinedButton(
+                    onClick = onSaveBackup,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(painterResource(R.drawable.ic_backup), null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.save_as_backup))
+                }
+
+                Button(
+                    onClick = onApply,
+                    modifier = Modifier.weight(1f),
+                    colors = if (hasChanges) ButtonDefaults.buttonColors() 
+                            else ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                ) {
+                    Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        if (hasChanges) stringResource(R.string.apply_pending_changes, pendingChangesCount)
+                        else stringResource(R.string.apply_settings_now)
+                    )
+                }
             }
         }
     }
