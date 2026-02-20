@@ -160,7 +160,8 @@ fun MainNavigation(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
             // Keep ALL pages in memory - prevents recomposition lag
             beyondViewportPageCount = bottomNavItems.size - 1,
             // Optimized fling behavior for snappier response

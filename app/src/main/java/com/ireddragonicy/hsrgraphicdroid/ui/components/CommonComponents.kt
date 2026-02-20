@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,85 +72,78 @@ fun GraphicsSlider(
         targetValue = if (isModified) {
             MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
         } else {
-            MaterialTheme.colorScheme.surfaceContainerHighest
+            Color.Transparent
         },
         label = "sliderBgColor"
     )
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = backgroundColor
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    if (description != null) {
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = isModified,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.setting_modified),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-
-                Text(
-                    text = displayValue,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
                 )
+                Spacer(modifier = Modifier.width(16.dp))
             }
 
-            Slider(
-                value = value,
-                onValueChange = onValueChange,
-                valueRange = valueRange,
-                steps = steps,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (description != null) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (isModified) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.setting_modified),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            Text(
+                text = displayValue,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Medium
             )
         }
+
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            steps = steps,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
     }
 }
 
@@ -169,72 +163,43 @@ fun GraphicsSwitch(
         targetValue = if (isModified) {
             MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
         } else {
-            MaterialTheme.colorScheme.surfaceContainerHighest
+            Color.Transparent
         },
         label = "switchBgColor"
     )
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = backgroundColor
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (icon != null) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-            }
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                if (description != null) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+    ListItem(
+        headlineContent = { Text(label) },
+        supportingContent = if (description != null || isModified) {
+            {
+                Column {
+                    if (description != null) Text(description)
+                    if (isModified) {
+                        Text(
+                            text = stringResource(R.string.setting_modified),
+                            color = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
             }
-
-            AnimatedVisibility(
-                visible = isModified,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(4.dp),
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.setting_modified),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
+        } else null,
+        leadingContent = icon?.let {
+            { Icon(it, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+        },
+        trailingContent = {
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange
             )
-        }
-    }
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .clickable { onCheckedChange(!checked) },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
 }
 
 // ==================== Status Chip ====================
@@ -426,50 +391,31 @@ fun SettingItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(summary) },
+        leadingContent = {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                tint = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        },
+        trailingContent = {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
+        },
+        modifier = modifier.clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
 }
 
 // ==================== Preset Button Row ====================
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PresetButtonRow(
     selectedPreset: Int?,
@@ -484,27 +430,20 @@ fun PresetButtonRow(
         stringResource(R.string.preset_max)
     )
 
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    SingleChoiceSegmentedButtonRow(
+        modifier = modifier.fillMaxWidth()
     ) {
         presets.forEachIndexed { index, preset ->
-            OutlinedButton(
+            SegmentedButton(
+                selected = selectedPreset == index,
                 onClick = { onPresetSelected(index) },
-                modifier = Modifier.weight(1f),
-                colors = if (selectedPreset == index) {
-                    ButtonDefaults.outlinedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                } else {
-                    ButtonDefaults.outlinedButtonColors()
-                },
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = presets.size)
             ) {
                 Text(
                     text = preset,
                     style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -522,64 +461,49 @@ fun QualitySliderCard(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        border = CardDefaults.outlinedCardBorder().copy(
-            width = 2.dp,
-            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
-        )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.weight(1f)
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = displayValue,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.Bold
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
-            )
-
-            Slider(
-                value = value.toFloat(),
-                onValueChange = { onValueChange(it.toInt()) },
-                valueRange = 0f..5f,
-                steps = 4,
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    activeTrackColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    inactiveTrackColor = MaterialTheme.colorScheme.primary
-                )
+                text = displayValue,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
         }
+
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = 0f..5f,
+            steps = 4,
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
 

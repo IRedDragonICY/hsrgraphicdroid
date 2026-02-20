@@ -82,7 +82,12 @@ fun GamePrefsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp, 
+                    end = 16.dp, 
+                    top = 0.dp, 
+                    bottom = 16.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Language Settings Card

@@ -46,13 +46,16 @@ fun SettingsScreen(
         },
         modifier = modifier
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding() + 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // Appearance Card
             item {
                 AppearanceCard(
@@ -132,29 +135,13 @@ private fun AppearanceCard(
     modifier: Modifier = Modifier
 ) {
     val effectiveDarkMode = isDarkMode ?: false
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-    ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Palette,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.appearance),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.appearance),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
+        )
 
             SettingsRow(
                 icon = if (isDarkMode == null) Icons.Default.BrightnessAuto else if (effectiveDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
@@ -188,7 +175,6 @@ private fun AppearanceCard(
                 subtitle = getLanguageDisplayName(currentLanguage),
                 onClick = onLanguageClick
             )
-        }
     }
 }
 
@@ -200,29 +186,13 @@ private fun AboutCard(
     onReportIssueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-    ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.about),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.about),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
+        )
 
             SettingsRow(
                 icon = Icons.Default.Info,
@@ -244,7 +214,6 @@ private fun AboutCard(
                 subtitle = stringResource(R.string.report_issue_desc),
                 onClick = onReportIssueClick
             )
-        }
     }
 }
 
@@ -254,29 +223,13 @@ private fun AdvancedCard(
     onExportLogsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-    ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Build,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.advanced),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = stringResource(R.string.advanced),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
+        )
 
             SettingsRow(
                 icon = Icons.Default.DeleteForever,
@@ -291,7 +244,6 @@ private fun AdvancedCard(
                 subtitle = stringResource(R.string.export_logs_desc),
                 onClick = onExportLogsClick
             )
-        }
     }
 }
 

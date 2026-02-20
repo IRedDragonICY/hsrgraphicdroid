@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
@@ -69,6 +70,7 @@ fun GraphicsScreen(
     var showSaveBackupDialog by remember { mutableStateOf(false) }
     var showApplyDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
+    var showPendingChangesDialog by remember { mutableStateOf(false) }
     var selectedPreset by remember { mutableStateOf<Int?>(null) }
 
     // Snackbar host
@@ -147,7 +149,7 @@ fun GraphicsScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Pending Changes Banner
@@ -155,32 +157,9 @@ fun GraphicsScreen(
                     item {
                         PendingChangesBanner(
                             changesCount = uiState.pendingChangesCount,
-                            onViewChanges = { /* Show changes dialog */ }
+                            onViewChanges = { showPendingChangesDialog = true }
                         )
                     }
-                }
-
-                // Status Card
-                item {
-                    StatusCard(
-                        status = status,
-                        onLaunchGame = {
-                            mainViewModel.currentPackage()?.let { pkg ->
-                                context.packageManager.getLaunchIntentForPackage(pkg)?.let {
-                                    context.startActivity(it)
-                                }
-                            }
-                        },
-                        onOpenAppInfo = {
-                            mainViewModel.currentPackage()?.let { pkg ->
-                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.parse("package:$pkg")
-                                }
-                                context.startActivity(intent)
-                            }
-                        },
-                        onShowBackups = { showBackupsSheet = true }
-                    )
                 }
 
                 // Master Quality Card
@@ -306,6 +285,31 @@ fun GraphicsScreen(
             }
         )
     }
+
+    // Pending Changes Dialog
+    if (showPendingChangesDialog) {
+        val changes = graphicsViewModel.getPendingChangesDetails()
+        AlertDialog(
+            onDismissRequest = { showPendingChangesDialog = false },
+            title = { Text(stringResource(R.string.view_pending_changes)) },
+            text = {
+                LazyColumn {
+                    items(changes) { change ->
+                        ListItem(
+                            headlineContent = { Text(change.fieldName) },
+                            supportingContent = { Text("${change.gameValue} → ${change.localValue}") },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPendingChangesDialog = false }) {
+                    Text(stringResource(android.R.string.ok))
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -407,16 +411,12 @@ private fun ExtendedSettingsCard(
     onSettingsChange: (GraphicsSettings) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.graphics_settings), style = MaterialTheme.typography.titleMedium)
-            }
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.graphics_settings), style = MaterialTheme.typography.titleLarge)
+        }
 
             Text(
                 text = stringResource(R.string.graphics_settings_desc),
@@ -579,14 +579,27 @@ private fun ExtendedSettingsCard(
                     descriptionRes = R.string.bloom_quality_desc
                 )
 
-                // AA Mode (0-2)
+                // AA Mode (0-2) mapped: 0=Off, 1=FXAA(Game 2), 2=TAA(Game 1)
+                val aaUiValue = when (settings.aaMode) {
+                    1 -> 2f // TAA is on the far right
+                    2 -> 1f // FXAA is in the middle
+                    else -> 0f // Off is on the far left
+                }
+
                 GraphicsSlider(
                     label = stringResource(R.string.anti_aliasing),
-                    value = settings.aaMode.toFloat(),
+                    value = aaUiValue,
                     valueRange = 0f..2f,
                     steps = 1,
                     displayValue = settings.getAAModeName(settings.aaMode),
-                    onValueChange = { onSettingsChange(settings.copy(aaMode = it.toInt())) },
+                    onValueChange = {
+                        val newAaMode = when (it.toInt()) {
+                            1 -> 2 // UI pos 1 -> FXAA (Game 2)
+                            2 -> 1 // UI pos 2 -> TAA (Game 1)
+                            else -> 0 // UI pos 0 -> Off (Game 0)
+                        }
+                        onSettingsChange(settings.copy(aaMode = newAaMode))
+                    },
                     icon = Icons.Default.FilterHdr,
                     description = stringResource(R.string.anti_aliasing_desc),
                     isModified = modifiedFields.contains("aa")
@@ -650,7 +663,6 @@ private fun ExtendedSettingsCard(
                     isModified = modifiedFields.contains("dlss")
                 )
             }
-        }
     }
 }
 
@@ -661,15 +673,11 @@ private fun DisplaySettingsCard(
     onSettingsChange: (GraphicsSettings) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            SectionHeader(
-                title = stringResource(R.string.section_display),
-                subtitle = stringResource(R.string.section_display_desc)
-            )
+    Column(modifier = modifier.fillMaxWidth()) {
+        SectionHeader(
+            title = stringResource(R.string.section_display),
+            subtitle = stringResource(R.string.section_display_desc)
+        )
 
             // Particle Trail (0-3)
             GraphicsSlider(
@@ -733,7 +741,6 @@ private fun DisplaySettingsCard(
                 description = stringResource(R.string.speed_up_open_desc),
                 isModified = modifiedFields.contains("speedUpOpen")
             )
-        }
     }
 }
 
@@ -743,15 +750,11 @@ private fun SettingsSection(
     subtitle: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            SectionHeader(title = title, subtitle = subtitle)
-            Spacer(Modifier.height(12.dp))
-            content()
-        }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        SectionHeader(title = title, subtitle = subtitle)
+        Spacer(Modifier.height(8.dp))
+        content()
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
     }
 }
 

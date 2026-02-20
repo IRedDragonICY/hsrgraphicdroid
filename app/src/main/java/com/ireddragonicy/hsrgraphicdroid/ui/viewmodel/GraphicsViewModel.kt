@@ -85,12 +85,14 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
 
     fun updateSettings(newSettings: GraphicsSettings) {
         val current = _uiState.value.currentSettings
-        val original = _uiState.value.originalSettings
         
         // Track changes
         changeManager.recordChange("settings", current, newSettings, newSettings)
-        
-        // Calculate modified fields
+        updateStateWithSettings(newSettings)
+    }
+
+    private fun updateStateWithSettings(newSettings: GraphicsSettings) {
+        val original = _uiState.value.originalSettings
         val modifiedFields = mutableSetOf<String>()
         original?.let { orig ->
             if (newSettings.fps != orig.fps) modifiedFields.add("fps")
@@ -270,18 +272,18 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
 
     fun undo() {
         changeManager.undo()?.let { previousSettings ->
-            _uiState.update {
-                it.copy(currentSettings = previousSettings)
-            }
+            updateStateWithSettings(previousSettings)
         }
     }
 
     fun redo() {
         changeManager.redo()?.let { nextSettings ->
-            _uiState.update {
-                it.copy(currentSettings = nextSettings)
-            }
+            updateStateWithSettings(nextSettings)
         }
+    }
+
+    fun getPendingChangesDetails(): List<com.ireddragonicy.hsrgraphicdroid.data.SettingChange> {
+        return changeManager.getModifiedFieldsDetails(_uiState.value.currentSettings)
     }
 
     fun saveBackup(name: String) {
