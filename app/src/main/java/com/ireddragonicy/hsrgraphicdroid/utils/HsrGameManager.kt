@@ -1,14 +1,13 @@
 package com.ireddragonicy.hsrgraphicdroid.utils
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
 import com.ireddragonicy.hsrgraphicdroid.data.GamePreferences
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
 import com.topjohnwu.superuser.Shell
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 
 /**
@@ -17,7 +16,6 @@ import java.io.File
  */
 class HsrGameManager(private val context: Context) {
 
-    private val gson = Gson()
     private var cachedPackage: String? = null
     private var cachedPrefsPath: String? = null
 
@@ -34,6 +32,9 @@ class HsrGameManager(private val context: Context) {
 
     val gameVersionName: String
         get() = GamePackage.fromPackageName(installedGamePackage)?.displayName ?: "Unknown"
+
+    val configPath: String?
+        get() = findPrefsPath()
 
     fun readCurrentSettings(): GraphicsSettings? {
         if (!isRootAvailable) {
@@ -323,23 +324,48 @@ class HsrGameManager(private val context: Context) {
     // region Backup Management
 
     fun saveBackup(name: String, settings: GraphicsSettings): Boolean = runCatching {
-        val backups = loadBackups().toMutableList()
-        backups.add(BackupData(System.currentTimeMillis(), settings, name))
-        backupFile.writeText(gson.toJson(backups))
+        val backups = loadBackupsAsJsonArray()
+        val entry = JSONObject()
+        entry.put("timestamp", System.currentTimeMillis())
+        entry.put("name", name)
+        entry.put("settings", GraphicsSettings.toEncodedString(settings))
+        backups.put(entry)
+        backupFile.writeText(backups.toString())
         true
     }.getOrDefault(false)
 
     fun loadBackups(): List<BackupData> = runCatching {
         if (!backupFile.exists()) return emptyList()
-        val type = object : TypeToken<List<BackupData>>() {}.type
-        gson.fromJson<List<BackupData>>(backupFile.readText(), type)
+        val arr = JSONArray(backupFile.readText())
+        val result = mutableListOf<BackupData>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val timestamp = obj.optLong("timestamp", 0L)
+            val bName = obj.optString("name", "")
+            val settingsEncoded = obj.optString("settings", "")
+            val settings = GraphicsSettings.fromEncodedString(settingsEncoded) ?: continue
+            result.add(BackupData(timestamp, settings, bName))
+        }
+        result
     }.getOrDefault(emptyList())
 
     fun deleteBackup(backup: BackupData): Boolean = runCatching {
-        val backups = loadBackups().filterNot { it.timestamp == backup.timestamp }
-        backupFile.writeText(gson.toJson(backups))
+        val arr = loadBackupsAsJsonArray()
+        val filtered = JSONArray()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            if (obj.optLong("timestamp", 0L) != backup.timestamp) {
+                filtered.put(obj)
+            }
+        }
+        backupFile.writeText(filtered.toString())
         true
     }.getOrDefault(false)
+
+    private fun loadBackupsAsJsonArray(): JSONArray {
+        if (!backupFile.exists()) return JSONArray()
+        return runCatching { JSONArray(backupFile.readText()) }.getOrDefault(JSONArray())
+    }
 
     // endregion
 
@@ -423,9 +449,9 @@ class HsrGameManager(private val context: Context) {
             """<int name="GraphicsSettings_GraphicsQuality" value="(\d+)" />""".toRegex()
 
         private val PREFS_PATH_TEMPLATES = listOf(
-            "/data/data/%s/shared_prefs/%s",
+            "/data_mirror/data_ce/null/0/%s/shared_prefs/%s", // Modern Android bypasses mount namespace isolation
             "/data/user/0/%s/shared_prefs/%s",
-            "/data_mirror/data_ce/null/0/%s/shared_prefs/%s",
+            "/data/data/%s/shared_prefs/%s",
             "/data/user_de/0/%s/shared_prefs/%s"
         )
     }

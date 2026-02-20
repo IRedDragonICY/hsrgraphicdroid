@@ -1,5 +1,8 @@
 package com.ireddragonicy.hsrgraphicdroid.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,19 +12,20 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
 import com.ireddragonicy.hsrgraphicdroid.ui.components.*
-import com.ireddragonicy.hsrgraphicdroid.ui.navigation.ActionBarConfig
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GraphicsViewModel
-import com.ireddragonicy.hsrgraphicdroid.data.SettingChange
+import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
 
 // Data class for slider configuration to reduce redundancy
 private data class SliderConfig(
@@ -49,12 +53,14 @@ private data class SwitchConfig(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GraphicsScreen(
+    mainViewModel: MainViewModel,
     graphicsViewModel: GraphicsViewModel,
-    useExternalBottomBar: Boolean = false,
-    onLaunchGame: () -> Unit = {},
-    onRegisterActionBar: (ActionBarConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    
+    val status by mainViewModel.status.collectAsStateWithLifecycle()
     val uiState by graphicsViewModel.uiState.collectAsStateWithLifecycle()
     val canUndo by graphicsViewModel.canUndo.collectAsStateWithLifecycle()
     val canRedo by graphicsViewModel.canRedo.collectAsStateWithLifecycle()
@@ -63,12 +69,10 @@ fun GraphicsScreen(
     var showSaveBackupDialog by remember { mutableStateOf(false) }
     var showApplyDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
-    var showPendingDialog by remember { mutableStateOf(false) }
     var selectedPreset by remember { mutableStateOf<Int?>(null) }
 
     // Snackbar host
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     // Handle messages
     LaunchedEffect(uiState.errorMessage, uiState.successMessage) {
@@ -77,27 +81,9 @@ fun GraphicsScreen(
             graphicsViewModel.clearMessage()
         }
         uiState.successMessage?.let { message ->
-            val result = snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = context.getString(R.string.launch_game)
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                onLaunchGame()
-            }
+            snackbarHostState.showSnackbar(message)
             graphicsViewModel.clearMessage()
         }
-    }
-
-    LaunchedEffect(uiState.hasChanges, uiState.pendingChangesCount) {
-        onRegisterActionBar(
-            ActionBarConfig(
-                hasChanges = uiState.hasChanges,
-                pendingChangesCount = uiState.pendingChangesCount,
-                onOpenBackups = { showBackupsSheet = true },
-                onSaveBackup = { showSaveBackupDialog = true },
-                onApply = { showApplyDialog = true }
-            )
-        )
     }
 
     Scaffold(
@@ -143,6 +129,14 @@ fun GraphicsScreen(
                 }
             )
         },
+        bottomBar = {
+            GraphicsBottomBar(
+                hasChanges = uiState.hasChanges,
+                pendingChangesCount = uiState.pendingChangesCount,
+                onSaveBackup = { showSaveBackupDialog = true },
+                onApply = { showApplyDialog = true }
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = modifier
     ) { paddingValues ->
@@ -161,9 +155,32 @@ fun GraphicsScreen(
                     item {
                         PendingChangesBanner(
                             changesCount = uiState.pendingChangesCount,
-                            onViewChanges = { showPendingDialog = true }
+                            onViewChanges = { /* Show changes dialog */ }
                         )
                     }
+                }
+
+                // Status Card
+                item {
+                    StatusCard(
+                        status = status,
+                        onLaunchGame = {
+                            mainViewModel.currentPackage()?.let { pkg ->
+                                context.packageManager.getLaunchIntentForPackage(pkg)?.let {
+                                    context.startActivity(it)
+                                }
+                            }
+                        },
+                        onOpenAppInfo = {
+                            mainViewModel.currentPackage()?.let { pkg ->
+                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = Uri.parse("package:$pkg")
+                                }
+                                context.startActivity(intent)
+                            }
+                        },
+                        onShowBackups = { showBackupsSheet = true }
+                    )
                 }
 
                 // Master Quality Card
@@ -265,46 +282,6 @@ fun GraphicsScreen(
         )
     }
 
-    // Pending Changes Dialog
-    if (showPendingDialog) {
-        val changes: List<SettingChange> = graphicsViewModel.getPendingChanges()
-        AlertDialog(
-            onDismissRequest = { showPendingDialog = false },
-            title = { Text(stringResource(R.string.pending_changes_title, changes.size)) },
-            text = {
-                if (changes.isEmpty()) {
-                    Text(stringResource(R.string.no_changes_to_apply))
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        changes.forEach { change ->
-                            Text(
-                                text = change.getDisplayText(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        graphicsViewModel.applySettings()
-                        showPendingDialog = false
-                    },
-                    enabled = changes.isNotEmpty()
-                ) {
-                    Text(stringResource(R.string.apply_settings_now))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showPendingDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
-    }
-
     // Reset Dialog
     if (showResetDialog) {
         AlertDialog(
@@ -332,6 +309,96 @@ fun GraphicsScreen(
 }
 
 @Composable
+private fun StatusCard(
+    status: com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.StatusState,
+    onLaunchGame: () -> Unit,
+    onOpenAppInfo: () -> Unit,
+    onShowBackups: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.system_status),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            StatusChip(
+                text = if (status.isChecking) stringResource(R.string.checking)
+                else if (status.isRootGranted) stringResource(R.string.root_granted)
+                else stringResource(R.string.root_check_failed),
+                isSuccess = status.isRootGranted,
+                isLoading = status.isChecking
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            StatusChip(
+                text = if (status.isChecking) stringResource(R.string.checking)
+                else if (status.isGameInstalled) {
+                    stringResource(R.string.game_found) + (status.gameVersion?.let { " ($it)" } ?: "")
+                } else stringResource(R.string.game_not_found),
+                isSuccess = status.isGameInstalled,
+                isLoading = status.isChecking
+            )
+
+            if (status.isGameInstalled && !status.isChecking) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilledTonalButton(
+                        onClick = onLaunchGame,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.launch_game))
+                    }
+
+                    OutlinedButton(
+                        onClick = onOpenAppInfo,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.Info, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.app_info))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = onShowBackups,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Backup, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.saved_backups))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ExtendedSettingsCard(
     settings: GraphicsSettings,
     modifiedFields: Set<String>,
@@ -342,10 +409,7 @@ private fun ExtendedSettingsCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+        shape = MaterialTheme.shapes.large
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -530,21 +594,6 @@ private fun ExtendedSettingsCard(
 
                 Spacer(Modifier.height(8.dp))
 
-                // Particle Trail (0-3)
-                GraphicsSlider(
-                    label = stringResource(R.string.particle_trail),
-                    value = settings.particleTrailSmoothness.toFloat(),
-                    valueRange = 0f..3f,
-                    steps = 2,
-                    displayValue = settings.getParticleTrailName(settings.particleTrailSmoothness),
-                    onValueChange = { onSettingsChange(settings.copy(particleTrailSmoothness = it.toInt())) },
-                    icon = Icons.Default.AutoAwesome,
-                    description = stringResource(R.string.particle_trail_desc),
-                    isModified = modifiedFields.contains("particleTrail")
-                )
-
-                Spacer(Modifier.height(8.dp))
-
                 // Self Shadow (0-2)
                 GraphicsSlider(
                     label = stringResource(R.string.self_shadow),
@@ -603,7 +652,6 @@ private fun ExtendedSettingsCard(
             }
         }
     }
-
 }
 
 @Composable
@@ -615,10 +663,7 @@ private fun DisplaySettingsCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+        shape = MaterialTheme.shapes.large
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionHeader(
@@ -626,7 +671,20 @@ private fun DisplaySettingsCard(
                 subtitle = stringResource(R.string.section_display_desc)
             )
 
-            Spacer(Modifier.height(12.dp))
+            // Particle Trail (0-3)
+            GraphicsSlider(
+                label = stringResource(R.string.particle_trail),
+                value = settings.particleTrailSmoothness.toFloat(),
+                valueRange = 0f..3f,
+                steps = 2,
+                displayValue = settings.getParticleTrailName(settings.particleTrailSmoothness),
+                onValueChange = { onSettingsChange(settings.copy(particleTrailSmoothness = it.toInt())) },
+                icon = Icons.Default.AutoAwesome,
+                description = stringResource(R.string.particle_trail_desc),
+                isModified = modifiedFields.contains("particleTrail")
+            )
+
+            Spacer(Modifier.height(16.dp))
 
             // Resolution Display (Read-only)
             Row(
@@ -685,14 +743,15 @@ private fun SettingsSection(
     subtitle: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium
     ) {
-        SectionHeader(title = title, subtitle = subtitle)
-        Spacer(Modifier.height(12.dp))
-        content()
+        Column(modifier = Modifier.padding(12.dp)) {
+            SectionHeader(title = title, subtitle = subtitle)
+            Spacer(Modifier.height(12.dp))
+            content()
+        }
     }
 }
 
@@ -718,6 +777,54 @@ private fun QualitySliderItem(
         isModified = isModified
     )
     Spacer(Modifier.height(8.dp))
+}
+
+@Composable
+private fun GraphicsBottomBar(
+    hasChanges: Boolean,
+    pendingChangesCount: Int,
+    onSaveBackup: () -> Unit,
+    onApply: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onSaveBackup,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Backup, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.save_as_backup))
+            }
+
+            Button(
+                onClick = onApply,
+                modifier = Modifier.weight(1f),
+                colors = if (hasChanges) ButtonDefaults.buttonColors() 
+                        else ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+            ) {
+                Icon(Icons.Default.Check, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    if (hasChanges) stringResource(R.string.apply_pending_changes, pendingChangesCount)
+                    else stringResource(R.string.apply_settings_now)
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

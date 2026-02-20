@@ -1,115 +1,82 @@
 package com.ireddragonicy.hsrgraphicdroid.data
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.annotations.Expose
-import com.google.gson.annotations.SerializedName
+import org.json.JSONObject
 import java.net.URLDecoder
 import java.net.URLEncoder
 
 data class GraphicsSettings(
-    @Expose @SerializedName("FPS")
     var fps: Int = 60,
-    
-    @Expose @SerializedName("EnableVSync")
     var enableVSync: Boolean = true,
-    
-    @Expose @SerializedName("RenderScale")
     var renderScale: Double = 1.0,
-    
-    @Expose @SerializedName("ResolutionQuality")
     var resolutionQuality: Int = 3,
-    
-    @Expose @SerializedName("ShadowQuality")
     var shadowQuality: Int = 3,
-    
-    @Expose @SerializedName("LightQuality")
     var lightQuality: Int = 3,
-    
-    @Expose @SerializedName("CharacterQuality")
     var characterQuality: Int = 3,
-    
-    @Expose @SerializedName("EnvDetailQuality")
     var envDetailQuality: Int = 3,
-    
-    @Expose @SerializedName("ReflectionQuality")
     var reflectionQuality: Int = 3,
-    
-    @Expose @SerializedName("SFXQuality")
     var sfxQuality: Int = 3,
-    
-    @Expose @SerializedName("BloomQuality")
     var bloomQuality: Int = 3,
-    
-    @Expose @SerializedName("AAMode")
     var aaMode: Int = 1,
-    
-    @Expose @SerializedName("EnableMetalFXSU")
     var enableMetalFXSU: Boolean = false,
-    
-    @Expose @SerializedName("EnableHalfResTransparent")
     var enableHalfResTransparent: Boolean = false,
-    
-    @Expose @SerializedName("EnableSelfShadow")
     var enableSelfShadow: Int = 1,
-    
-    @Expose @SerializedName("DlssQuality")
     var dlssQuality: Int = 0,
-    
-    @Expose @SerializedName("ParticleTrailSmoothness")
     var particleTrailSmoothness: Int = 0,
-    
-    @SerializedName("Screenmanager Resolution Width")
     var screenWidth: Int = 1920,
-    
-    @SerializedName("Screenmanager Resolution Height")
     var screenHeight: Int = 1080,
-    
-    @SerializedName("GraphicsSettings_GraphicsQuality")
     var graphicsQuality: Int = 3,
-    
-    @SerializedName("Screenmanager Fullscreen mode")
     var fullscreenMode: Int = 1,
-    
-    @SerializedName("User_800754040_SpeedUpOpen")
     var speedUpOpen: Int = 1
 ) {
     companion object {
-        private val gson = Gson()
-        private val modelGson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
-        
         fun fromEncodedString(encoded: String): GraphicsSettings? {
             return try {
                 val decoded = URLDecoder.decode(encoded, "UTF-8")
-                modelGson.fromJson(decoded, GraphicsSettings::class.java)
+                val json = JSONObject(decoded)
+                GraphicsSettings(
+                    fps = json.optInt("FPS", 60),
+                    enableVSync = json.optBoolean("EnableVSync", true),
+                    renderScale = json.optDouble("RenderScale", 1.0),
+                    resolutionQuality = json.optInt("ResolutionQuality", 3),
+                    shadowQuality = json.optInt("ShadowQuality", 3),
+                    lightQuality = json.optInt("LightQuality", 3),
+                    characterQuality = json.optInt("CharacterQuality", 3),
+                    envDetailQuality = json.optInt("EnvDetailQuality", 3),
+                    reflectionQuality = json.optInt("ReflectionQuality", 3),
+                    sfxQuality = json.optInt("SFXQuality", 3),
+                    bloomQuality = json.optInt("BloomQuality", 3),
+                    aaMode = json.optInt("AAMode", 1),
+                    enableMetalFXSU = json.optBoolean("EnableMetalFXSU", false),
+                    enableHalfResTransparent = json.optBoolean("EnableHalfResTransparent", false),
+                    enableSelfShadow = json.optInt("EnableSelfShadow", 1),
+                    dlssQuality = json.optInt("DlssQuality", 0),
+                    particleTrailSmoothness = json.optInt("ParticleTrailSmoothness", 0)
+                )
             } catch (e: Exception) {
                 null
             }
         }
         
         fun toEncodedString(settings: GraphicsSettings): String {
-            // Use LinkedHashMap to preserve order exactly as the game expects
-            val map = LinkedHashMap<String, Any>()
-            map["FPS"] = settings.fps
-            map["EnableVSync"] = settings.enableVSync
-            map["RenderScale"] = settings.renderScale
-            map["ResolutionQuality"] = settings.resolutionQuality
-            map["ShadowQuality"] = settings.shadowQuality
-            map["LightQuality"] = settings.lightQuality
-            map["CharacterQuality"] = settings.characterQuality
-            map["EnvDetailQuality"] = settings.envDetailQuality
-            map["ReflectionQuality"] = settings.reflectionQuality
-            map["SFXQuality"] = settings.sfxQuality
-            map["BloomQuality"] = settings.bloomQuality
-            map["AAMode"] = settings.aaMode
-            map["EnableMetalFXSU"] = settings.enableMetalFXSU
-            map["EnableHalfResTransparent"] = settings.enableHalfResTransparent
-            map["EnableSelfShadow"] = settings.enableSelfShadow
-            map["DlssQuality"] = settings.dlssQuality
-            map["ParticleTrailSmoothness"] = settings.particleTrailSmoothness
-            
-            val json = gson.toJson(map)
-            return URLEncoder.encode(json, "UTF-8")
+            val json = JSONObject()
+            json.put("FPS", settings.fps)
+            json.put("EnableVSync", settings.enableVSync)
+            json.put("RenderScale", settings.renderScale)
+            json.put("ResolutionQuality", settings.resolutionQuality)
+            json.put("ShadowQuality", settings.shadowQuality)
+            json.put("LightQuality", settings.lightQuality)
+            json.put("CharacterQuality", settings.characterQuality)
+            json.put("EnvDetailQuality", settings.envDetailQuality)
+            json.put("ReflectionQuality", settings.reflectionQuality)
+            json.put("SFXQuality", settings.sfxQuality)
+            json.put("BloomQuality", settings.bloomQuality)
+            json.put("AAMode", settings.aaMode)
+            json.put("EnableMetalFXSU", settings.enableMetalFXSU)
+            json.put("EnableHalfResTransparent", settings.enableHalfResTransparent)
+            json.put("EnableSelfShadow", settings.enableSelfShadow)
+            json.put("DlssQuality", settings.dlssQuality)
+            json.put("ParticleTrailSmoothness", settings.particleTrailSmoothness)
+            return URLEncoder.encode(json.toString(), "UTF-8")
         }
     }
     

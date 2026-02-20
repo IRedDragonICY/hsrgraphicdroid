@@ -1,7 +1,10 @@
 package com.ireddragonicy.hsrgraphicdroid.ui.viewmodel
 
 import android.app.Application
-import androidx.appcompat.app.AppCompatDelegate
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.app.LocaleManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ireddragonicy.hsrgraphicdroid.ui.AppLanguage
@@ -59,14 +62,33 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             preferenceManager.setTheme(theme.key)
         }
-        AppCompatDelegate.setDefaultNightMode(theme.mode)
+        // Compose reactivity handles dark/light mode via uiState.isDarkMode
     }
 
     fun updateLanguage(language: AppLanguage) {
         viewModelScope.launch {
             preferenceManager.setLanguage(language.key)
         }
-        AppCompatDelegate.setApplicationLocales(AppLanguage.toLocaleList(language))
+        applyLanguage(getApplication(), language)
+    }
+
+    private fun applyLanguage(context: Context, language: AppLanguage) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val localeManager = context.getSystemService(LocaleManager::class.java)
+            val localeList = AppLanguage.toLocaleList(language).unwrap() as android.os.LocaleList
+            localeManager.applicationLocales = localeList
+        } else {
+            val locale = if (language == AppLanguage.SYSTEM || language.tag.isEmpty()) {
+                java.util.Locale.getDefault()
+            } else {
+                java.util.Locale(language.tag)
+            }
+            java.util.Locale.setDefault(locale)
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+        }
     }
 
     // Compose UI helpers
@@ -85,5 +107,3 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         updateLanguage(language)
     }
 }
-
-

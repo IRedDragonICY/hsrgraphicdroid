@@ -29,7 +29,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:configChanges="locale|layoutDirection"
-            android:theme="@style/Theme.HsrGraphicDroid">
+            android:theme="@style/Theme.HsrGraphicDroid.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

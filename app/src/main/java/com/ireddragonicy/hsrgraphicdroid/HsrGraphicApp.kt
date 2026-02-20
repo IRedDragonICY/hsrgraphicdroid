@@ -2,7 +2,6 @@ package com.ireddragonicy.hsrgraphicdroid
 
 import android.app.Application
 import android.util.Log
-import com.google.android.material.color.DynamicColors
 import com.topjohnwu.superuser.Shell
 
 class HsrGraphicApp : Application() {
@@ -25,7 +24,7 @@ class HsrGraphicApp : Application() {
     
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this)
+        // Dynamic colors are handled by Compose's dynamicColorScheme() in HsrGraphicTheme
         
         // Pre-initialize shell in background to avoid UI delay
         Shell.getShell { shell ->

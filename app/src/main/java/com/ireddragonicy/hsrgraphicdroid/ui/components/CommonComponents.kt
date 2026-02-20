@@ -11,8 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -470,30 +468,6 @@ fun SettingItem(
     }
 }
 
-// ==================== Action Bottom Bar ====================
-
-@Composable
-fun ActionBottomBar(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surfaceContainer
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            content()
-        }
-    }
-}
-
 // ==================== Preset Button Row ====================
 
 @Composable
@@ -548,11 +522,16 @@ fun QualitySliderCard(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        tonalElevation = 2.dp,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        border = CardDefaults.outlinedCardBorder().copy(
+            width = 2.dp,
+            brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
+        )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -564,20 +543,20 @@ fun QualitySliderCard(
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(28.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = displayValue,
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -585,7 +564,7 @@ fun QualitySliderCard(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                 modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
             )
 
@@ -595,9 +574,9 @@ fun QualitySliderCard(
                 valueRange = 0f..5f,
                 steps = 4,
                 colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                    thumbColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    activeTrackColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    inactiveTrackColor = MaterialTheme.colorScheme.primary
                 )
             )
         }

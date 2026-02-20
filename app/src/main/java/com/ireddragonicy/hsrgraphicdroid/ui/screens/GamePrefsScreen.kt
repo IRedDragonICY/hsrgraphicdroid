@@ -6,21 +6,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.GamePreferences
 import com.ireddragonicy.hsrgraphicdroid.ui.components.*
-import com.ireddragonicy.hsrgraphicdroid.ui.navigation.ActionBarConfig
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GamePrefsViewModel
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.MainViewModel
 
@@ -29,9 +25,6 @@ import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.MainViewModel
 fun GamePrefsScreen(
     mainViewModel: MainViewModel,
     gamePrefsViewModel: GamePrefsViewModel,
-    useExternalBottomBar: Boolean = false,
-    onLaunchGame: () -> Unit = {},
-    onRegisterActionBar: (ActionBarConfig) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val status by mainViewModel.status.collectAsStateWithLifecycle()
@@ -41,7 +34,6 @@ fun GamePrefsScreen(
     var showApplyDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     LaunchedEffect(uiState.errorMessage, uiState.successMessage) {
         uiState.errorMessage?.let { message ->
@@ -49,27 +41,9 @@ fun GamePrefsScreen(
             gamePrefsViewModel.clearMessage()
         }
         uiState.successMessage?.let { message ->
-            val result = snackbarHostState.showSnackbar(
-                message = message,
-                actionLabel = context.getString(R.string.launch_game)
-            )
-            if (result == SnackbarResult.ActionPerformed) {
-                onLaunchGame()
-            }
+            snackbarHostState.showSnackbar(message)
             gamePrefsViewModel.clearMessage()
         }
-    }
-
-    LaunchedEffect(uiState.hasChanges) {
-        onRegisterActionBar(
-            ActionBarConfig(
-                hasChanges = uiState.hasChanges,
-                pendingChangesCount = 0,
-                onOpenBackups = { /* reserved */ },
-                onSaveBackup = { showResetDialog = true },
-                onApply = { showApplyDialog = true }
-            )
-        )
     }
 
     Scaffold(
@@ -89,6 +63,13 @@ fun GamePrefsScreen(
                         )
                     }
                 }
+            )
+        },
+        bottomBar = {
+            GamePrefsBottomBar(
+                hasChanges = uiState.hasChanges,
+                onReset = { showResetDialog = true },
+                onApply = { showApplyDialog = true }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -203,10 +184,7 @@ private fun LanguageSettingsCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+        shape = MaterialTheme.shapes.large
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -290,10 +268,7 @@ private fun BlacklistCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
+        shape = MaterialTheme.shapes.large
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -428,3 +403,46 @@ private fun AddBlacklistDialog(
     )
 }
 
+@Composable
+private fun GamePrefsBottomBar(
+    hasChanges: Boolean,
+    onReset: () -> Unit,
+    onApply: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shadowElevation = 8.dp,
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onReset,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.Refresh, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.reset))
+            }
+
+            Button(
+                onClick = onApply,
+                modifier = Modifier.weight(1f),
+                colors = if (hasChanges) ButtonDefaults.buttonColors()
+                else ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Icon(Icons.Default.Check, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.apply))
+            }
+        }
+    }
+}

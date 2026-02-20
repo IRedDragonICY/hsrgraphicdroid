@@ -1,14 +1,14 @@
 package com.ireddragonicy.hsrgraphicdroid.ui.viewmodel
 
 import android.app.Application
-import android.app.usage.StorageStats
+import android.content.Context
+import android.content.res.Configuration
 import android.app.usage.StorageStatsManager
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.UserHandle
 import android.os.storage.StorageManager
+import android.app.LocaleManager
 import com.topjohnwu.superuser.Shell
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
@@ -33,6 +33,7 @@ data class StatusState(
     val isGameInstalled: Boolean = false,
     val gameVersion: String? = null,
     val gamePackage: String? = null,
+    val configPath: String? = null,
     val isChecking: Boolean = true
 )
 
@@ -77,12 +78,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             null
         }
+        val path = if (installed) {
+            withContext(Dispatchers.IO) { gameManager.configPath }
+        } else {
+            null
+        }
 
         _status.value = StatusState(
             isRootGranted = isRoot,
             isGameInstalled = installed,
             gameVersion = version,
             gamePackage = installedPackage,
+            configPath = path,
             isChecking = false
         )
     }
@@ -132,21 +139,39 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             preferenceManager.setTheme(theme.key)
         }
-        AppCompatDelegate.setDefaultNightMode(theme.mode)
+        // Compose reactivity handles dark/light mode via SettingsViewModel.uiState.isDarkMode
     }
 
     fun updateLanguage(language: AppLanguage) {
         viewModelScope.launch {
             preferenceManager.setLanguage(language.key)
         }
-        AppCompatDelegate.setApplicationLocales(AppLanguage.toLocaleList(language))
+        applyLanguage(getApplication(), language)
     }
 
     suspend fun bootstrapAppearance() {
-        val theme = AppTheme.fromKey(preferenceManager.getTheme().first())
         val language = AppLanguage.fromKey(preferenceManager.getLanguage().first())
-        AppCompatDelegate.setDefaultNightMode(theme.mode)
-        AppCompatDelegate.setApplicationLocales(AppLanguage.toLocaleList(language))
+        // Theme is handled reactively by Compose via SettingsViewModel.uiState.isDarkMode
+        applyLanguage(getApplication(), language)
+    }
+
+    private fun applyLanguage(context: Context, language: AppLanguage) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val localeManager = context.getSystemService(LocaleManager::class.java)
+            val localeList = AppLanguage.toLocaleList(language).unwrap() as android.os.LocaleList
+            localeManager.applicationLocales = localeList
+        } else {
+            val locale = if (language == AppLanguage.SYSTEM || language.tag.isEmpty()) {
+                java.util.Locale.getDefault()
+            } else {
+                java.util.Locale(language.tag)
+            }
+            java.util.Locale.setDefault(locale)
+            val config = Configuration(context.resources.configuration)
+            config.setLocale(locale)
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+        }
     }
 
     fun currentPackage(): String? = gameManager.installedGamePackage
@@ -212,4 +237,3 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         return dataBytes to cacheBytes
     }
 }
-

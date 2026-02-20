@@ -1,12 +1,13 @@
 package com.ireddragonicy.hsrgraphicdroid.ui
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ireddragonicy.hsrgraphicdroid.ui.navigation.MainNavigation
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
  * This is the only Activity in the app. All UI is built using
  * Compose with Navigation Compose for screen navigation.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     // ViewModels - using activity-level scope for shared state
     private val mainViewModel: MainViewModel by viewModels()
@@ -32,6 +33,9 @@ class MainActivity : AppCompatActivity() {
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen before super.onCreate
+        installSplashScreen()
+        
         super.onCreate(savedInstanceState)
         
         // Enable edge-to-edge display

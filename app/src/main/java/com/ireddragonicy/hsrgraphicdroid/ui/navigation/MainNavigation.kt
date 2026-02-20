@@ -15,24 +15,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import com.ireddragonicy.hsrgraphicdroid.R
-import com.ireddragonicy.hsrgraphicdroid.ui.components.ActionBottomBar
 import com.ireddragonicy.hsrgraphicdroid.ui.screens.*
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GamePrefsViewModel
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GraphicsViewModel
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.MainViewModel
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
-
-data class ActionBarConfig(
-    val hasChanges: Boolean = false,
-    val pendingChangesCount: Int = 0,
-    val onOpenBackups: () -> Unit = {},
-    val onSaveBackup: () -> Unit = {},
-    val onApply: () -> Unit = {}
-)
 
 /**
  * Navigation routes for the app
@@ -97,21 +86,6 @@ fun MainNavigation(
         pageCount = { bottomNavItems.size }
     )
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    var graphicsActionBarConfig by remember { mutableStateOf(ActionBarConfig()) }
-    var gamePrefsActionBarConfig by remember { mutableStateOf(ActionBarConfig()) }
-
-    val playGame: () -> Unit = remember {
-        {
-            val pkg = mainViewModel.currentPackage()
-            if (pkg != null) {
-                context.packageManager.getLaunchIntentForPackage(pkg)?.let {
-                    context.startActivity(it)
-                }
-            }
-        }
-    }
 
     // Pre-cache all screens to prevent lag on first navigation
     val screens = remember {
@@ -145,19 +119,14 @@ fun MainNavigation(
             },
             @Composable {
                 GraphicsScreen(
-                    graphicsViewModel = graphicsViewModel,
-                    useExternalBottomBar = true,
-                    onRegisterActionBar = { config -> graphicsActionBarConfig = config },
-                    onLaunchGame = playGame
+                    mainViewModel = mainViewModel,
+                    graphicsViewModel = graphicsViewModel
                 )
             },
             @Composable {
                 GamePrefsScreen(
                     mainViewModel = mainViewModel,
-                    gamePrefsViewModel = gamePrefsViewModel,
-                    useExternalBottomBar = true,
-                    onRegisterActionBar = { config -> gamePrefsActionBarConfig = config },
-                    onLaunchGame = playGame
+                    gamePrefsViewModel = gamePrefsViewModel
                 )
             },
             @Composable {
@@ -170,59 +139,21 @@ fun MainNavigation(
 
     Scaffold(
         bottomBar = {
-            Column {
-                if (pagerState.currentPage == 1 || pagerState.currentPage == 2) {
-                    val config = if (pagerState.currentPage == 1) graphicsActionBarConfig else gamePrefsActionBarConfig
-                    ActionBottomBar {
-                        IconButton(onClick = config.onOpenBackups) {
-                            Icon(Icons.Outlined.Visibility, null, Modifier.size(20.dp))
-                        }
-                        OutlinedButton(
-                            onClick = config.onSaveBackup,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Outlined.SaveAlt, null, Modifier.size(18.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.save_as_backup))
-                        }
-                        Button(
-                            onClick = config.onApply,
-                            modifier = Modifier.weight(1f),
-                            colors = if (config.hasChanges) ButtonDefaults.buttonColors()
-                            else ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            AppBottomNavigationBar(
+                selectedIndex = pagerState.currentPage,
+                onItemSelected = { index ->
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(
+                            page = index,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMediumLow
                             )
-                        ) {
-                            Icon(Icons.Outlined.Check, null, Modifier.size(18.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                if (config.hasChanges && config.pendingChangesCount > 0)
-                                    stringResource(R.string.apply_pending_changes, config.pendingChangesCount)
-                                else stringResource(R.string.apply_settings_now)
-                            )
-                        }
+                        )
                     }
                 }
-                AppBottomNavigationBar(
-                    selectedIndex = pagerState.currentPage,
-                    onItemSelected = { index ->
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(
-                                page = index,
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
-                                )
-                            )
-                        }
-                    }
-                )
-            }
+            )
         },
-        contentWindowInsets = WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-        ),
         modifier = modifier
     ) { innerPadding ->
         HorizontalPager(

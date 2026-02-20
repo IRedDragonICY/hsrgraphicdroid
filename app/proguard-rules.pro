@@ -90,31 +90,10 @@
 -keep interface com.topjohnwu.superuser.** { *; }
 -keepclassmembers class * extends com.topjohnwu.superuser.Shell$Initializer { *; }
 
-# Gson - minimal keep (only what's needed for serialization)
--keep,allowobfuscation class com.google.gson.** { *; }
--keepclassmembers,allowobfuscation class * {
-    @com.google.gson.annotations.SerializedName <fields>;
-}
-
-# Keep ONLY the fields in data classes, allow obfuscation of class names
--keepclassmembers class com.ireddragonicy.hsrgraphicdroid.model.** {
-    <fields>;
-}
--keepclassmembers class com.ireddragonicy.hsrgraphicdroid.data.** {
-    <fields>;
-}
-
 # DataStore - minimal
 -keep class androidx.datastore.preferences.** { *; }
 
 # ==================== ANDROID RULES (MINIMAL) ====================
-
-# ViewBinding - minimal
--keep class * implements androidx.viewbinding.ViewBinding {
-    public static *** inflate(android.view.LayoutInflater);
-    public static *** inflate(android.view.LayoutInflater, android.view.ViewGroup, boolean);
-    public *** getRoot();
-}
 
 # Remove unused resources aggressively
 -dontwarn org.xmlpull.**

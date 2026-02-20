@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.ireddragonicy.hsrgraphicdroid.data.BackupData
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
 import com.ireddragonicy.hsrgraphicdroid.data.SettingsChangeManager
-import com.ireddragonicy.hsrgraphicdroid.data.SettingChange
 import com.ireddragonicy.hsrgraphicdroid.utils.HsrGameManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -72,10 +71,6 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
                     )
                 }
             }
-
-    fun getPendingChanges(): List<SettingChange> {
-        return changeManager.getModifiedFieldsDetails(_uiState.value.currentSettings)
-    }
         }
     }
 
@@ -367,9 +362,5 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
 
     suspend fun getPrefsContent(): String? = withContext(Dispatchers.IO) {
         gameManager.getPrefsContent()
-    }
-
-    fun getPendingChanges(): List<SettingChange> {
-        return changeManager.getModifiedFieldsDetails(_uiState.value.currentSettings)
     }
 }

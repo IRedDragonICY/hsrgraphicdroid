@@ -6,23 +6,8 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Apps
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Memory
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.AspectRatio
-import androidx.compose.material.icons.outlined.CreditCard
-import androidx.compose.material.icons.outlined.Coffee
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.VideogameAsset
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,184 +49,94 @@ fun HomeScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .windowInsetsPadding(
-                WindowInsets.safeDrawing.only(
-                    WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-                )
-            )
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            tonalElevation = 4.dp,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
+        // Header Card
+        InfoCard(
+            title = stringResource(R.string.app_name),
+            subtitle = stringResource(R.string.quick_actions)
         ) {
-            Column(
-                modifier = Modifier.padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = stringResource(R.string.about_description),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
             Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                    StatusPill(
-                        icon = Icons.Outlined.Security,
-                        text = when {
-                            status.isChecking -> stringResource(R.string.checking)
-                            status.isRootGranted -> stringResource(R.string.root_granted)
-                            else -> stringResource(R.string.root_not_granted)
-                        },
-                        type = if (status.isChecking) PillType.Loading else if (status.isRootGranted) PillType.Success else PillType.Warning
+                StatusChip(
+                    text = if (status.isChecking) stringResource(R.string.checking)
+                    else if (status.isRootGranted) stringResource(R.string.root_granted)
+                    else stringResource(R.string.root_not_granted),
+                    isSuccess = status.isRootGranted,
+                    isLoading = status.isChecking
                 )
-                    StatusPill(
-                        icon = Icons.Outlined.VideogameAsset,
-                        text = when {
-                            status.isChecking -> stringResource(R.string.checking)
-                            status.isGameInstalled -> stringResource(R.string.game_found)
-                            else -> stringResource(R.string.game_not_found)
-                        },
-                        type = if (status.isChecking) PillType.Loading else if (status.isGameInstalled) PillType.Success else PillType.Warning
-                    )
-                }
+                StatusChip(
+                    text = if (status.isChecking) stringResource(R.string.checking)
+                    else if (status.isGameInstalled) stringResource(R.string.game_found)
+                    else stringResource(R.string.game_not_found),
+                    isSuccess = status.isGameInstalled,
+                    isLoading = status.isChecking
+                )
+            }
 
-                Divider()
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Game Info
             status.gameVersion?.let { version ->
                 Text(
                     text = "Version: $version",
-                                style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
+
             gameInfo?.let { info ->
                 info.apkName?.let { apk ->
                     Text(
                         text = "APK: $apk",
                         style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
+                
                 if (info.dataBytes != null && info.cacheBytes != null) {
                     Text(
                         text = "Data: ${formatBytes(info.dataBytes)} • Cache: ${formatBytes(info.cacheBytes)}",
                         style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
-                            }
-                        }
-                    }
                 }
+            }
+
+            status.configPath?.let { path ->
+                Text(
+                    text = "Config Path: $path",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Current Settings Preview (KernelSU-style info list)
-        Surface(
+        // Quick Actions Card
+        ElevatedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            tonalElevation = 2.dp,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
+            shape = MaterialTheme.shapes.large
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.graphics_settings),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                currentSettings?.let { settings ->
-                    InfoListRow(
-                        icon = Icons.Outlined.Tune,
-                        title = stringResource(R.string.overall_graphics_quality),
-                        value = settings.getMasterQualityName(settings.graphicsQuality)
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.Speed,
-                        title = stringResource(R.string.fps),
-                        value = "${settings.fps}"
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.AspectRatio,
-                        title = stringResource(R.string.render_scale),
-                        value = String.format("%.1fx", settings.renderScale)
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.Apps,
-                        title = stringResource(R.string.screen_resolution),
-                        value = "${settings.screenWidth}×${settings.screenHeight}"
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.Sync,
-                        title = stringResource(R.string.vsync),
-                        value = if (settings.enableVSync) "On" else "Off"
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.Memory,
-                        title = stringResource(R.string.dlss_quality),
-                        value = settings.getDlssName(settings.dlssQuality)
-                    )
-                    InfoListRow(
-                        icon = Icons.Outlined.Tune,
-                        title = stringResource(R.string.anti_aliasing),
-                        value = settings.getAAModeName(settings.aaMode)
-                    )
-                } ?: run {
-                    Text(
-                        text = stringResource(R.string.not_available),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Quick Actions pinned near nav
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            tonalElevation = 3.dp,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
-        ) {
-            Column(
-                modifier = Modifier.padding(14.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text(
                     text = stringResource(R.string.quick_actions),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.titleMedium
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
                         onClick = {
@@ -254,32 +149,53 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         enabled = status.isGameInstalled
                     ) {
-                        Icon(Icons.Outlined.PlayArrow, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.launch_game))
                     }
+
                     OutlinedButton(
-                        onClick = { scope.launch { mainViewModel.killGame() } },
+                        onClick = {
+                            scope.launch {
+                                mainViewModel.killGame()
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         enabled = status.isGameInstalled && status.isRootGranted
                     ) {
-                        Icon(Icons.Outlined.Close, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.kill_game))
                     }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     FilledTonalButton(
                         onClick = onNavigateToGraphics,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Outlined.Tune, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.graphics_editor))
                     }
+
                     TextButton(
                         onClick = {
                             mainViewModel.currentPackage()?.let { pkg ->
@@ -292,53 +208,102 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         enabled = status.isGameInstalled
                     ) {
-                        Icon(Icons.Outlined.Info, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.app_info))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            status.configPath?.let { path ->
+                                // Copy path to clipboard as a fallback
+                                val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val clipData = android.content.ClipData.newPlainText("Config Path", path)
+                                clipboardManager.setPrimaryClip(clipData)
+
+                                try {
+                                    val builder = android.os.StrictMode.VmPolicy.Builder()
+                                    android.os.StrictMode.setVmPolicy(builder.build())
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        setDataAndType(Uri.parse("file://$path"), "text/xml")
+                                        // Do NOT use FLAG_GRANT_READ_URI_PERMISSION here!
+                                        // The Android UI framework will stat() the file and throw ENOENT
+                                        // because our app UID doesn't have root access natively.
+                                        // Let the receiving root editor handle the file:// path with its own root shell.
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Open with Root Editor"))
+                                    android.widget.Toast.makeText(context, "Path copied to clipboard!", android.widget.Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(context, "No app found! Path copied to clipboard.", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = status.isGameInstalled && status.isRootGranted && status.configPath != null
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Code,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Open playerprefs.xml")
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Donate card (3-column large icons)
-        Surface(
+        // Current Settings Preview
+        OutlinedCard(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            tonalElevation = 2.dp,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
+            shape = MaterialTheme.shapes.large
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Support / Donate",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.graphics_settings),
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    SupportTile(
-                        label = "PayPal",
-                        url = "https://www.paypal.com/paypalme/IRedDragonICY",
-                        icon = Icons.Outlined.CreditCard,
-                        modifier = Modifier.weight(1f)
+
+                Text(
+                    text = stringResource(R.string.overall_graphics_quality),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                currentSettings?.let { settings ->
+                    Text(
+                        text = "FPS ${settings.fps} • Render ${String.format("%.1f", settings.renderScale)}x • ${settings.getMasterQualityName(settings.graphicsQuality)}",
+                        style = MaterialTheme.typography.titleSmall
                     )
-                    SupportTile(
-                        label = "Ko-fi",
-                        url = "https://ko-fi.com/ireddragonicy",
-                        icon = Icons.Outlined.Coffee,
-                        modifier = Modifier.weight(1f)
+                    Text(
+                        text = "${settings.screenWidth}×${settings.screenHeight} • ${if (settings.enableVSync) "VSync ON" else "VSync OFF"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
-                    SupportTile(
-                        label = "Saweria",
-                        url = "https://saweria.co/IRedDragonICY",
-                        icon = Icons.Outlined.FavoriteBorder,
-                        modifier = Modifier.weight(1f)
+                } ?: run {
+                    Text(
+                        text = stringResource(R.string.not_available),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -352,122 +317,4 @@ private fun formatBytes(bytes: Long): String {
     val exp = (Math.log(bytes.toDouble()) / Math.log(unit.toDouble())).toInt()
     val pre = "KMGTPE"[exp - 1]
     return String.format("%.1f %sB", bytes / Math.pow(unit.toDouble(), exp.toDouble()), pre)
-}
-
-@Composable
-private fun StatusPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
-    type: PillType
-) {
-    val colors = AssistChipDefaults.assistChipColors(
-        containerColor = when (type) {
-            PillType.Success -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-            PillType.Warning -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.28f)
-            PillType.Loading -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        },
-        labelColor = MaterialTheme.colorScheme.onSurface,
-        leadingIconContentColor = MaterialTheme.colorScheme.onSurface
-    )
-
-    AssistChip(
-        onClick = {},
-        enabled = false,
-        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp)) },
-        label = { Text(text, style = MaterialTheme.typography.labelLarge) },
-        colors = colors
-    )
-}
-
-private enum class PillType { Success, Warning, Loading }
-
-@Composable
-private fun InfoRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun SupportTile(
-    label: String,
-    url: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    Surface(
-        modifier = modifier
-            .height(110.dp)
-            .clickable {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                context.startActivity(intent)
-            },
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 3.dp,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-private fun InfoListRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    value: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
 }
