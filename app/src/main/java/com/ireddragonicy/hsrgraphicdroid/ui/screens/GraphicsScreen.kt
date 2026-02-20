@@ -7,14 +7,13 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
 private data class SliderConfig(
     val key: String,
     val labelRes: Int,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: Painter,
     val descriptionRes: Int? = null,
     val valueRange: ClosedFloatingPointRange<Float>,
     val steps: Int,
@@ -45,7 +44,7 @@ private data class SliderConfig(
 private data class SwitchConfig(
     val key: String,
     val labelRes: Int,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: Painter,
     val descriptionRes: Int? = null,
     val getValue: (GraphicsSettings) -> Boolean,
     val setValue: (GraphicsSettings, Boolean) -> GraphicsSettings
@@ -103,7 +102,7 @@ fun GraphicsScreen(
                         enabled = canUndo
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                            painter = painterResource(R.drawable.ic_undo),
                             contentDescription = stringResource(R.string.undo),
                             tint = if (canUndo) MaterialTheme.colorScheme.onSurface 
                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
@@ -114,7 +113,7 @@ fun GraphicsScreen(
                         enabled = canRedo
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Redo,
+                            painter = painterResource(R.drawable.ic_redo),
                             contentDescription = stringResource(R.string.redo),
                             tint = if (canRedo) MaterialTheme.colorScheme.onSurface 
                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
@@ -124,7 +123,7 @@ fun GraphicsScreen(
                         onClick = { showResetDialog = true }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            painter = painterResource(R.drawable.ic_refresh),
                             contentDescription = stringResource(R.string.reset)
                         )
                     }
@@ -329,7 +328,7 @@ private fun StatusCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    painter = painterResource(R.drawable.ic_info),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -372,7 +371,7 @@ private fun StatusCard(
                         onClick = onLaunchGame,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.PlayArrow, null, Modifier.size(18.dp))
+                        Icon(painterResource(R.drawable.ic_play), null, Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.launch_game))
                     }
@@ -381,7 +380,7 @@ private fun StatusCard(
                         onClick = onOpenAppInfo,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Info, null, Modifier.size(18.dp))
+                        Icon(painterResource(R.drawable.ic_info), null, Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.app_info))
                     }
@@ -393,7 +392,7 @@ private fun StatusCard(
                     onClick = onShowBackups,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(Icons.Default.Backup, null, Modifier.size(18.dp))
+                    Icon(painterResource(R.drawable.ic_backup), null, Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.saved_backups))
                 }
@@ -413,7 +412,7 @@ private fun ExtendedSettingsCard(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Edit, null, tint = MaterialTheme.colorScheme.primary)
+            Icon(painterResource(R.drawable.ic_tune), null, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.graphics_settings), style = MaterialTheme.typography.titleLarge)
         }
@@ -450,7 +449,7 @@ private fun ExtendedSettingsCard(
                     steps = 2,
                     displayValue = settings.fps.toString(),
                     onValueChange = { onSettingsChange(settings.copy(fps = it.toInt())) },
-                    icon = Icons.Default.Speed,
+                    icon = painterResource(R.drawable.ic_speed),
                     isModified = modifiedFields.contains("fps")
                 )
 
@@ -461,7 +460,7 @@ private fun ExtendedSettingsCard(
                     label = stringResource(R.string.vsync),
                     checked = settings.enableVSync,
                     onCheckedChange = { onSettingsChange(settings.copy(enableVSync = it)) },
-                    icon = Icons.Default.Sync,
+                    icon = painterResource(R.drawable.ic_sync),
                     isModified = modifiedFields.contains("vsync")
                 )
 
@@ -475,7 +474,7 @@ private fun ExtendedSettingsCard(
                     steps = 14,
                     displayValue = String.format("%.1fx", settings.renderScale),
                     onValueChange = { onSettingsChange(settings.copy(renderScale = it.toDouble())) },
-                    icon = Icons.Default.AspectRatio,
+                    icon = painterResource(R.drawable.ic_aspect_ratio),
                     isModified = modifiedFields.contains("renderScale")
                 )
             }
@@ -492,7 +491,7 @@ private fun ExtendedSettingsCard(
                     value = settings.resolutionQuality,
                     displayValue = settings.getQualityName(settings.resolutionQuality),
                     onValueChange = { onSettingsChange(settings.copy(resolutionQuality = it)) },
-                    icon = Icons.Default.HighQuality,
+                    icon = painterResource(R.drawable.ic_high_quality),
                     isModified = modifiedFields.contains("resolution")
                 )
 
@@ -501,7 +500,7 @@ private fun ExtendedSettingsCard(
                     value = settings.shadowQuality,
                     displayValue = settings.getQualityName(settings.shadowQuality),
                     onValueChange = { onSettingsChange(settings.copy(shadowQuality = it)) },
-                    icon = Icons.Default.Contrast,
+                    icon = painterResource(R.drawable.ic_contrast),
                     isModified = modifiedFields.contains("shadow"),
                     descriptionRes = R.string.shadow_quality_desc
                 )
@@ -511,7 +510,7 @@ private fun ExtendedSettingsCard(
                     value = settings.lightQuality,
                     displayValue = settings.getQualityName(settings.lightQuality),
                     onValueChange = { onSettingsChange(settings.copy(lightQuality = it)) },
-                    icon = Icons.Default.LightMode,
+                    icon = painterResource(R.drawable.ic_light_mode),
                     isModified = modifiedFields.contains("light"),
                     descriptionRes = R.string.light_quality_desc
                 )
@@ -521,7 +520,7 @@ private fun ExtendedSettingsCard(
                     value = settings.characterQuality,
                     displayValue = settings.getQualityName(settings.characterQuality),
                     onValueChange = { onSettingsChange(settings.copy(characterQuality = it)) },
-                    icon = Icons.Default.Person,
+                    icon = painterResource(R.drawable.ic_person),
                     isModified = modifiedFields.contains("character"),
                     descriptionRes = R.string.character_quality_desc
                 )
@@ -531,7 +530,7 @@ private fun ExtendedSettingsCard(
                     value = settings.envDetailQuality,
                     displayValue = settings.getQualityName(settings.envDetailQuality),
                     onValueChange = { onSettingsChange(settings.copy(envDetailQuality = it)) },
-                    icon = Icons.Default.Landscape,
+                    icon = painterResource(R.drawable.ic_landscape),
                     isModified = modifiedFields.contains("environment"),
                     descriptionRes = R.string.environment_quality_desc
                 )
@@ -541,7 +540,7 @@ private fun ExtendedSettingsCard(
                     value = settings.reflectionQuality,
                     displayValue = settings.getQualityName(settings.reflectionQuality),
                     onValueChange = { onSettingsChange(settings.copy(reflectionQuality = it)) },
-                    icon = Icons.Default.WaterDrop,
+                    icon = painterResource(R.drawable.ic_water_drop),
                     isModified = modifiedFields.contains("reflection"),
                     descriptionRes = R.string.reflection_quality_desc
                 )
@@ -562,7 +561,7 @@ private fun ExtendedSettingsCard(
                     steps = 3,
                     displayValue = settings.getSfxQualityName(settings.sfxQuality),
                     onValueChange = { onSettingsChange(settings.copy(sfxQuality = it.toInt())) },
-                    icon = Icons.Default.AutoAwesome,
+                    icon = painterResource(R.drawable.ic_auto_awesome),
                     description = stringResource(R.string.sfx_quality_desc),
                     isModified = modifiedFields.contains("sfx")
                 )
@@ -574,7 +573,7 @@ private fun ExtendedSettingsCard(
                     value = settings.bloomQuality,
                     displayValue = settings.getQualityName(settings.bloomQuality),
                     onValueChange = { onSettingsChange(settings.copy(bloomQuality = it)) },
-                    icon = Icons.Default.Flare,
+                    icon = painterResource(R.drawable.ic_flare),
                     isModified = modifiedFields.contains("bloom"),
                     descriptionRes = R.string.bloom_quality_desc
                 )
@@ -600,7 +599,7 @@ private fun ExtendedSettingsCard(
                         }
                         onSettingsChange(settings.copy(aaMode = newAaMode))
                     },
-                    icon = Icons.Default.FilterHdr,
+                    icon = painterResource(R.drawable.ic_filter_hdr),
                     description = stringResource(R.string.anti_aliasing_desc),
                     isModified = modifiedFields.contains("aa")
                 )
@@ -615,7 +614,7 @@ private fun ExtendedSettingsCard(
                     steps = 1,
                     displayValue = settings.getSelfShadowName(settings.enableSelfShadow),
                     onValueChange = { onSettingsChange(settings.copy(enableSelfShadow = it.toInt())) },
-                    icon = Icons.Default.Contrast,
+                    icon = painterResource(R.drawable.ic_contrast),
                     description = stringResource(R.string.self_shadow_desc),
                     isModified = modifiedFields.contains("selfShadow")
                 )
@@ -632,7 +631,7 @@ private fun ExtendedSettingsCard(
                     label = stringResource(R.string.metalfx_super_resolution),
                     checked = settings.enableMetalFXSU,
                     onCheckedChange = { onSettingsChange(settings.copy(enableMetalFXSU = it)) },
-                    icon = Icons.Default.AutoAwesome,
+                    icon = painterResource(R.drawable.ic_auto_awesome),
                     description = stringResource(R.string.metalfx_desc),
                     isModified = modifiedFields.contains("metalFx")
                 )
@@ -643,7 +642,7 @@ private fun ExtendedSettingsCard(
                     label = stringResource(R.string.half_res_transparent),
                     checked = settings.enableHalfResTransparent,
                     onCheckedChange = { onSettingsChange(settings.copy(enableHalfResTransparent = it)) },
-                    icon = Icons.Default.Opacity,
+                    icon = painterResource(R.drawable.ic_opacity),
                     description = stringResource(R.string.half_res_desc),
                     isModified = modifiedFields.contains("halfRes")
                 )
@@ -658,7 +657,7 @@ private fun ExtendedSettingsCard(
                     steps = 3,
                     displayValue = settings.getDlssName(settings.dlssQuality),
                     onValueChange = { onSettingsChange(settings.copy(dlssQuality = it.toInt())) },
-                    icon = Icons.Default.Memory,
+                    icon = painterResource(R.drawable.ic_memory),
                     description = stringResource(R.string.dlss_desc),
                     isModified = modifiedFields.contains("dlss")
                 )
@@ -687,7 +686,7 @@ private fun DisplaySettingsCard(
                 steps = 2,
                 displayValue = settings.getParticleTrailName(settings.particleTrailSmoothness),
                 onValueChange = { onSettingsChange(settings.copy(particleTrailSmoothness = it.toInt())) },
-                icon = Icons.Default.AutoAwesome,
+                icon = painterResource(R.drawable.ic_auto_awesome),
                 description = stringResource(R.string.particle_trail_desc),
                 isModified = modifiedFields.contains("particleTrail")
             )
@@ -699,7 +698,7 @@ private fun DisplaySettingsCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Screenshot, null, tint = MaterialTheme.colorScheme.primary)
+                Icon(painterResource(R.drawable.ic_screenshot), null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.current_resolution), style = MaterialTheme.typography.labelLarge)
@@ -718,7 +717,7 @@ private fun DisplaySettingsCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Fullscreen, null, tint = MaterialTheme.colorScheme.primary)
+                Icon(painterResource(R.drawable.ic_fullscreen), null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.fullscreen_mode), style = MaterialTheme.typography.labelLarge)
@@ -737,7 +736,7 @@ private fun DisplaySettingsCard(
                 label = stringResource(R.string.speed_up_open),
                 checked = settings.speedUpOpen == 1,
                 onCheckedChange = { onSettingsChange(settings.copy(speedUpOpen = if (it) 1 else 0)) },
-                icon = Icons.Default.RocketLaunch,
+                icon = painterResource(R.drawable.ic_rocket_launch),
                 description = stringResource(R.string.speed_up_open_desc),
                 isModified = modifiedFields.contains("speedUpOpen")
             )
@@ -764,7 +763,7 @@ private fun QualitySliderItem(
     value: Int,
     displayValue: String,
     onValueChange: (Int) -> Unit,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: Painter,
     isModified: Boolean,
     descriptionRes: Int? = null
 ) {
@@ -805,7 +804,7 @@ private fun GraphicsBottomBar(
                 onClick = onSaveBackup,
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(Icons.Default.Backup, null, Modifier.size(18.dp))
+                Icon(painterResource(R.drawable.ic_backup), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(stringResource(R.string.save_as_backup))
             }
@@ -819,7 +818,7 @@ private fun GraphicsBottomBar(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
             ) {
-                Icon(Icons.Default.Check, null, Modifier.size(18.dp))
+                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(
                     if (hasChanges) stringResource(R.string.apply_pending_changes, pendingChangesCount)

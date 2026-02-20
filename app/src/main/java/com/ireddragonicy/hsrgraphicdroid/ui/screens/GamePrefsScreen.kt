@@ -4,12 +4,12 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,7 +58,7 @@ fun GamePrefsScreen(
                 actions = {
                     IconButton(onClick = { showResetDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Refresh,
+                            painter = painterResource(R.drawable.ic_refresh),
                             contentDescription = stringResource(R.string.reset)
                         )
                     }
@@ -105,7 +105,7 @@ fun GamePrefsScreen(
                     BlacklistCard(
                         title = stringResource(R.string.video_blacklist),
                         description = stringResource(R.string.video_blacklist_desc),
-                        icon = Icons.Default.Videocam,
+                        icon = painterResource(R.drawable.ic_videocam),
                         items = uiState.currentPrefs.videoBlacklist,
                         onRemoveItem = { gamePrefsViewModel.removeFromVideoBlacklist(it) },
                         onAddItem = { gamePrefsViewModel.addToVideoBlacklist(it) }
@@ -117,7 +117,7 @@ fun GamePrefsScreen(
                     BlacklistCard(
                         title = stringResource(R.string.audio_blacklist),
                         description = stringResource(R.string.audio_blacklist_desc),
-                        icon = Icons.Default.MusicNote,
+                        icon = painterResource(R.drawable.ic_music_note),
                         items = uiState.currentPrefs.audioBlacklist,
                         onRemoveItem = { gamePrefsViewModel.removeFromAudioBlacklist(it) },
                         onAddItem = { gamePrefsViewModel.addToAudioBlacklist(it) }
@@ -194,7 +194,7 @@ private fun LanguageSettingsCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Language,
+                    painter = painterResource(R.drawable.ic_language),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -262,7 +262,7 @@ private fun LanguageSettingsCard(
 private fun BlacklistCard(
     title: String,
     description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: Painter,
     items: List<String>,
     onRemoveItem: (String) -> Unit,
     onAddItem: (String) -> Unit,
@@ -281,7 +281,7 @@ private fun BlacklistCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = icon,
+                    painter = icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -299,7 +299,7 @@ private fun BlacklistCard(
                 }
                 IconButton(onClick = { isExpanded = !isExpanded }) {
                     Icon(
-                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        painter = if (isExpanded) painterResource(R.drawable.ic_expand_less) else painterResource(R.drawable.ic_expand_more),
                         contentDescription = null
                     )
                 }
@@ -344,7 +344,7 @@ private fun BlacklistCard(
                         onClick = { showAddDialog = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.Add, null, Modifier.size(18.dp))
+                        Icon(painterResource(R.drawable.ic_add), null, Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.add_to_blacklist))
                     }
@@ -430,7 +430,7 @@ private fun GamePrefsBottomBar(
                 onClick = onReset,
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(Icons.Default.Refresh, null, Modifier.size(18.dp))
+                Icon(painterResource(R.drawable.ic_refresh), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(stringResource(R.string.reset))
             }
@@ -444,7 +444,7 @@ private fun GamePrefsBottomBar(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Icon(Icons.Default.Check, null, Modifier.size(18.dp))
+                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text(stringResource(R.string.apply))
             }

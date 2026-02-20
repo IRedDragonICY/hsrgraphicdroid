@@ -8,16 +8,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,7 +62,7 @@ fun GraphicsSlider(
     displayValue: String,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
+    icon: Painter? = null,
     description: String? = null,
     isModified: Boolean = false
 ) {
@@ -89,7 +87,7 @@ fun GraphicsSlider(
         ) {
             if (icon != null) {
                 Icon(
-                    imageVector = icon,
+                    painter = icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
@@ -155,7 +153,7 @@ fun GraphicsSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
+    icon: Painter? = null,
     description: String? = null,
     isModified: Boolean = false
 ) {
@@ -213,9 +211,9 @@ fun StatusChip(
     modifier: Modifier = Modifier
 ) {
     val icon = when {
-        isLoading -> Icons.Default.HourglassEmpty
-        isSuccess -> Icons.Default.Check
-        else -> Icons.Default.Close
+        isLoading -> painterResource(R.drawable.ic_history)
+        isSuccess -> painterResource(R.drawable.ic_check)
+        else -> painterResource(R.drawable.ic_close)
     }
 
     AssistChip(
@@ -223,7 +221,7 @@ fun StatusChip(
         label = { Text(text) },
         leadingIcon = {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
@@ -316,7 +314,7 @@ fun BackupCard(
                 modifier = Modifier.padding(end = 4.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Restore,
+                    painter = painterResource(R.drawable.ic_restore),
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
@@ -326,7 +324,7 @@ fun BackupCard(
 
             IconButton(onClick = onDelete) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    painter = painterResource(R.drawable.ic_delete),
                     contentDescription = stringResource(R.string.delete)
                 )
             }
@@ -354,7 +352,7 @@ fun BlacklistItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Block,
+                painter = painterResource(R.drawable.ic_close),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp)
@@ -372,7 +370,7 @@ fun BlacklistItem(
                 modifier = Modifier.size(32.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    painter = painterResource(R.drawable.ic_close),
                     contentDescription = stringResource(R.string.remove),
                     modifier = Modifier.size(18.dp)
                 )
@@ -387,7 +385,7 @@ fun BlacklistItem(
 fun SettingItem(
     title: String,
     summary: String,
-    icon: ImageVector,
+    icon: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -396,14 +394,14 @@ fun SettingItem(
         supportingContent = { Text(summary) },
         leadingContent = {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         trailingContent = {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                painter = painterResource(R.drawable.ic_chevron_right),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -471,7 +469,7 @@ fun QualitySliderCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Star,
+                painter = painterResource(R.drawable.ic_star),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(28.dp)
@@ -527,7 +525,7 @@ fun PendingChangesBanner(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    painter = painterResource(R.drawable.ic_edit),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     modifier = Modifier.size(20.dp)

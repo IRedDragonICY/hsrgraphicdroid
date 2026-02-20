@@ -2,15 +2,15 @@ package com.ireddragonicy.hsrgraphicdroid.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -144,7 +144,7 @@ private fun AppearanceCard(
         )
 
             SettingsRow(
-                icon = if (isDarkMode == null) Icons.Default.BrightnessAuto else if (effectiveDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                icon = if (isDarkMode == null) painterResource(R.drawable.ic_brightness_auto) else if (effectiveDarkMode) painterResource(R.drawable.ic_dark_mode) else painterResource(R.drawable.ic_light_mode),
                 title = stringResource(R.string.theme),
                 subtitle = if (isDarkMode == null) stringResource(R.string.language_system) else stringResource(if (effectiveDarkMode) R.string.dark_theme else R.string.light_theme),
                 onClick = onThemeClick
@@ -155,7 +155,7 @@ private fun AppearanceCard(
                 supportingContent = { Text(stringResource(R.string.dynamic_color_desc)) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Default.ColorLens,
+                        painter = painterResource(R.drawable.ic_color_lens),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -170,7 +170,7 @@ private fun AppearanceCard(
             )
 
             SettingsRow(
-                icon = Icons.Default.Language,
+                icon = painterResource(R.drawable.ic_language),
                 title = stringResource(R.string.app_language),
                 subtitle = getLanguageDisplayName(currentLanguage),
                 onClick = onLanguageClick
@@ -195,21 +195,21 @@ private fun AboutCard(
         )
 
             SettingsRow(
-                icon = Icons.Default.Info,
+                icon = painterResource(R.drawable.ic_info),
                 title = stringResource(R.string.about_app),
                 subtitle = "v$versionName",
                 onClick = onAboutClick
             )
 
             SettingsRow(
-                icon = Icons.Default.Code,
+                icon = painterResource(R.drawable.ic_code),
                 title = stringResource(R.string.github_repo),
                 subtitle = stringResource(R.string.view_source_code),
                 onClick = onGitHubClick
             )
 
             SettingsRow(
-                icon = Icons.Default.BugReport,
+                icon = painterResource(R.drawable.ic_bug_report),
                 title = stringResource(R.string.report_issue),
                 subtitle = stringResource(R.string.report_issue_desc),
                 onClick = onReportIssueClick
@@ -232,14 +232,14 @@ private fun AdvancedCard(
         )
 
             SettingsRow(
-                icon = Icons.Default.DeleteForever,
+                icon = painterResource(R.drawable.ic_delete_forever),
                 title = stringResource(R.string.clear_app_data),
                 subtitle = stringResource(R.string.clear_app_data_desc),
                 onClick = onClearDataClick
             )
 
             SettingsRow(
-                icon = Icons.Default.FileDownload,
+                icon = painterResource(R.drawable.ic_file_download),
                 title = stringResource(R.string.export_logs),
                 subtitle = stringResource(R.string.export_logs_desc),
                 onClick = onExportLogsClick
@@ -249,7 +249,7 @@ private fun AdvancedCard(
 
 @Composable
 private fun SettingsRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: Painter,
     title: String,
     subtitle: String,
     onClick: () -> Unit,
@@ -260,14 +260,14 @@ private fun SettingsRow(
         supportingContent = { Text(subtitle) },
         leadingContent = {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         trailingContent = {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                painter = painterResource(R.drawable.ic_chevron_right),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -6,14 +6,13 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -150,7 +149,7 @@ fun HomeScreen(
                         enabled = status.isGameInstalled
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
+                            painter = painterResource(R.drawable.ic_play),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -168,7 +167,7 @@ fun HomeScreen(
                         enabled = status.isGameInstalled && status.isRootGranted
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            painter = painterResource(R.drawable.ic_close),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -188,7 +187,7 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Edit,
+                            painter = painterResource(R.drawable.ic_tune),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -209,7 +208,7 @@ fun HomeScreen(
                         enabled = status.isGameInstalled
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            painter = painterResource(R.drawable.ic_info),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -253,7 +252,7 @@ fun HomeScreen(
                         enabled = status.isGameInstalled && status.isRootGranted && status.configPath != null
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Code,
+                            painter = painterResource(R.drawable.ic_code),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )

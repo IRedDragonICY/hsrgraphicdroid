@@ -7,13 +7,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.ui.screens.*
@@ -29,35 +26,30 @@ import kotlinx.coroutines.launch
 sealed class Screen(
     val route: String,
     val titleRes: Int,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val iconRes: Int
 ) {
     data object Home : Screen(
         route = "home",
         titleRes = R.string.nav_home,
-        selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Outlined.Home
+        iconRes = R.drawable.ic_home
     )
 
     data object Graphics : Screen(
         route = "graphics",
         titleRes = R.string.nav_graphics,
-        selectedIcon = Icons.Filled.Tune,
-        unselectedIcon = Icons.Outlined.Tune
+        iconRes = R.drawable.ic_palette
     )
 
     data object GamePrefs : Screen(
         route = "game_prefs",
         titleRes = R.string.nav_game_prefs,
-        selectedIcon = Icons.Filled.SportsEsports,
-        unselectedIcon = Icons.Outlined.SportsEsports
+        iconRes = R.drawable.ic_game
     )
 
     data object Settings : Screen(
         route = "settings",
         titleRes = R.string.nav_settings,
-        selectedIcon = Icons.Filled.Settings,
-        unselectedIcon = Icons.Outlined.Settings
+        iconRes = R.drawable.ic_settings
     )
 }
 
@@ -206,7 +198,7 @@ fun AppBottomNavigationBar(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                        painter = androidx.compose.ui.res.painterResource(screen.iconRes),
                         contentDescription = null // Removed for performance, label provides accessibility
                     )
                 },
