@@ -1,123 +1,19 @@
 package com.ireddragonicy.hsrgraphicdroid.data
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
 /**
  * Professional Settings Change Manager
  * Handles undo/redo operations and change tracking for graphics settings
  */
-class SettingsChangeManager {
+class SettingsChangeManager : BaseChangeManager<GraphicsSettings>() {
 
-    // History stacks for undo/redo
-    private val undoStack = mutableListOf<SettingsSnapshot>()
-    private val redoStack = mutableListOf<SettingsSnapshot>()
-    
-    // Maximum history size
-    private val maxHistorySize = 50
-
-    // Current baseline (last saved/loaded settings from game)
-    private var baselineSettings: GraphicsSettings? = null
-    
-    // Track modified fields
-    private val _modifiedFields = MutableStateFlow<Set<String>>(emptySet())
-    val modifiedFields: StateFlow<Set<String>> = _modifiedFields.asStateFlow()
-    
-    // Undo/Redo availability
-    private val _canUndo = MutableStateFlow(false)
-    val canUndo: StateFlow<Boolean> = _canUndo.asStateFlow()
-    
-    private val _canRedo = MutableStateFlow(false)
-    val canRedo: StateFlow<Boolean> = _canRedo.asStateFlow()
-    
-    // Pending changes count
-    private val _pendingChangesCount = MutableStateFlow(0)
-    val pendingChangesCount: StateFlow<Int> = _pendingChangesCount.asStateFlow()
-    
-    // External changes detected (from game)
-    private val _externalChanges = MutableStateFlow<List<SettingChange>>(emptyList())
-    val externalChanges: StateFlow<List<SettingChange>> = _externalChanges.asStateFlow()
-
-    /**
-     * Set baseline settings (from game file or after apply)
-     */
-    fun setBaseline(settings: GraphicsSettings) {
-        baselineSettings = settings.copy()
-        undoStack.clear()
-        redoStack.clear()
-        _modifiedFields.value = emptySet()
-        _pendingChangesCount.value = 0
-        updateUndoRedoState()
-    }
-
-    /**
-     * Record a setting change for undo/redo
-     */
-    fun recordChange(fieldName: String, oldValue: Any?, newValue: Any?, currentSettings: GraphicsSettings) {
-        if (oldValue == newValue) return
-        
-        val snapshot = SettingsSnapshot(
-            settings = currentSettings.copy(),
-            fieldName = fieldName,
-            oldValue = oldValue,
-            newValue = newValue,
-            timestamp = System.currentTimeMillis()
-        )
-        
-        undoStack.add(snapshot)
-        redoStack.clear()
-        
-        // Trim history if too large
-        while (undoStack.size > maxHistorySize) {
-            undoStack.removeAt(0)
-        }
-        
-        updateModifiedFields(currentSettings)
-        updateUndoRedoState()
-    }
-
-    /**
-     * Undo last change
-     */
-    fun undo(): GraphicsSettings? {
-        if (undoStack.isEmpty()) return null
-        
-        val lastChange = undoStack.removeAt(undoStack.lastIndex)
-        redoStack.add(lastChange)
-        
-        // Get previous state
-        val previousSettings = if (undoStack.isNotEmpty()) {
-            undoStack.last().settings.copy()
-        } else {
-            baselineSettings?.copy()
-        }
-        
-        previousSettings?.let { updateModifiedFields(it) }
-        updateUndoRedoState()
-        
-        return previousSettings
-    }
-
-    /**
-     * Redo last undone change
-     */
-    fun redo(): GraphicsSettings? {
-        if (redoStack.isEmpty()) return null
-        
-        val redoChange = redoStack.removeAt(redoStack.lastIndex)
-        undoStack.add(redoChange)
-        
-        updateModifiedFields(redoChange.settings)
-        updateUndoRedoState()
-        
-        return redoChange.settings.copy()
+    override fun copySettings(settings: GraphicsSettings): GraphicsSettings {
+        return settings.copy()
     }
 
     /**
      * Compare with game settings and detect external changes
      */
-    fun detectExternalChanges(gameSettings: GraphicsSettings, localSettings: GraphicsSettings): List<SettingChange> {
+    override fun detectExternalChanges(gameSettings: GraphicsSettings, localSettings: GraphicsSettings): List<SettingChange> {
         val changes = mutableListOf<SettingChange>()
         
         compareField("FPS", localSettings.fps, gameSettings.fps)?.let { changes.add(it) }
@@ -147,23 +43,9 @@ class SettingsChangeManager {
     }
 
     /**
-     * Clear external changes notification
-     */
-    fun clearExternalChanges() {
-        _externalChanges.value = emptyList()
-    }
-
-    /**
-     * Check if a specific field is modified from baseline
-     */
-    fun isFieldModified(fieldName: String): Boolean {
-        return _modifiedFields.value.contains(fieldName)
-    }
-
-    /**
      * Get all modified fields with their changes
      */
-    fun getModifiedFieldsDetails(currentSettings: GraphicsSettings): List<SettingChange> {
+    override fun getModifiedFieldsDetails(currentSettings: GraphicsSettings): List<SettingChange> {
         val baseline = baselineSettings ?: return emptyList()
         val changes = mutableListOf<SettingChange>()
         
@@ -234,22 +116,7 @@ class SettingsChangeManager {
         return changes
     }
 
-    /**
-     * Reset to baseline
-     */
-    fun resetToBaseline(): GraphicsSettings? {
-        baselineSettings?.let { baseline ->
-            undoStack.clear()
-            redoStack.clear()
-            _modifiedFields.value = emptySet()
-            _pendingChangesCount.value = 0
-            updateUndoRedoState()
-            return baseline.copy()
-        }
-        return null
-    }
-
-    private fun updateModifiedFields(currentSettings: GraphicsSettings) {
+    override fun updateModifiedFields(currentSettings: GraphicsSettings) {
         val baseline = baselineSettings ?: return
         val modified = mutableSetOf<String>()
         
@@ -277,40 +144,5 @@ class SettingsChangeManager {
         
         _modifiedFields.value = modified
         _pendingChangesCount.value = modified.size
-    }
-
-    private fun updateUndoRedoState() {
-        _canUndo.value = undoStack.isNotEmpty()
-        _canRedo.value = redoStack.isNotEmpty()
-    }
-
-    private fun compareField(name: String, localValue: Any?, gameValue: Any?): SettingChange? {
-        return if (localValue != gameValue) {
-            SettingChange(name, localValue.toString(), gameValue.toString())
-        } else null
-    }
-}
-
-/**
- * Snapshot of settings at a point in time
- */
-data class SettingsSnapshot(
-    val settings: GraphicsSettings,
-    val fieldName: String,
-    val oldValue: Any?,
-    val newValue: Any?,
-    val timestamp: Long
-)
-
-/**
- * Represents a change in a setting
- */
-data class SettingChange(
-    val fieldName: String,
-    val localValue: String,
-    val gameValue: String
-) {
-    fun getDisplayText(): String {
-        return "$fieldName: $localValue → $gameValue"
     }
 }

@@ -133,6 +133,52 @@ data class GamePreferences(
             val jsonArray = list.joinToString(",", prefix = "[", postfix = "]") { "\"$it\"" }
             return URLEncoder.encode(jsonArray, "UTF-8")
         }
+
+        fun fromEncodedString(encoded: String): GamePreferences? {
+            return try {
+                val decoded = URLDecoder.decode(encoded, "UTF-8")
+                val json = org.json.JSONObject(decoded)
+                GamePreferences(
+                    lastUserId = if (json.has("lastUserId")) json.getInt("lastUserId") else null,
+                    lastServerName = if (json.has("lastServerName")) json.getString("lastServerName") else null,
+                    textLanguage = json.optInt("textLanguage", 2),
+                    audioLanguage = json.optInt("audioLanguage", 2),
+                    elfOrderNeedShowNewHint = if (json.has("elfOrderNeedShowNewHint")) json.getBoolean("elfOrderNeedShowNewHint") else null,
+                    videoBlacklist = parseBlacklistFromEncoded(json.optString("videoBlacklist", "")),
+                    audioBlacklist = parseBlacklistFromEncoded(json.optString("audioBlacklist", "")),
+                    isSaveBattleSpeed = if (json.has("isSaveBattleSpeed")) json.getInt("isSaveBattleSpeed") else null,
+                    autoBattleOpen = if (json.has("autoBattleOpen")) json.getInt("autoBattleOpen") else null,
+                    needDownloadAllAssets = if (json.has("needDownloadAllAssets")) json.getInt("needDownloadAllAssets") else null,
+                    forceUpdateVideo = if (json.has("forceUpdateVideo")) json.getInt("forceUpdateVideo") else null,
+                    forceUpdateAudio = if (json.has("forceUpdateAudio")) json.getInt("forceUpdateAudio") else null,
+                    showSimplifiedSkillDesc = if (json.has("showSimplifiedSkillDesc")) json.getInt("showSimplifiedSkillDesc") else null,
+                    gridFightSeenSeasonTalentTree = if (json.has("gridFightSeenSeasonTalentTree")) json.getInt("gridFightSeenSeasonTalentTree") else null,
+                    rogueTournEnableGodMode = if (json.has("rogueTournEnableGodMode")) json.getInt("rogueTournEnableGodMode") else null
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        fun toEncodedString(prefs: GamePreferences): String {
+            val json = org.json.JSONObject()
+            prefs.lastUserId?.let { json.put("lastUserId", it) }
+            prefs.lastServerName?.let { json.put("lastServerName", it) }
+            json.put("textLanguage", prefs.textLanguage)
+            json.put("audioLanguage", prefs.audioLanguage)
+            prefs.elfOrderNeedShowNewHint?.let { json.put("elfOrderNeedShowNewHint", it) }
+            json.put("videoBlacklist", encodeBlacklistToString(prefs.videoBlacklist))
+            json.put("audioBlacklist", encodeBlacklistToString(prefs.audioBlacklist))
+            prefs.isSaveBattleSpeed?.let { json.put("isSaveBattleSpeed", it) }
+            prefs.autoBattleOpen?.let { json.put("autoBattleOpen", it) }
+            prefs.needDownloadAllAssets?.let { json.put("needDownloadAllAssets", it) }
+            prefs.forceUpdateVideo?.let { json.put("forceUpdateVideo", it) }
+            prefs.forceUpdateAudio?.let { json.put("forceUpdateAudio", it) }
+            prefs.showSimplifiedSkillDesc?.let { json.put("showSimplifiedSkillDesc", it) }
+            prefs.gridFightSeenSeasonTalentTree?.let { json.put("gridFightSeenSeasonTalentTree", it) }
+            prefs.rogueTournEnableGodMode?.let { json.put("rogueTournEnableGodMode", it) }
+            return URLEncoder.encode(json.toString(), "UTF-8")
+        }
     }
     
     /**
@@ -156,3 +202,9 @@ data class GamePreferences(
         }
     }
 }
+
+data class GamePrefsBackupData(
+    val timestamp: Long,
+    val prefs: GamePreferences,
+    val name: String
+)

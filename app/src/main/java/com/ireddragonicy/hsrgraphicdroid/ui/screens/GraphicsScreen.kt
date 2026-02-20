@@ -89,49 +89,17 @@ fun GraphicsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.graphics_editor),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                actions = {
-                    IconButton(
-                        onClick = { graphicsViewModel.undo() },
-                        enabled = canUndo
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_undo),
-                            contentDescription = stringResource(R.string.undo),
-                            tint = if (canUndo) MaterialTheme.colorScheme.onSurface 
-                                   else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        )
-                    }
-                    IconButton(
-                        onClick = { graphicsViewModel.redo() },
-                        enabled = canRedo
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_redo),
-                            contentDescription = stringResource(R.string.redo),
-                            tint = if (canRedo) MaterialTheme.colorScheme.onSurface 
-                                   else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        )
-                    }
-                    IconButton(
-                        onClick = { showResetDialog = true }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_refresh),
-                            contentDescription = stringResource(R.string.reset)
-                        )
-                    }
-                }
+            EditorTopAppBar(
+                title = stringResource(R.string.graphics_editor),
+                canUndo = canUndo,
+                canRedo = canRedo,
+                onUndo = { graphicsViewModel.undo() },
+                onRedo = { graphicsViewModel.redo() },
+                onReset = { showResetDialog = true }
             )
         },
         bottomBar = {
-            GraphicsBottomBar(
+            EditorBottomBar(
                 hasChanges = uiState.hasChanges,
                 pendingChangesCount = uiState.pendingChangesCount,
                 onSaveBackup = { showSaveBackupDialog = true },
@@ -204,7 +172,7 @@ fun GraphicsScreen(
 
     // Backups Bottom Sheet
     if (showBackupsSheet) {
-        BackupsBottomSheet(
+        GraphicsBackupsBottomSheet(
             backups = uiState.backups,
             onRestore = { backup ->
                 graphicsViewModel.restoreBackup(backup)
@@ -213,18 +181,19 @@ fun GraphicsScreen(
             onDelete = { backup ->
                 graphicsViewModel.deleteBackup(backup)
             },
-            onDismiss = { showBackupsSheet = false }
+            onDismissRequest = { showBackupsSheet = false }
         )
     }
 
     // Save Backup Dialog
     if (showSaveBackupDialog) {
         SaveBackupDialog(
-            onSave = { name ->
-                graphicsViewModel.saveBackup(name)
+            onConfirm = { name ->
+                val finalName = name.ifEmpty { "Backup ${System.currentTimeMillis()}" }
+                graphicsViewModel.saveBackup(finalName)
                 showSaveBackupDialog = false
             },
-            onDismiss = { showSaveBackupDialog = false }
+            onDismissRequest = { showSaveBackupDialog = false }
         )
     }
 
@@ -254,51 +223,21 @@ fun GraphicsScreen(
 
     // Reset Dialog
     if (showResetDialog) {
-        AlertDialog(
-            onDismissRequest = { showResetDialog = false },
-            title = { Text(stringResource(R.string.reset_all_changes)) },
-            text = { Text(stringResource(R.string.reset_changes_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        graphicsViewModel.resetToOriginal()
-                        selectedPreset = null
-                        showResetDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.reset))
-                }
+        ResetChangesDialog(
+            onConfirm = {
+                graphicsViewModel.resetToOriginal()
+                selectedPreset = null
+                showResetDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismissRequest = { showResetDialog = false }
         )
     }
 
     // Pending Changes Dialog
     if (showPendingChangesDialog) {
-        val changes = graphicsViewModel.getPendingChangesDetails()
-        AlertDialog(
-            onDismissRequest = { showPendingChangesDialog = false },
-            title = { Text(stringResource(R.string.view_pending_changes)) },
-            text = {
-                LazyColumn {
-                    items(changes) { change ->
-                        ListItem(
-                            headlineContent = { Text(change.fieldName) },
-                            supportingContent = { Text("${change.gameValue} → ${change.localValue}") },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showPendingChangesDialog = false }) {
-                    Text(stringResource(android.R.string.ok))
-                }
-            }
+        PendingChangesDialog(
+            changes = graphicsViewModel.getPendingChangesDetails(),
+            onDismissRequest = { showPendingChangesDialog = false }
         )
     }
 }
@@ -417,16 +356,16 @@ private fun ExtendedSettingsCard(
             )
 
             // Presets Section
-            SectionHeader(
+            SettingsSection(
                 title = stringResource(R.string.presets),
                 subtitle = stringResource(R.string.presets_desc)
-            )
-
-            PresetButtonRow(
-                selectedPreset = selectedPreset,
-                onPresetSelected = onPresetSelected,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            ) {
+                PresetButtonRow(
+                    selectedPreset = selectedPreset,
+                    onPresetSelected = onPresetSelected,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             // Performance Section
             SettingsSection(
@@ -665,11 +604,10 @@ private fun DisplaySettingsCard(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        SectionHeader(
+        SettingsSection(
             title = stringResource(R.string.section_display),
             subtitle = stringResource(R.string.section_display_desc)
-        )
-
+        ) {
             // Particle Trail (0-3)
             GraphicsSlider(
                 label = stringResource(R.string.particle_trail),
@@ -744,6 +682,7 @@ private fun DisplaySettingsCard(
                 description = stringResource(R.string.pso_shader_warmup_desc),
                 isModified = modifiedFields.contains("psoShader")
             )
+        }
     }
 }
 
@@ -753,11 +692,18 @@ private fun SettingsSection(
     subtitle: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        SectionHeader(title = title, subtitle = subtitle)
-        Spacer(Modifier.height(8.dp))
-        content()
-        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            SectionHeader(title = title, subtitle = subtitle)
+            Spacer(Modifier.height(12.dp))
+            content()
+        }
     }
 }
 
@@ -785,154 +731,4 @@ private fun QualitySliderItem(
     Spacer(Modifier.height(8.dp))
 }
 
-@Composable
-private fun GraphicsBottomBar(
-    hasChanges: Boolean,
-    pendingChangesCount: Int,
-    onSaveBackup: () -> Unit,
-    onApply: () -> Unit,
-    onViewChanges: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surfaceContainer
-    ) {
-        Column {
-            // Sticky Pending Changes Banner
-            if (pendingChangesCount > 0) {
-                PendingChangesBanner(
-                    changesCount = pendingChangesCount,
-                    onViewChanges = onViewChanges
-                )
-            }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onSaveBackup,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(painterResource(R.drawable.ic_backup), null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.save_as_backup))
-                }
-
-                Button(
-                    onClick = onApply,
-                    modifier = Modifier.weight(1f),
-                    colors = if (hasChanges) ButtonDefaults.buttonColors() 
-                            else ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                ) {
-                    Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        if (hasChanges) stringResource(R.string.apply_pending_changes, pendingChangesCount)
-                        else stringResource(R.string.apply_settings_now)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun BackupsBottomSheet(
-    backups: List<BackupData>,
-    onRestore: (BackupData) -> Unit,
-    onDelete: (BackupData) -> Unit,
-    onDismiss: () -> Unit
-) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberModalBottomSheetState()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.saved_backups),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = stringResource(R.string.backup_count, backups.size),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            if (backups.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.no_backups),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 320.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(backups) { backup ->
-                        BackupCard(
-                            backup = backup,
-                            onRestore = { onRestore(backup) },
-                            onDelete = { onDelete(backup) }
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-@Composable
-private fun SaveBackupDialog(
-    onSave: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var backupName by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.save_as_backup)) },
-        text = {
-            OutlinedTextField(
-                value = backupName,
-                onValueChange = { backupName = it },
-                label = { Text(stringResource(R.string.backup_name_hint)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val name = backupName.ifEmpty { "Backup ${System.currentTimeMillis()}" }
-                    onSave(name)
-                }
-            ) {
-                Text(stringResource(R.string.save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}

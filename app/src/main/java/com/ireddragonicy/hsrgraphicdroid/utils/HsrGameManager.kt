@@ -9,6 +9,7 @@ import com.topjohnwu.superuser.Shell
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import com.ireddragonicy.hsrgraphicdroid.data.GamePrefsBackupData
 
 /**
  * Manager class for interacting with Honkai: Star Rail game data.
@@ -406,12 +407,59 @@ class HsrGameManager(private val context: Context) {
         return runCatching { JSONArray(backupFile.readText()) }.getOrDefault(JSONArray())
     }
 
+    fun savePrefsBackup(name: String, prefs: GamePreferences): Boolean = runCatching {
+        val backups = loadPrefsBackupsAsJsonArray()
+        val entry = JSONObject()
+        entry.put("timestamp", System.currentTimeMillis())
+        entry.put("name", name)
+        entry.put("prefs", GamePreferences.toEncodedString(prefs))
+        backups.put(entry)
+        prefsBackupFile.writeText(backups.toString())
+        true
+    }.getOrDefault(false)
+
+    fun loadPrefsBackups(): List<GamePrefsBackupData> = runCatching {
+        if (!prefsBackupFile.exists()) return emptyList()
+        val arr = JSONArray(prefsBackupFile.readText())
+        val result = mutableListOf<GamePrefsBackupData>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            val timestamp = obj.optLong("timestamp", 0L)
+            val bName = obj.optString("name", "")
+            val prefsEncoded = obj.optString("prefs", "")
+            val prefs = GamePreferences.fromEncodedString(prefsEncoded) ?: continue
+            result.add(GamePrefsBackupData(timestamp, prefs, bName))
+        }
+        result
+    }.getOrDefault(emptyList())
+
+    fun deletePrefsBackup(backup: GamePrefsBackupData): Boolean = runCatching {
+        val arr = loadPrefsBackupsAsJsonArray()
+        val filtered = JSONArray()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            if (obj.optLong("timestamp", 0L) != backup.timestamp) {
+                filtered.put(obj)
+            }
+        }
+        prefsBackupFile.writeText(filtered.toString())
+        true
+    }.getOrDefault(false)
+
+    private fun loadPrefsBackupsAsJsonArray(): JSONArray {
+        if (!prefsBackupFile.exists()) return JSONArray()
+        return runCatching { JSONArray(prefsBackupFile.readText()) }.getOrDefault(JSONArray())
+    }
+
     // endregion
 
     // region Private Helpers
 
     private val backupFile: File
         get() = File(context.filesDir, BACKUP_FILE)
+
+    private val prefsBackupFile: File
+        get() = File(context.filesDir, PREFS_BACKUP_FILE)
 
     private fun detectInstalledPackage(): String? {
         for (pkg in GamePackage.entries) {
@@ -452,6 +500,7 @@ class HsrGameManager(private val context: Context) {
         private const val TAG = "HsrGameManager"
         private const val GRAPHICS_KEY = "GraphicsSettings_Model"
         private const val BACKUP_FILE = "hsr_backups.json"
+        private const val PREFS_BACKUP_FILE = "hsr_prefs_backups.json"
 
         // Game Preferences Keys
         private const val LAST_USER_ID_KEY = "App_LastUserID"

@@ -279,7 +279,7 @@
     <string name="export_logs">Export Logs</string>
     <string name="export_logs_desc">Save debug logs for troubleshooting</string>
     <string name="about_description">A premium tool for customizing Honkai: Star Rail graphics settings. Requires root access.</string>
-    <string name="license_info">Licensed under MIT License\n© 2025 iRedDragonICY</string>
+    <string name="license_info">Licensed under Apache-2.0 License\n© 2025 iRedDragonICY</string>
     
     <!-- New QoL & Graphics Settings -->
     <string name="pso_shader_warmup">PSO Shader Warmup</string>

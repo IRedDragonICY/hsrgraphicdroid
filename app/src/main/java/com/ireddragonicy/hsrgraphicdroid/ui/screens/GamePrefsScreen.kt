@@ -29,9 +29,14 @@ fun GamePrefsScreen(
 ) {
     val status by mainViewModel.status.collectAsStateWithLifecycle()
     val uiState by gamePrefsViewModel.uiState.collectAsStateWithLifecycle()
+    val canUndo by gamePrefsViewModel.canUndo.collectAsStateWithLifecycle()
+    val canRedo by gamePrefsViewModel.canRedo.collectAsStateWithLifecycle()
     
     var showResetDialog by remember { mutableStateOf(false) }
     var showApplyDialog by remember { mutableStateOf(false) }
+    var showSaveBackupDialog by remember { mutableStateOf(false) }
+    var showPendingChangesDialog by remember { mutableStateOf(false) }
+    var showBackupsSheet by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -48,28 +53,22 @@ fun GamePrefsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.game_preferences),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { showResetDialog = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_refresh),
-                            contentDescription = stringResource(R.string.reset)
-                        )
-                    }
-                }
+            EditorTopAppBar(
+                title = stringResource(R.string.game_preferences),
+                canUndo = canUndo,
+                canRedo = canRedo,
+                onUndo = { gamePrefsViewModel.undo() },
+                onRedo = { gamePrefsViewModel.redo() },
+                onReset = { showResetDialog = true }
             )
         },
         bottomBar = {
-            GamePrefsBottomBar(
+            EditorBottomBar(
                 hasChanges = uiState.hasChanges,
-                onReset = { showResetDialog = true },
-                onApply = { showApplyDialog = true }
+                pendingChangesCount = uiState.pendingChangesCount,
+                onSaveBackup = { showSaveBackupDialog = true },
+                onApply = { showApplyDialog = true },
+                onViewChanges = { showPendingChangesDialog = true }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -159,27 +158,49 @@ fun GamePrefsScreen(
         }
     }
 
+    // Backups Bottom Sheet
+    if (showBackupsSheet) {
+        GamePrefsBackupsBottomSheet(
+            backups = uiState.backups,
+            onRestore = { backup ->
+                gamePrefsViewModel.restoreBackup(backup)
+                showBackupsSheet = false
+            },
+            onDelete = { backup ->
+                gamePrefsViewModel.deleteBackup(backup)
+            },
+            onDismissRequest = { showBackupsSheet = false }
+        )
+    }
+
+    // Save Backup Dialog
+    if (showSaveBackupDialog) {
+        SaveBackupDialog(
+            onConfirm = { name ->
+                val finalName = name.ifEmpty { "Backup ${System.currentTimeMillis()}" }
+                gamePrefsViewModel.saveBackup(finalName)
+                showSaveBackupDialog = false
+            },
+            onDismissRequest = { showSaveBackupDialog = false }
+        )
+    }
+
     // Reset Dialog
     if (showResetDialog) {
-        AlertDialog(
-            onDismissRequest = { showResetDialog = false },
-            title = { Text(stringResource(R.string.reset_all_changes)) },
-            text = { Text(stringResource(R.string.reset_prefs_message)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        gamePrefsViewModel.resetToOriginal()
-                        showResetDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.reset))
-                }
+        ResetChangesDialog(
+            onConfirm = {
+                gamePrefsViewModel.resetToOriginal()
+                showResetDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showResetDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismissRequest = { showResetDialog = false }
+        )
+    }
+
+    // Pending Changes Dialog
+    if (showPendingChangesDialog) {
+        PendingChangesDialog(
+            changes = gamePrefsViewModel.getPendingChangesDetails(),
+            onDismissRequest = { showPendingChangesDialog = false }
         )
     }
 
@@ -219,7 +240,10 @@ private fun LanguageSettingsCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -303,7 +327,10 @@ private fun BlacklistCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -474,7 +501,10 @@ private fun QoLSettingsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -523,7 +553,10 @@ private fun UidSpecificSettingsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -572,7 +605,10 @@ private fun AssetDownloadSettingsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -620,46 +656,4 @@ private fun AssetDownloadSettingsCard(
     }
 }
 
-@Composable
-private fun GamePrefsBottomBar(
-    hasChanges: Boolean,
-    onReset: () -> Unit,
-    onApply: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surfaceContainer
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onReset,
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(painterResource(R.drawable.ic_refresh), null, Modifier.size(18.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.reset))
-            }
 
-            Button(
-                onClick = onApply,
-                modifier = Modifier.weight(1f),
-                colors = if (hasChanges) ButtonDefaults.buttonColors()
-                else ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            ) {
-                Icon(painterResource(R.drawable.ic_check), null, Modifier.size(18.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.apply))
-            }
-        }
-    }
-}
