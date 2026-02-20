@@ -732,6 +732,18 @@ private fun DisplaySettingsCard(
                 description = stringResource(R.string.speed_up_open_desc),
                 isModified = modifiedFields.contains("speedUpOpen")
             )
+
+            Spacer(Modifier.height(8.dp))
+
+            // PSO Shader Warmup
+            GraphicsSwitch(
+                label = stringResource(R.string.pso_shader_warmup),
+                checked = settings.enablePsoShaderWarmup,
+                onCheckedChange = { onSettingsChange(settings.copy(enablePsoShaderWarmup = it)) },
+                icon = painterResource(R.drawable.ic_memory),
+                description = stringResource(R.string.pso_shader_warmup_desc),
+                isModified = modifiedFields.contains("psoShader")
+            )
     }
 }
 

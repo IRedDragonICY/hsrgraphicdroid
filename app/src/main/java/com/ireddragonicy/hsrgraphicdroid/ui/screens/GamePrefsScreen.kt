@@ -100,6 +100,36 @@ fun GamePrefsScreen(
                     )
                 }
 
+                // QoL Settings Card
+                item {
+                    QoLSettingsCard(
+                        prefs = uiState.currentPrefs,
+                        onPreferenceChange = { key, isEnabled ->
+                            gamePrefsViewModel.updateBooleanPreference(key, isEnabled)
+                        }
+                    )
+                }
+
+                // UID Specific Settings Card
+                item {
+                    UidSpecificSettingsCard(
+                        prefs = uiState.currentPrefs,
+                        onPreferenceChange = { key, isEnabled ->
+                            gamePrefsViewModel.updateBooleanPreference(key, isEnabled)
+                        }
+                    )
+                }
+
+                // Asset Download Settings Card
+                item {
+                    AssetDownloadSettingsCard(
+                        prefs = uiState.currentPrefs,
+                        onPreferenceChange = { key, isEnabled ->
+                            gamePrefsViewModel.updateBooleanPreference(key, isEnabled)
+                        }
+                    )
+                }
+
                 // Video Blacklist Card
                 item {
                     BlacklistCard(
@@ -406,6 +436,188 @@ private fun AddBlacklistDialog(
             }
         }
     )
+}
+
+@Composable
+private fun PreferenceSwitchItem(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun QoLSettingsCard(
+    prefs: GamePreferences,
+    onPreferenceChange: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (prefs.isSaveBattleSpeed == null && prefs.autoBattleOpen == null) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_auto_awesome),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.qol_settings),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            
+            if (prefs.isSaveBattleSpeed != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.is_save_battle_speed),
+                    description = stringResource(R.string.is_save_battle_speed_desc),
+                    checked = prefs.isSaveBattleSpeed == 1,
+                    onCheckedChange = { onPreferenceChange("isSaveBattleSpeed", it) }
+                )
+            }
+            
+            if (prefs.autoBattleOpen != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.auto_battle_open),
+                    description = stringResource(R.string.auto_battle_open_desc),
+                    checked = prefs.autoBattleOpen == 1,
+                    onCheckedChange = { onPreferenceChange("autoBattleOpen", it) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UidSpecificSettingsCard(
+    prefs: GamePreferences,
+    onPreferenceChange: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (prefs.lastUserId == null || (prefs.showSimplifiedSkillDesc == null && prefs.rogueTournEnableGodMode == null)) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_person),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.uid_specific_settings),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            
+            if (prefs.showSimplifiedSkillDesc != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.simplified_skill_desc),
+                    description = stringResource(R.string.simplified_skill_desc_desc),
+                    checked = prefs.showSimplifiedSkillDesc == 1,
+                    onCheckedChange = { onPreferenceChange("showSimplifiedSkillDesc", it) }
+                )
+            }
+            
+            if (prefs.rogueTournEnableGodMode != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.rogue_tourn_god_mode),
+                    description = stringResource(R.string.rogue_tourn_god_mode_desc),
+                    checked = prefs.rogueTournEnableGodMode == 1,
+                    onCheckedChange = { onPreferenceChange("rogueTournEnableGodMode", it) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AssetDownloadSettingsCard(
+    prefs: GamePreferences,
+    onPreferenceChange: (String, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (prefs.needDownloadAllAssets == null && prefs.forceUpdateVideo == null && prefs.forceUpdateAudio == null) return
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_download),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.asset_downloads),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+            
+            if (prefs.needDownloadAllAssets != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.need_download_all_assets),
+                    description = stringResource(R.string.need_download_all_assets_desc),
+                    checked = prefs.needDownloadAllAssets == 1,
+                    onCheckedChange = { onPreferenceChange("needDownloadAllAssets", it) }
+                )
+            }
+            
+            if (prefs.forceUpdateVideo != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.force_update_video),
+                    description = stringResource(R.string.force_update_desc),
+                    checked = prefs.forceUpdateVideo == 1,
+                    onCheckedChange = { onPreferenceChange("forceUpdateVideo", it) }
+                )
+            }
+
+            if (prefs.forceUpdateAudio != null) {
+                PreferenceSwitchItem(
+                    title = stringResource(R.string.force_update_audio),
+                    description = stringResource(R.string.force_update_desc),
+                    checked = prefs.forceUpdateAudio == 1,
+                    onCheckedChange = { onPreferenceChange("forceUpdateAudio", it) }
+                )
+            }
+        }
+    }
 }
 
 @Composable

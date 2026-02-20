@@ -21,7 +21,21 @@ data class GamePreferences(
     
     // Blacklists (for skipping cutscenes/audio)
     var videoBlacklist: List<String> = emptyList(),
-    var audioBlacklist: List<String> = emptyList()
+    var audioBlacklist: List<String> = emptyList(),
+    
+    // Quality of Life (QoL)
+    var isSaveBattleSpeed: Int? = null,
+    var autoBattleOpen: Int? = null,
+    
+    // Updates & Downloads
+    var needDownloadAllAssets: Int? = null,
+    var forceUpdateVideo: Int? = null,
+    var forceUpdateAudio: Int? = null,
+    
+    // UID Specific Settings
+    var showSimplifiedSkillDesc: Int? = null,
+    var gridFightSeenSeasonTalentTree: Int? = null,
+    var rogueTournEnableGodMode: Int? = null
 ) {
     companion object {
         /**

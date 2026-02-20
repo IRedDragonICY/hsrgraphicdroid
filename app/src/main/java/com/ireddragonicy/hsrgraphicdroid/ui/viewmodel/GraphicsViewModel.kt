@@ -112,6 +112,9 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
             if (newSettings.enableHalfResTransparent != orig.enableHalfResTransparent) modifiedFields.add("halfRes")
             if (newSettings.dlssQuality != orig.dlssQuality) modifiedFields.add("dlss")
             if (newSettings.particleTrailSmoothness != orig.particleTrailSmoothness) modifiedFields.add("particleTrail")
+            if (newSettings.enablePsoShaderWarmup != orig.enablePsoShaderWarmup) modifiedFields.add("psoShader")
+            if (newSettings.isUserSave != orig.isUserSave) modifiedFields.add("isUserSave")
+            if (newSettings.version != orig.version) modifiedFields.add("version")
             if (newSettings.graphicsQuality != orig.graphicsQuality) modifiedFields.add("graphicsQuality")
             if (newSettings.speedUpOpen != orig.speedUpOpen) modifiedFields.add("speedUpOpen")
         }

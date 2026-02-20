@@ -15,11 +15,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ireddragonicy.hsrgraphicdroid.R
 import com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings
-import com.ireddragonicy.hsrgraphicdroid.ui.components.InfoCard
 import com.ireddragonicy.hsrgraphicdroid.ui.components.StatusChip
+import com.ireddragonicy.hsrgraphicdroid.data.GamePreferences
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.GameInfo
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.MainViewModel
 import com.ireddragonicy.hsrgraphicdroid.ui.viewmodel.StatusState
@@ -38,100 +39,131 @@ fun HomeScreen(
     
     var currentSettings by remember { mutableStateOf<GraphicsSettings?>(null) }
     var gameInfo by remember { mutableStateOf<GameInfo?>(null) }
+    var gamePrefs by remember { mutableStateOf<GamePreferences?>(null) }
+    var showUid by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         mainViewModel.refreshStatus()
         currentSettings = mainViewModel.readGraphicsSettings()
         gameInfo = mainViewModel.loadGameInfo()
+        gamePrefs = mainViewModel.readGamePreferences()
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        // Header Card
-        InfoCard(
-            title = stringResource(R.string.app_name),
-            subtitle = stringResource(R.string.quick_actions)
+        // App Header
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatusChip(
-                    text = if (status.isChecking) stringResource(R.string.checking)
-                    else if (status.isRootGranted) stringResource(R.string.root_granted)
-                    else stringResource(R.string.root_not_granted),
-                    isSuccess = status.isRootGranted,
-                    isLoading = status.isChecking
-                )
-                StatusChip(
-                    text = if (status.isChecking) stringResource(R.string.checking)
-                    else if (status.isGameInstalled) stringResource(R.string.game_found)
-                    else stringResource(R.string.game_not_found),
-                    isSuccess = status.isGameInstalled,
-                    isLoading = status.isChecking
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Game Info
-            status.gameVersion?.let { version ->
-                Text(
-                    text = "Version: $version",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
-            gameInfo?.let { info ->
-                info.apkName?.let { apk ->
-                    Text(
-                        text = "APK: $apk",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-                
-                if (info.dataBytes != null && info.cacheBytes != null) {
-                    Text(
-                        text = "Data: ${formatBytes(info.dataBytes)} • Cache: ${formatBytes(info.cacheBytes)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-
-            status.configPath?.let { path ->
-                Text(
-                    text = "Config Path: $path",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
+            StatusChip(
+                text = if (status.isChecking) stringResource(R.string.checking)
+                else if (status.isRootGranted) stringResource(R.string.root_granted)
+                else stringResource(R.string.root_not_granted),
+                isSuccess = status.isRootGranted,
+                isLoading = status.isChecking,
+                modifier = Modifier.weight(1f)
+            )
+            StatusChip(
+                text = if (status.isChecking) stringResource(R.string.checking)
+                else if (status.isGameInstalled) stringResource(R.string.game_found)
+                else stringResource(R.string.game_not_found),
+                isSuccess = status.isGameInstalled,
+                isLoading = status.isChecking,
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Quick Actions Card
-        ElevatedCard(
+        // Game Info Section (Modern Flat Look)
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                gamePrefs?.lastUserId?.let { uid ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Account UID",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = if (showUid) uid.toString() else "•".repeat(uid.toString().length),
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = { showUid = !showUid }) {
+                            Icon(
+                                painter = painterResource(if (showUid) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                                contentDescription = if (showUid) "Hide UID" else "Show UID",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.surfaceVariant)
+                }
+
+                status.gameVersion?.let { version ->
+                    InfoRow(label = "Version", value = version)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
+                gameInfo?.let { info ->
+                    info.apkName?.let { apk ->
+                        InfoRow(label = "Package", value = apk)
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                    if (info.dataBytes != null && info.cacheBytes != null) {
+                        InfoRow(label = "Storage", value = "${formatBytes(info.dataBytes)} Data • ${formatBytes(info.cacheBytes)} Cache")
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Quick Actions Card
+        Text(
+            text = stringResource(R.string.quick_actions),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.quick_actions),
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -263,29 +295,34 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Current Settings Preview
-        OutlinedCard(
+        Text(
+            text = stringResource(R.string.graphics_settings),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
+        )
+
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.graphics_settings),
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
                     text = stringResource(R.string.overall_graphics_quality),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 currentSettings?.let { settings ->
                     Text(
@@ -307,6 +344,28 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 16.dp)
+        )
     }
 }
 

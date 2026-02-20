@@ -280,4 +280,25 @@
     <string name="export_logs_desc">Save debug logs for troubleshooting</string>
     <string name="about_description">A premium tool for customizing Honkai: Star Rail graphics settings. Requires root access.</string>
     <string name="license_info">Licensed under MIT License\n© 2025 iRedDragonICY</string>
+    
+    <!-- New QoL & Graphics Settings -->
+    <string name="pso_shader_warmup">PSO Shader Warmup</string>
+    <string name="pso_shader_warmup_desc">Precompiles shaders to reduce stuttering during gameplay</string>
+    <string name="is_save_battle_speed">Save Battle Speed</string>
+    <string name="is_save_battle_speed_desc">Remembers your 2x speed preference between battles</string>
+    <string name="auto_battle_open">Auto-Battle by Default</string>
+    <string name="auto_battle_open_desc">Automatically enables auto-battle when combat starts</string>
+    <string name="need_download_all_assets">Download All Assets</string>
+    <string name="need_download_all_assets_desc">Downloads all voice and cutscene packs in advance</string>
+    <string name="force_update_video">Force Update Video</string>
+    <string name="force_update_audio">Force Update Audio</string>
+    <string name="force_update_desc">Forces the game to re-check and download assets on next launch</string>
+    <string name="uid_specific_settings">Account Specific Settings</string>
+    <string name="simplified_skill_desc">Simplified Skill Description</string>
+    <string name="simplified_skill_desc_desc">Shows shorter, concise skill descriptions in combat</string>
+    <string name="grid_fight_talent_tree">Grid Fight Event Settings</string>
+    <string name="rogue_tourn_god_mode">Simulated Universe: God Mode</string>
+    <string name="rogue_tourn_god_mode_desc">Enables internal test God Mode in Simulated Universe/Divergent Universe</string>
+    <string name="qol_settings">Quality of Life</string>
+    <string name="asset_downloads">Asset Downloads</string>
 </resources>

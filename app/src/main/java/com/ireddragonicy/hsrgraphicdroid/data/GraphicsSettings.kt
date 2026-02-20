@@ -26,7 +26,10 @@ data class GraphicsSettings(
     var screenHeight: Int = 1080,
     var graphicsQuality: Int = 3,
     var fullscreenMode: Int = 1,
-    var speedUpOpen: Int = 1
+    var speedUpOpen: Int = 1,
+    var enablePsoShaderWarmup: Boolean = true,
+    var isUserSave: Int = 1,
+    var version: Int = 10
 ) {
     companion object {
         fun fromEncodedString(encoded: String): GraphicsSettings? {
@@ -50,7 +53,10 @@ data class GraphicsSettings(
                     enableHalfResTransparent = json.optBoolean("EnableHalfResTransparent", false),
                     enableSelfShadow = json.optInt("EnableSelfShadow", 1),
                     dlssQuality = json.optInt("DlssQuality", 0),
-                    particleTrailSmoothness = json.optInt("ParticleTrailSmoothness", 0)
+                    particleTrailSmoothness = json.optInt("ParticleTrailSmoothness", 0),
+                    enablePsoShaderWarmup = json.optBoolean("EnablePsoShaderWarmup", true),
+                    isUserSave = json.optInt("IsUserSave", 1),
+                    version = json.optInt("Version", 10)
                 )
             } catch (e: Exception) {
                 null
@@ -76,6 +82,9 @@ data class GraphicsSettings(
             json.put("EnableSelfShadow", settings.enableSelfShadow)
             json.put("DlssQuality", settings.dlssQuality)
             json.put("ParticleTrailSmoothness", settings.particleTrailSmoothness)
+            json.put("EnablePsoShaderWarmup", settings.enablePsoShaderWarmup)
+            json.put("IsUserSave", settings.isUserSave)
+            json.put("Version", settings.version)
             return URLEncoder.encode(json.toString(), "UTF-8")
         }
     }

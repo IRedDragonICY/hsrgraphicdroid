@@ -102,22 +102,6 @@ class HsrGameManager(private val context: Context) {
                 newContent = content.replace("</map>", """    <string name="$GRAPHICS_KEY">$encoded</string>
 </map>""")
             }
-
-            // Helper to update int values
-            // Note: XML format can be either <int ... /> or <int .../>
-            fun updateInt(key: String, value: Int, xml: String): String {
-                // Escape special regex characters in key (like % in URL-encoded names)
-                val escapedKey = Regex.escape(key)
-                // Match both formats: with or without space before />
-                val regex = """<int name="$escapedKey" value="(-?\d+)"\s*/>""".toRegex()
-                return if (regex.containsMatchIn(xml)) {
-                    xml.replace(regex, """<int name="$key" value="$value" />""")
-                } else {
-                    xml.replace("</map>", """    <int name="$key" value="$value" />
-</map>""")
-                }
-            }
-            
             newContent = updateInt("Screenmanager%20Resolution%20Width", settings.screenWidth, newContent)
             newContent = updateInt("Screenmanager%20Resolution%20Height", settings.screenHeight, newContent)
             newContent = updateInt("Screenmanager%20Fullscreen%20mode", settings.fullscreenMode, newContent)
@@ -200,8 +184,26 @@ class HsrGameManager(private val context: Context) {
             val elfHintRegex = """<int name="User_\d+_ElfOrderNeedShowNewHint" value="(\d+)" />""".toRegex()
             val elfOrderHint = elfHintRegex.find(content)?.groupValues?.get(1)?.toIntOrNull() == 1
             
+            val lastUserId = LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull()
+            
+            val isSaveBattleSpeed = """<int name="OtherSettings_IsSaveBattleSpeed" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            val autoBattleOpen = """<int name="OtherSettings_AutoBattleOpen" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            val needDownloadAllAssets = """<int name="App_NeedDownloadAllAssets" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            val forceUpdateVideo = """<int name="App_ForceUpdateVideo" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            val forceUpdateAudio = """<int name="App_ForceUpdateAudio" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            
+            val showSimplifiedSkillDesc = lastUserId?.let { uid ->
+                """<int name="User_${uid}_ShowSimplifiedSkillDesc" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            }
+            val gridFightSeenSeasonTalentTree = lastUserId?.let { uid ->
+                """<int name="User_${uid}_GridFightSeenSeasonTalentTree" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            }
+            val rogueTournEnableGodMode = lastUserId?.let { uid ->
+                """<int name="User_${uid}_RogueTournEnableGodMode" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
+            }
+            
             GamePreferences(
-                lastUserId = LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull(),
+                lastUserId = lastUserId,
                 lastServerName = LAST_SERVER_REGEX.find(content)?.groupValues?.get(1),
                 textLanguage = GamePreferences.getTextLanguageFromCode(
                     TEXT_LANGUAGE_REGEX.find(content)?.groupValues?.get(1) ?: "en"
@@ -215,7 +217,15 @@ class HsrGameManager(private val context: Context) {
                 ),
                 audioBlacklist = GamePreferences.parseBlacklistFromEncoded(
                     AUDIO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
-                )
+                ),
+                isSaveBattleSpeed = isSaveBattleSpeed,
+                autoBattleOpen = autoBattleOpen,
+                needDownloadAllAssets = needDownloadAllAssets,
+                forceUpdateVideo = forceUpdateVideo,
+                forceUpdateAudio = forceUpdateAudio,
+                showSimplifiedSkillDesc = showSimplifiedSkillDesc,
+                gridFightSeenSeasonTalentTree = gridFightSeenSeasonTalentTree,
+                rogueTournEnableGodMode = rogueTournEnableGodMode
             )
         }.onFailure { e ->
             Log.e(TAG, "Error reading game preferences", e)
@@ -317,6 +327,35 @@ class HsrGameManager(private val context: Context) {
         return Shell.cmd(
             "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
         ).exec().isSuccess.also { tempFile.delete() }
+    }
+
+    /**
+     * Write new QoL, Asset Update, and UID specific settings
+     */
+    fun writeOtherPreferences(prefs: GamePreferences): Boolean {
+        if (!isRootAvailable) return false
+        val prefsPath = findPrefsPath() ?: return false
+        
+        return runCatching {
+            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+            
+            prefs.isSaveBattleSpeed?.let { content = updateInt("OtherSettings_IsSaveBattleSpeed", it, content) }
+            prefs.autoBattleOpen?.let { content = updateInt("OtherSettings_AutoBattleOpen", it, content) }
+            prefs.needDownloadAllAssets?.let { content = updateInt("App_NeedDownloadAllAssets", it, content) }
+            prefs.forceUpdateVideo?.let { content = updateInt("App_ForceUpdateVideo", it, content) }
+            prefs.forceUpdateAudio?.let { content = updateInt("App_ForceUpdateAudio", it, content) }
+            
+            // UID specific settings
+            val uid = prefs.lastUserId ?: LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull()
+            
+            if (uid != null) {
+                prefs.showSimplifiedSkillDesc?.let { content = updateInt("User_${uid}_ShowSimplifiedSkillDesc", it, content) }
+                prefs.gridFightSeenSeasonTalentTree?.let { content = updateInt("User_${uid}_GridFightSeenSeasonTalentTree", it, content) }
+                prefs.rogueTournEnableGodMode?.let { content = updateInt("User_${uid}_RogueTournEnableGodMode", it, content) }
+            }
+            
+            writePrefsContent(content)
+        }.getOrDefault(false)
     }
 
     // endregion
@@ -447,6 +486,18 @@ class HsrGameManager(private val context: Context) {
             """<int name="Screenmanager%20Fullscreen%20mode" value="(-?\d+)" />""".toRegex()
         private val GRAPHICS_QUALITY_REGEX = 
             """<int name="GraphicsSettings_GraphicsQuality" value="(\d+)" />""".toRegex()
+
+        // Helper to update int values in XML safely
+        fun updateInt(key: String, value: Int, xml: String): String {
+            val escapedKey = Regex.escape(key)
+            val regex = """<int name="$escapedKey" value="(-?\d+)"\s*/>""".toRegex()
+            return if (regex.containsMatchIn(xml)) {
+                xml.replace(regex, """<int name="$key" value="$value" />""")
+            } else {
+                xml.replace("</map>", """    <int name="$key" value="$value" />
+</map>""")
+            }
+        }
 
         private val PREFS_PATH_TEMPLATES = listOf(
             "/data_mirror/data_ce/null/0/%s/shared_prefs/%s", // Modern Android bypasses mount namespace isolation

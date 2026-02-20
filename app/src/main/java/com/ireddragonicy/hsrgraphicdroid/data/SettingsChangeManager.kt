@@ -137,6 +137,9 @@ class SettingsChangeManager {
         compareField("Half Res Transparent", localSettings.enableHalfResTransparent, gameSettings.enableHalfResTransparent)?.let { changes.add(it) }
         compareField("DLSS Quality", localSettings.dlssQuality, gameSettings.dlssQuality)?.let { changes.add(it) }
         compareField("Particle Trail", localSettings.particleTrailSmoothness, gameSettings.particleTrailSmoothness)?.let { changes.add(it) }
+        compareField("PSO Shader Warmup", localSettings.enablePsoShaderWarmup, gameSettings.enablePsoShaderWarmup)?.let { changes.add(it) }
+        compareField("Is User Save", localSettings.isUserSave, gameSettings.isUserSave)?.let { changes.add(it) }
+        compareField("Version", localSettings.version, gameSettings.version)?.let { changes.add(it) }
         compareField("Graphics Quality", localSettings.graphicsQuality, gameSettings.graphicsQuality)?.let { changes.add(it) }
         
         _externalChanges.value = changes
@@ -215,6 +218,15 @@ class SettingsChangeManager {
         if (currentSettings.particleTrailSmoothness != baseline.particleTrailSmoothness) {
             changes.add(SettingChange("Particle Trail", baseline.particleTrailSmoothness.toString(), currentSettings.particleTrailSmoothness.toString()))
         }
+        if (currentSettings.enablePsoShaderWarmup != baseline.enablePsoShaderWarmup) {
+            changes.add(SettingChange("PSO Shader Warmup", baseline.enablePsoShaderWarmup.toString(), currentSettings.enablePsoShaderWarmup.toString()))
+        }
+        if (currentSettings.isUserSave != baseline.isUserSave) {
+            changes.add(SettingChange("Is User Save", baseline.isUserSave.toString(), currentSettings.isUserSave.toString()))
+        }
+        if (currentSettings.version != baseline.version) {
+            changes.add(SettingChange("Version", baseline.version.toString(), currentSettings.version.toString()))
+        }
         if (currentSettings.graphicsQuality != baseline.graphicsQuality) {
             changes.add(SettingChange("Graphics Quality", baseline.graphicsQuality.toString(), currentSettings.graphicsQuality.toString()))
         }
@@ -258,6 +270,9 @@ class SettingsChangeManager {
         if (currentSettings.enableHalfResTransparent != baseline.enableHalfResTransparent) modified.add("halfRes")
         if (currentSettings.dlssQuality != baseline.dlssQuality) modified.add("dlss")
         if (currentSettings.particleTrailSmoothness != baseline.particleTrailSmoothness) modified.add("particleTrail")
+        if (currentSettings.enablePsoShaderWarmup != baseline.enablePsoShaderWarmup) modified.add("psoShader")
+        if (currentSettings.isUserSave != baseline.isUserSave) modified.add("isUserSave")
+        if (currentSettings.version != baseline.version) modified.add("version")
         if (currentSettings.graphicsQuality != baseline.graphicsQuality) modified.add("graphicsQuality")
         
         _modifiedFields.value = modified

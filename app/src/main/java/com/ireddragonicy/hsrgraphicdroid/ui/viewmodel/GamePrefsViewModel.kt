@@ -144,8 +144,13 @@ class GamePrefsViewModel(application: Application) : AndroidViewModel(applicatio
             val audioSuccess = withContext(Dispatchers.IO) {
                 gameManager.writeAudioBlacklist(prefs.audioBlacklist)
             }
+            
+            // Apply other settings
+            val otherSuccess = withContext(Dispatchers.IO) {
+                gameManager.writeOtherPreferences(prefs)
+            }
 
-            if (langSuccess && videoSuccess && audioSuccess) {
+            if (langSuccess && videoSuccess && audioSuccess && otherSuccess) {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -182,11 +187,40 @@ class GamePrefsViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun updateBooleanPreference(key: String, isEnabled: Boolean) {
+        val value = if (isEnabled) 1 else 0
+        _uiState.update { state ->
+            val newPrefs = when(key) {
+                "isSaveBattleSpeed" -> state.currentPrefs.copy(isSaveBattleSpeed = value)
+                "autoBattleOpen" -> state.currentPrefs.copy(autoBattleOpen = value)
+                "needDownloadAllAssets" -> state.currentPrefs.copy(needDownloadAllAssets = value)
+                "forceUpdateVideo" -> state.currentPrefs.copy(forceUpdateVideo = value)
+                "forceUpdateAudio" -> state.currentPrefs.copy(forceUpdateAudio = value)
+                "showSimplifiedSkillDesc" -> state.currentPrefs.copy(showSimplifiedSkillDesc = value)
+                "gridFightSeenSeasonTalentTree" -> state.currentPrefs.copy(gridFightSeenSeasonTalentTree = value)
+                "rogueTournEnableGodMode" -> state.currentPrefs.copy(rogueTournEnableGodMode = value)
+                else -> state.currentPrefs
+            }
+            state.copy(
+                currentPrefs = newPrefs,
+                hasChanges = hasChanges(newPrefs, state.originalPreferences)
+            )
+        }
+    }
+
     private fun hasChanges(current: GamePreferences, original: GamePreferences?): Boolean {
         if (original == null) return false
         return current.textLanguage != original.textLanguage ||
                 current.audioLanguage != original.audioLanguage ||
                 current.videoBlacklist != original.videoBlacklist ||
-                current.audioBlacklist != original.audioBlacklist
+                current.audioBlacklist != original.audioBlacklist ||
+                current.isSaveBattleSpeed != original.isSaveBattleSpeed ||
+                current.autoBattleOpen != original.autoBattleOpen ||
+                current.needDownloadAllAssets != original.needDownloadAllAssets ||
+                current.forceUpdateVideo != original.forceUpdateVideo ||
+                current.forceUpdateAudio != original.forceUpdateAudio ||
+                current.showSimplifiedSkillDesc != original.showSimplifiedSkillDesc ||
+                current.gridFightSeenSeasonTalentTree != original.gridFightSeenSeasonTalentTree ||
+                current.rogueTournEnableGodMode != original.rogueTournEnableGodMode
     }
 }
