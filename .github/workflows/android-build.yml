@@ -42,7 +42,7 @@ jobs:
     - name: Build Debug APK
       run: ./gradlew assembleDebug --stacktrace
       
-    - name: Optimize APK with zipalign
+    - name: Optimize and Sign APK
       run: |
         # Find and optimize APKs
         RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" -type f | head -1)
@@ -50,12 +50,26 @@ jobs:
           ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
           BUILD_TOOLS_VERSION=$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -1)
           ZIPALIGN="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/zipalign"
+          APKSIGNER="$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner"
           
-          if [ -f "$ZIPALIGN" ]; then
+          if [ -f "$ZIPALIGN" ] && [ -f "$APKSIGNER" ]; then
             ALIGNED_APK="${RELEASE_APK%.apk}-aligned.apk"
+            
+            # Step 1: Zipalign (this invalidates the existing v1/v2/v3 signatures)
             "$ZIPALIGN" -v 4 "$RELEASE_APK" "$ALIGNED_APK"
             mv "$ALIGNED_APK" "$RELEASE_APK"
             echo "✅ APK optimized with zipalign"
+            
+            # Step 2: Re-Sign the aligned APK using the decoded keystore
+            "$APKSIGNER" sign \
+              --ks ${{ github.workspace }}/keystore.jks \
+              --ks-key-alias ${{ secrets.KEY_ALIAS }} \
+              --ks-pass pass:${{ secrets.KEY_STORE_PASSWORD }} \
+              --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+              "$RELEASE_APK"
+            echo "✅ APK signed with apksigner (v2/v3 signatures restored)"
+          else
+            echo "⚠️ Could not find zipalign or apksigner in $ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/"
           fi
         fi
         
