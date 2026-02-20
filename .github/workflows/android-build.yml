@@ -125,31 +125,30 @@ jobs:
         tag_name: ${{ steps.version.outputs.tag }}
         name: Pre-Release ${{ steps.version.outputs.version }} (Build ${{ steps.version.outputs.build }})
         body: |
-          ## 🚀 Auto-Build Pre-Release
+          ## Automated Pre-Release Build
           
           **Version:** ${{ steps.version.outputs.version }}
           **Build Number:** ${{ steps.version.outputs.build }}
           **Commit:** ${{ github.sha }}
           **Branch:** ${{ github.ref_name }}
           
-          ### 📦 Downloads
-          - **Release APK**: Optimized & signed production build ✅
-          - **Debug APK**: For testing with detailed logs
+          ### Build Artifacts
+          - **Release APK**: Signed and optimized production build
+          - **Debug APK**: Unobfuscated testing build with detailed logs
           
-          ### ✨ Optimizations Applied
-          - ✅ R8/ProGuard minification enabled
-          - ✅ Resource shrinking enabled  
-          - ✅ APK signed & zipaligned
-          - ✅ Unused code removed
+          ### Optimizations Applied
+          - R8/ProGuard minification
+          - Resource shrinking
+          - APK signature and zipalign optimization
           
-          ### ⚠️ Pre-Release Notice
-          This is an automated pre-release build. It may contain bugs or unstable features.
+          ### Pre-Release Notice
+          This is an automated pre-release build generated directly from the latest commit. It may contain bugs or unstable features.
           
-          ### 📝 Recent Changes
+          ### Changelog
           ${{ github.event.head_commit.message }}
           
           ---
-          Built automatically by GitHub Actions
+          *Built automatically by GitHub Actions*
         draft: false
         prerelease: true
         files: |
