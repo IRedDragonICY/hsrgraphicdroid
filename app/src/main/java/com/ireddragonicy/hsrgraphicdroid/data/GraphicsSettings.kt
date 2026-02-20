@@ -155,8 +155,8 @@ data class GraphicsSettings(
     fun getAAModeName(mode: Int): String {
         return when (mode) {
             0 -> "Off"
-            1 -> "TAA"
-            2 -> "SMAA"
+            1 -> "FXAA"
+            2 -> "TAA"
             else -> "Off"
         }
     }

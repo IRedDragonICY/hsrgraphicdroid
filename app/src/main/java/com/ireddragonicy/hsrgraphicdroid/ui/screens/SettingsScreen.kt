@@ -4,12 +4,15 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -131,25 +134,28 @@ private fun AppearanceCard(
     val effectiveDarkMode = isDarkMode ?: false
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.appearance),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // Theme Setting
             SettingsRow(
                 icon = if (effectiveDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
                 title = stringResource(R.string.theme),
@@ -157,39 +163,25 @@ private fun AppearanceCard(
                 onClick = onThemeClick
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Dynamic Color Setting
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ColorLens,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.dynamic_color),
-                        style = MaterialTheme.typography.bodyLarge
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.dynamic_color)) },
+                supportingContent = { Text(stringResource(R.string.dynamic_color_desc)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.ColorLens,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = stringResource(R.string.dynamic_color_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                trailingContent = {
+                    Switch(
+                        checked = useDynamicColor,
+                        onCheckedChange = onDynamicColorChange
                     )
-                }
-                Switch(
-                    checked = useDynamicColor,
-                    onCheckedChange = onDynamicColorChange
-                )
-            }
+                },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // Language Setting
             SettingsRow(
                 icon = Icons.Default.Language,
                 title = stringResource(R.string.app_language),
@@ -210,23 +202,27 @@ private fun AboutCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.about),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-
-            Spacer(Modifier.height(16.dp))
 
             SettingsRow(
                 icon = Icons.Default.Info,
@@ -235,16 +231,12 @@ private fun AboutCard(
                 onClick = onAboutClick
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
             SettingsRow(
                 icon = Icons.Default.Code,
                 title = stringResource(R.string.github_repo),
                 subtitle = stringResource(R.string.view_source_code),
                 onClick = onGitHubClick
             )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             SettingsRow(
                 icon = Icons.Default.BugReport,
@@ -264,23 +256,27 @@ private fun AdvancedCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Build,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.advanced),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-
-            Spacer(Modifier.height(16.dp))
 
             SettingsRow(
                 icon = Icons.Default.DeleteForever,
@@ -288,8 +284,6 @@ private fun AdvancedCard(
                 subtitle = stringResource(R.string.clear_app_data_desc),
                 onClick = onClearDataClick
             )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             SettingsRow(
                 icon = Icons.Default.FileDownload,
@@ -309,41 +303,26 @@ private fun SettingsRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(subtitle) },
+        leadingContent = {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        },
+        trailingContent = {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        }
-    }
+        },
+        modifier = modifier.clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    )
 }
 
 @Composable
