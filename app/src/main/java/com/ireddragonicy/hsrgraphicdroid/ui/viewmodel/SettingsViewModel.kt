@@ -92,8 +92,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     // Compose UI helpers
-    fun setDarkMode(isDark: Boolean) {
-        val theme = if (isDark) AppTheme.DARK else AppTheme.LIGHT
+    fun setDarkMode(isDark: Boolean?) {
+        val theme = when (isDark) {
+            true -> AppTheme.DARK
+            false -> AppTheme.LIGHT
+            null -> AppTheme.SYSTEM
+        }
         updateTheme(theme)
     }
 

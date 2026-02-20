@@ -98,7 +98,7 @@ fun SettingsScreen(
     // Theme Dialog
     if (showThemeDialog) {
         ThemeDialog(
-            isDarkMode = uiState.isDarkMode ?: false,
+            isDarkMode = uiState.isDarkMode,
             onDarkModeChange = { settingsViewModel.setDarkMode(it) },
             onDismiss = { showThemeDialog = false }
         )
@@ -157,9 +157,9 @@ private fun AppearanceCard(
             }
 
             SettingsRow(
-                icon = if (effectiveDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                icon = if (isDarkMode == null) Icons.Default.BrightnessAuto else if (effectiveDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
                 title = stringResource(R.string.theme),
-                subtitle = stringResource(if (effectiveDarkMode) R.string.dark_theme else R.string.light_theme),
+                subtitle = if (isDarkMode == null) stringResource(R.string.language_system) else stringResource(if (effectiveDarkMode) R.string.dark_theme else R.string.light_theme),
                 onClick = onThemeClick
             )
 
@@ -327,8 +327,8 @@ private fun SettingsRow(
 
 @Composable
 private fun ThemeDialog(
-    isDarkMode: Boolean,
-    onDarkModeChange: (Boolean) -> Unit,
+    isDarkMode: Boolean?,
+    onDarkModeChange: (Boolean?) -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -343,7 +343,20 @@ private fun ThemeDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = !isDarkMode,
+                        selected = isDarkMode == null,
+                        onClick = { onDarkModeChange(null) }
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.language_system))
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = isDarkMode == false,
                         onClick = { onDarkModeChange(false) }
                     )
                     Spacer(Modifier.width(8.dp))
@@ -356,7 +369,7 @@ private fun ThemeDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = isDarkMode,
+                        selected = isDarkMode == true,
                         onClick = { onDarkModeChange(true) }
                     )
                     Spacer(Modifier.width(8.dp))
@@ -379,9 +392,11 @@ private fun LanguageDialog(
     onDismiss: () -> Unit
 ) {
     val languages = listOf(
+        "system" to stringResource(R.string.language_system),
         "en" to "English",
         "zh" to "中文",
         "ja" to "日本語",
+        "ru" to "Русский",
         "id" to "Bahasa Indonesia"
     )
 
@@ -449,11 +464,14 @@ private fun AboutDialog(
     )
 }
 
+@Composable
 private fun getLanguageDisplayName(code: String): String {
     return when (code) {
+        "system" -> stringResource(R.string.language_system)
         "en" -> "English"
         "zh" -> "中文"
         "ja" -> "日本語"
+        "ru" -> "Русский"
         "id" -> "Bahasa Indonesia"
         else -> code
     }
