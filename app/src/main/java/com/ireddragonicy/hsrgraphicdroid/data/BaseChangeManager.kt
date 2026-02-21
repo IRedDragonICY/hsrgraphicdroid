@@ -191,4 +191,43 @@ abstract class BaseChangeManager<T> {
             SettingChange(name, localValue.toString(), gameValue.toString())
         } else null
     }
+
+    /**
+     * Helper to compute diffs between two settings objects via Java Reflection.
+     * Generates a list of SettingChange objects.
+     */
+    protected inline fun <reified T : Any> diffSettings(
+        old: T,
+        new: T,
+        displayNames: Map<String, String>,
+        crossinline valueFormatter: (fieldName: String, value: Any?) -> String = { _, v -> v?.toString() ?: "null" }
+    ): List<SettingChange> {
+        val changes = mutableListOf<SettingChange>()
+        val fields = T::class.java.declaredFields
+
+        for (field in fields) {
+            // Skip synthetic/compiler-generated fields or Jacoco constants to prevent crashes
+            if (field.isSynthetic || field.name.startsWith("\$")) continue
+            
+            try {
+                field.isAccessible = true
+                val oldValue = field.get(old)
+                val newValue = field.get(new)
+
+                if (oldValue != newValue) {
+                    val displayName = displayNames[field.name] ?: field.name
+                    changes.add(
+                        SettingChange(
+                            fieldName = displayName,
+                            localValue = valueFormatter(field.name, newValue),
+                            gameValue = valueFormatter(field.name, oldValue)
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                // Ignore any reflection exceptions during iteration
+            }
+        }
+        return changes
+    }
 }

@@ -72,15 +72,18 @@
     java.lang.String toString();
 }
 
-# Strip Kotlin metadata completely
--dontwarn kotlin.**
--dontwarn kotlinx.**
+# Strip minimal Kotlin metadata but keep reflection requirements
 -keep class kotlin.Metadata { *; }
 
-# Minimal attributes - only keep what's absolutely necessary
+# Keep data classes used for Java reflection to prevent R8 from renaming their fields
+-keep class com.ireddragonicy.hsrgraphicdroid.data.GraphicsSettings { *; }
+-keep class com.ireddragonicy.hsrgraphicdroid.data.GamePreferences { *; }
+
+# Minimal attributes - keep what's absolutely necessary for reflection
 -keepattributes Signature
 -keepattributes *Annotation*
 -keepattributes Exceptions
+-keepattributes RuntimeVisibleAnnotations
 
 # ==================== LIBRARY RULES (MINIMAL) ====================
 

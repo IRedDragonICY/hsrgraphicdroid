@@ -82,7 +82,18 @@ fun GraphicsScreen(
             graphicsViewModel.clearMessage()
         }
         uiState.successMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            val actionResult = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = context.getString(R.string.launch_game),
+                duration = SnackbarDuration.Long
+            )
+            if (actionResult == SnackbarResult.ActionPerformed) {
+                mainViewModel.currentPackage()?.let { pkg ->
+                    context.packageManager.getLaunchIntentForPackage(pkg)?.let { intent ->
+                        context.startActivity(intent)
+                    }
+                }
+            }
             graphicsViewModel.clearMessage()
         }
     }

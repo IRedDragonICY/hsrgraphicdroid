@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,6 +28,7 @@ fun GamePrefsScreen(
     gamePrefsViewModel: GamePrefsViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val status by mainViewModel.status.collectAsStateWithLifecycle()
     val uiState by gamePrefsViewModel.uiState.collectAsStateWithLifecycle()
     val canUndo by gamePrefsViewModel.canUndo.collectAsStateWithLifecycle()
@@ -46,7 +48,18 @@ fun GamePrefsScreen(
             gamePrefsViewModel.clearMessage()
         }
         uiState.successMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            val actionResult = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = context.getString(R.string.launch_game),
+                duration = SnackbarDuration.Long
+            )
+            if (actionResult == SnackbarResult.ActionPerformed) {
+                mainViewModel.currentPackage()?.let { pkg ->
+                    context.packageManager.getLaunchIntentForPackage(pkg)?.let { intent ->
+                        context.startActivity(intent)
+                    }
+                }
+            }
             gamePrefsViewModel.clearMessage()
         }
     }

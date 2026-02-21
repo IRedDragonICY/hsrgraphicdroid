@@ -43,39 +43,22 @@ class HsrGameManager(private val context: Context) {
             return null
         }
 
-        val prefsPath = findPrefsPath() ?: run {
-            Log.e(TAG, "Could not find game preferences file")
-            return null
-        }
+        val map = getPrefsMap() ?: return null
 
         return runCatching {
-            val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            if (content.isEmpty()) {
-                Log.e(TAG, "Preferences file is empty")
+            val encoded = map[GRAPHICS_KEY] as? String ?: run {
+                Log.e(TAG, "GraphicsSettings_Model key not found in map")
                 return null
             }
             
-            Log.d(TAG, "File content length: ${content.length}")
-
-            val encoded = GRAPHICS_REGEX.find(content)?.groupValues?.get(1) ?: run {
-                Log.e(TAG, "GraphicsSettings_Model key not found in content")
-                Log.d(TAG, "Content preview: ${content.take(1000)}")
-                return null
-            }
-            
-            Log.d(TAG, "Found encoded string length: ${encoded.length}")
-
             GraphicsSettings.fromEncodedString(encoded).also {
                 if (it == null) {
-                    Log.e(TAG, "Failed to parse encoded string: ${encoded.take(200)}")
+                    Log.e(TAG, "Failed to parse encoded string")
                 } else {
-                    Log.d(TAG, "Successfully parsed settings - FPS: ${it.fps}, Quality: ${it.graphicsQuality}")
-                    
-                    // Parse other fields from XML content
-                    it.screenWidth = RESOLUTION_WIDTH_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1920
-                    it.screenHeight = RESOLUTION_HEIGHT_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1080
-                    it.fullscreenMode = FULLSCREEN_MODE_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 1
-                    it.graphicsQuality = GRAPHICS_QUALITY_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull() ?: 3
+                    it.screenWidth = map["Screenmanager%20Resolution%20Width"] as? Int ?: 1920
+                    it.screenHeight = map["Screenmanager%20Resolution%20Height"] as? Int ?: 1080
+                    it.fullscreenMode = map["Screenmanager%20Fullscreen%20mode"] as? Int ?: 1
+                    it.graphicsQuality = map["GraphicsSettings_GraphicsQuality"] as? Int ?: 3
                 }
             }
         }.onFailure { e ->
@@ -85,41 +68,16 @@ class HsrGameManager(private val context: Context) {
 
     fun writeSettings(settings: GraphicsSettings): Boolean {
         if (!isRootAvailable) return false
-
-        val prefsPath = findPrefsPath() ?: return false
-        val pkg = installedGamePackage ?: return false
+        val map = getPrefsMap() ?: return false
 
         return runCatching {
-            val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            val encoded = GraphicsSettings.toEncodedString(settings)
+            map[GRAPHICS_KEY] = GraphicsSettings.toEncodedString(settings)
+            map["Screenmanager%20Resolution%20Width"] = settings.screenWidth
+            map["Screenmanager%20Resolution%20Height"] = settings.screenHeight
+            map["Screenmanager%20Fullscreen%20mode"] = settings.fullscreenMode
+            map["GraphicsSettings_GraphicsQuality"] = settings.graphicsQuality
             
-            var newContent = content
-            if (GRAPHICS_REGEX.containsMatchIn(content)) {
-                newContent = content.replace(GRAPHICS_REGEX) {
-                    """<string name="$GRAPHICS_KEY">$encoded</string>"""
-                }
-            } else {
-                // Insert if missing
-                newContent = content.replace("</map>", """    <string name="$GRAPHICS_KEY">$encoded</string>
-</map>""")
-            }
-            newContent = updateInt("Screenmanager%20Resolution%20Width", settings.screenWidth, newContent)
-            newContent = updateInt("Screenmanager%20Resolution%20Height", settings.screenHeight, newContent)
-            newContent = updateInt("Screenmanager%20Fullscreen%20mode", settings.fullscreenMode, newContent)
-            // GraphicsSettings_GraphicsQuality is Unity's master quality:
-            // 0 = Custom (allows modifying extended settings not in game UI)
-            // 1-5 = Game presets (Very Low to Very High) - game will use its default values
-            // If user selected a game preset (1-5), game will override GraphicsSettings_Model values
-            // If user selected Custom (0), game will use the values from GraphicsSettings_Model
-            newContent = updateInt("GraphicsSettings_GraphicsQuality", settings.graphicsQuality, newContent)
-
-            val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
-                writeText(newContent)
-            }
-
-            Shell.cmd(
-                "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
-            ).exec().isSuccess.also { tempFile.delete() }
+            savePrefsMap(map)
         }.getOrDefault(false)
     }
 
@@ -175,58 +133,36 @@ class HsrGameManager(private val context: Context) {
     fun readGamePreferences(): GamePreferences? {
         if (!isRootAvailable) return null
         
-        val prefsPath = findPrefsPath() ?: return null
+        val map = getPrefsMap() ?: return null
         
         return runCatching {
-            val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            if (content.isEmpty()) return null
-            
-            // Parse Elf Order hint - look for User_*_ElfOrderNeedShowNewHint
-            val elfHintRegex = """<int name="User_\d+_ElfOrderNeedShowNewHint" value="(\d+)" />""".toRegex()
-            val elfOrderHint = elfHintRegex.find(content)?.groupValues?.get(1)?.toIntOrNull() == 1
-            
-            val lastUserId = LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull()
-            
-            val isSaveBattleSpeed = """<int name="OtherSettings_IsSaveBattleSpeed" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            val autoBattleOpen = """<int name="OtherSettings_AutoBattleOpen" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            val needDownloadAllAssets = """<int name="App_NeedDownloadAllAssets" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            val forceUpdateVideo = """<int name="App_ForceUpdateVideo" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            val forceUpdateAudio = """<int name="App_ForceUpdateAudio" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            
-            val showSimplifiedSkillDesc = lastUserId?.let { uid ->
-                """<int name="User_${uid}_ShowSimplifiedSkillDesc" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            }
-            val gridFightSeenSeasonTalentTree = lastUserId?.let { uid ->
-                """<int name="User_${uid}_GridFightSeenSeasonTalentTree" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            }
-            val rogueTournEnableGodMode = lastUserId?.let { uid ->
-                """<int name="User_${uid}_RogueTournEnableGodMode" value="(-?\d+)"\s*/>""".toRegex().find(content)?.groupValues?.get(1)?.toIntOrNull()
-            }
+            val lastUserId = map[LAST_USER_ID_KEY] as? Int
+            val elfOrderHint = map["User_${lastUserId}_ElfOrderNeedShowNewHint"] == 1
             
             GamePreferences(
                 lastUserId = lastUserId,
-                lastServerName = LAST_SERVER_REGEX.find(content)?.groupValues?.get(1),
+                lastServerName = map[LAST_SERVER_KEY] as? String,
                 textLanguage = GamePreferences.getTextLanguageFromCode(
-                    TEXT_LANGUAGE_REGEX.find(content)?.groupValues?.get(1) ?: "en"
+                    map[TEXT_LANGUAGE_KEY] as? String ?: "en"
                 ),
                 audioLanguage = GamePreferences.getAudioLanguageFromCode(
-                    AUDIO_LANGUAGE_REGEX.find(content)?.groupValues?.get(1) ?: "jp"
+                    map[AUDIO_LANGUAGE_KEY] as? String ?: "jp"
                 ),
                 elfOrderNeedShowNewHint = elfOrderHint,
                 videoBlacklist = GamePreferences.parseBlacklistFromEncoded(
-                    VIDEO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
+                    map[VIDEO_BLACKLIST_KEY] as? String
                 ),
                 audioBlacklist = GamePreferences.parseBlacklistFromEncoded(
-                    AUDIO_BLACKLIST_REGEX.find(content)?.groupValues?.get(1)
+                    map[AUDIO_BLACKLIST_KEY] as? String
                 ),
-                isSaveBattleSpeed = isSaveBattleSpeed,
-                autoBattleOpen = autoBattleOpen,
-                needDownloadAllAssets = needDownloadAllAssets,
-                forceUpdateVideo = forceUpdateVideo,
-                forceUpdateAudio = forceUpdateAudio,
-                showSimplifiedSkillDesc = showSimplifiedSkillDesc,
-                gridFightSeenSeasonTalentTree = gridFightSeenSeasonTalentTree,
-                rogueTournEnableGodMode = rogueTournEnableGodMode
+                isSaveBattleSpeed = map["OtherSettings_IsSaveBattleSpeed"] as? Int,
+                autoBattleOpen = map["OtherSettings_AutoBattleOpen"] as? Int,
+                needDownloadAllAssets = map["App_NeedDownloadAllAssets"] as? Int,
+                forceUpdateVideo = map["App_ForceUpdateVideo"] as? Int,
+                forceUpdateAudio = map["App_ForceUpdateAudio"] as? Int,
+                showSimplifiedSkillDesc = lastUserId?.let { map["User_${it}_ShowSimplifiedSkillDesc"] as? Int },
+                gridFightSeenSeasonTalentTree = lastUserId?.let { map["User_${it}_GridFightSeenSeasonTalentTree"] as? Int },
+                rogueTournEnableGodMode = lastUserId?.let { map["User_${it}_RogueTournEnableGodMode"] as? Int }
             )
         }.onFailure { e ->
             Log.e(TAG, "Error reading game preferences", e)
@@ -238,35 +174,12 @@ class HsrGameManager(private val context: Context) {
      */
     fun writeLanguageSettings(textLanguage: Int, audioLanguage: Int): Boolean {
         if (!isRootAvailable) return false
-        val prefsPath = findPrefsPath() ?: return false
+        val map = getPrefsMap() ?: return false
         
         return runCatching {
-            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            
-            val textCode = GamePreferences.getCodeFromTextLanguage(textLanguage)
-            val audioCode = GamePreferences.getCodeFromAudioLanguage(audioLanguage)
-            
-            // Update or add text language
-            content = if (TEXT_LANGUAGE_REGEX.containsMatchIn(content)) {
-                content.replace(TEXT_LANGUAGE_REGEX) {
-                    """<string name="$TEXT_LANGUAGE_KEY">$textCode</string>"""
-                }
-            } else {
-                content.replace("</map>", """    <string name="$TEXT_LANGUAGE_KEY">$textCode</string>
-</map>""")
-            }
-            
-            // Update or add audio language
-            content = if (AUDIO_LANGUAGE_REGEX.containsMatchIn(content)) {
-                content.replace(AUDIO_LANGUAGE_REGEX) {
-                    """<string name="$AUDIO_LANGUAGE_KEY">$audioCode</string>"""
-                }
-            } else {
-                content.replace("</map>", """    <string name="$AUDIO_LANGUAGE_KEY">$audioCode</string>
-</map>""")
-            }
-            
-            writePrefsContent(content)
+            map[TEXT_LANGUAGE_KEY] = GamePreferences.getCodeFromTextLanguage(textLanguage)
+            map[AUDIO_LANGUAGE_KEY] = GamePreferences.getCodeFromAudioLanguage(audioLanguage)
+            savePrefsMap(map)
         }.getOrDefault(false)
     }
 
@@ -275,22 +188,11 @@ class HsrGameManager(private val context: Context) {
      */
     fun writeVideoBlacklist(blacklist: List<String>): Boolean {
         if (!isRootAvailable) return false
-        val prefsPath = findPrefsPath() ?: return false
+        val map = getPrefsMap() ?: return false
         
         return runCatching {
-            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            val encoded = GamePreferences.encodeBlacklistToString(blacklist)
-            
-            content = if (VIDEO_BLACKLIST_REGEX.containsMatchIn(content)) {
-                content.replace(VIDEO_BLACKLIST_REGEX) {
-                    """<string name="$VIDEO_BLACKLIST_KEY">$encoded</string>"""
-                }
-            } else {
-                content.replace("</map>", """    <string name="$VIDEO_BLACKLIST_KEY">$encoded</string>
-</map>""")
-            }
-            
-            writePrefsContent(content)
+            map[VIDEO_BLACKLIST_KEY] = GamePreferences.encodeBlacklistToString(blacklist)
+            savePrefsMap(map)
         }.getOrDefault(false)
     }
 
@@ -299,63 +201,40 @@ class HsrGameManager(private val context: Context) {
      */
     fun writeAudioBlacklist(blacklist: List<String>): Boolean {
         if (!isRootAvailable) return false
-        val prefsPath = findPrefsPath() ?: return false
+        val map = getPrefsMap() ?: return false
         
         return runCatching {
-            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            val encoded = GamePreferences.encodeBlacklistToString(blacklist)
-            
-            content = if (AUDIO_BLACKLIST_REGEX.containsMatchIn(content)) {
-                content.replace(AUDIO_BLACKLIST_REGEX) {
-                    """<string name="$AUDIO_BLACKLIST_KEY">$encoded</string>"""
-                }
-            } else {
-                content.replace("</map>", """    <string name="$AUDIO_BLACKLIST_KEY">$encoded</string>
-</map>""")
-            }
-            
-            writePrefsContent(content)
+            map[AUDIO_BLACKLIST_KEY] = GamePreferences.encodeBlacklistToString(blacklist)
+            savePrefsMap(map)
         }.getOrDefault(false)
     }
 
-    private fun writePrefsContent(content: String): Boolean {
-        val prefsPath = findPrefsPath() ?: return false
-        
-        val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
-            writeText(content)
-        }
-        
-        return Shell.cmd(
-            "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
-        ).exec().isSuccess.also { tempFile.delete() }
-    }
+
 
     /**
      * Write new QoL, Asset Update, and UID specific settings
      */
     fun writeOtherPreferences(prefs: GamePreferences): Boolean {
         if (!isRootAvailable) return false
-        val prefsPath = findPrefsPath() ?: return false
+        val map = getPrefsMap() ?: return false
         
         return runCatching {
-            var content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
-            
-            prefs.isSaveBattleSpeed?.let { content = updateInt("OtherSettings_IsSaveBattleSpeed", it, content) }
-            prefs.autoBattleOpen?.let { content = updateInt("OtherSettings_AutoBattleOpen", it, content) }
-            prefs.needDownloadAllAssets?.let { content = updateInt("App_NeedDownloadAllAssets", it, content) }
-            prefs.forceUpdateVideo?.let { content = updateInt("App_ForceUpdateVideo", it, content) }
-            prefs.forceUpdateAudio?.let { content = updateInt("App_ForceUpdateAudio", it, content) }
+            prefs.isSaveBattleSpeed?.let { map["OtherSettings_IsSaveBattleSpeed"] = it }
+            prefs.autoBattleOpen?.let { map["OtherSettings_AutoBattleOpen"] = it }
+            prefs.needDownloadAllAssets?.let { map["App_NeedDownloadAllAssets"] = it }
+            prefs.forceUpdateVideo?.let { map["App_ForceUpdateVideo"] = it }
+            prefs.forceUpdateAudio?.let { map["App_ForceUpdateAudio"] = it }
             
             // UID specific settings
-            val uid = prefs.lastUserId ?: LAST_USER_ID_REGEX.find(content)?.groupValues?.get(1)?.toIntOrNull()
+            val uid = prefs.lastUserId ?: map[LAST_USER_ID_KEY] as? Int
             
             if (uid != null) {
-                prefs.showSimplifiedSkillDesc?.let { content = updateInt("User_${uid}_ShowSimplifiedSkillDesc", it, content) }
-                prefs.gridFightSeenSeasonTalentTree?.let { content = updateInt("User_${uid}_GridFightSeenSeasonTalentTree", it, content) }
-                prefs.rogueTournEnableGodMode?.let { content = updateInt("User_${uid}_RogueTournEnableGodMode", it, content) }
+                prefs.showSimplifiedSkillDesc?.let { map["User_${uid}_ShowSimplifiedSkillDesc"] = it }
+                prefs.gridFightSeenSeasonTalentTree?.let { map["User_${uid}_GridFightSeenSeasonTalentTree"] = it }
+                prefs.rogueTournEnableGodMode?.let { map["User_${uid}_RogueTournEnableGodMode"] = it }
             }
             
-            writePrefsContent(content)
+            savePrefsMap(map)
         }.getOrDefault(false)
     }
 
@@ -494,6 +373,102 @@ class HsrGameManager(private val context: Context) {
         return null
     }
 
+    private fun getPrefsMap(): MutableMap<String, Any>? {
+        val prefsPath = findPrefsPath() ?: return null
+        val content = Shell.cmd("cat $prefsPath").exec().out.joinToString("\n")
+        if (content.isEmpty()) return null
+        return UnityXmlHandler.parseXml(content).toMutableMap()
+    }
+
+    private fun savePrefsMap(map: Map<String, Any>): Boolean {
+        val prefsPath = findPrefsPath() ?: return false
+        val newContent = UnityXmlHandler.serializeXml(map)
+        
+        val tempFile = File(context.cacheDir, "temp_prefs.xml").apply {
+            writeText(newContent)
+        }
+        
+        return Shell.cmd(
+            "cp ${tempFile.absolutePath} $prefsPath && chmod 660 $prefsPath && chown $(stat -c '%u:%g' $(dirname $prefsPath)) $prefsPath"
+        ).exec().isSuccess.also { tempFile.delete() }
+    }
+
+    private object UnityXmlHandler {
+        fun parseXml(xmlString: String): Map<String, Any> {
+            val map = mutableMapOf<String, Any>()
+            try {
+                val factory = org.xmlpull.v1.XmlPullParserFactory.newInstance()
+                factory.isNamespaceAware = false
+                val parser = factory.newPullParser()
+                parser.setInput(java.io.StringReader(xmlString))
+
+                var eventType = parser.eventType
+                while (eventType != org.xmlpull.v1.XmlPullParser.END_DOCUMENT) {
+                    if (eventType == org.xmlpull.v1.XmlPullParser.START_TAG) {
+                        val tagName = parser.name
+                        if (tagName == "int") {
+                            val name = parser.getAttributeValue(null, "name")
+                            val value = parser.getAttributeValue(null, "value")?.toIntOrNull()
+                            if (name != null && value != null) {
+                                map[name] = value
+                            }
+                        } else if (tagName == "string") {
+                            val name = parser.getAttributeValue(null, "name")
+                            if (name != null) {
+                                val text = parser.nextText()
+                                map[name] = text
+                            }
+                        }
+                    }
+                    eventType = parser.next()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("UnityXmlHandler", "Failed to parse XML", e)
+            }
+            return map
+        }
+
+        fun serializeXml(map: Map<String, Any>): String {
+            val output = java.io.StringWriter()
+            try {
+                val serializer = android.util.Xml.newSerializer()
+                serializer.setOutput(output)
+                serializer.startDocument("utf-8", true)
+                
+                val nl = "\n"
+                serializer.text(nl)
+                serializer.startTag(null, "map")
+                serializer.text(nl)
+                
+                for ((key, value) in map) {
+                    serializer.text("    ")
+                    when (value) {
+                        is Int -> {
+                            serializer.startTag(null, "int")
+                            serializer.attribute(null, "name", key)
+                            serializer.attribute(null, "value", value.toString())
+                            serializer.endTag(null, "int")
+                        }
+                        is String -> {
+                            serializer.startTag(null, "string")
+                            serializer.attribute(null, "name", key)
+                            serializer.text(value)
+                            serializer.endTag(null, "string")
+                        }
+                    }
+                    serializer.text(nl)
+                }
+                
+                serializer.endTag(null, "map")
+                serializer.endDocument()
+            } catch (e: Exception) {
+                android.util.Log.e("UnityXmlHandler", "Failed to serialize XML", e)
+            }
+            
+            return output.toString().replace("standalone='true'", "standalone=\"yes\"")
+        }
+    }
+
     // endregion
 
     companion object {
@@ -509,44 +484,6 @@ class HsrGameManager(private val context: Context) {
         private const val AUDIO_LANGUAGE_KEY = "LanguageSettings_LocalAudioLanguage"
         private const val VIDEO_BLACKLIST_KEY = "App_VideoBlacklist"
         private const val AUDIO_BLACKLIST_KEY = "App_AudioBlacklist"
-
-        private val GRAPHICS_REGEX = 
-            """<string name="$GRAPHICS_KEY">([^<]*)</string>""".toRegex()
-
-        // Game Preferences Regex patterns
-        private val LAST_USER_ID_REGEX =
-            """<int name="$LAST_USER_ID_KEY" value="(\d+)" />""".toRegex()
-        private val LAST_SERVER_REGEX =
-            """<string name="$LAST_SERVER_KEY">([^<]*)</string>""".toRegex()
-        private val TEXT_LANGUAGE_REGEX =
-            """<string name="$TEXT_LANGUAGE_KEY">([^<]+)</string>""".toRegex()
-        private val AUDIO_LANGUAGE_REGEX =
-            """<string name="$AUDIO_LANGUAGE_KEY">([^<]+)</string>""".toRegex()
-        private val VIDEO_BLACKLIST_REGEX =
-            """<string name="$VIDEO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
-        private val AUDIO_BLACKLIST_REGEX =
-            """<string name="$AUDIO_BLACKLIST_KEY">([^<]*)</string>""".toRegex()
-            
-        private val RESOLUTION_WIDTH_REGEX = 
-            """<int name="Screenmanager%20Resolution%20Width" value="(\d+)" />""".toRegex()
-        private val RESOLUTION_HEIGHT_REGEX = 
-            """<int name="Screenmanager%20Resolution%20Height" value="(\d+)" />""".toRegex()
-        private val FULLSCREEN_MODE_REGEX = 
-            """<int name="Screenmanager%20Fullscreen%20mode" value="(-?\d+)" />""".toRegex()
-        private val GRAPHICS_QUALITY_REGEX = 
-            """<int name="GraphicsSettings_GraphicsQuality" value="(\d+)" />""".toRegex()
-
-        // Helper to update int values in XML safely
-        fun updateInt(key: String, value: Int, xml: String): String {
-            val escapedKey = Regex.escape(key)
-            val regex = """<int name="$escapedKey" value="(-?\d+)"\s*/>""".toRegex()
-            return if (regex.containsMatchIn(xml)) {
-                xml.replace(regex, """<int name="$key" value="$value" />""")
-            } else {
-                xml.replace("</map>", """    <int name="$key" value="$value" />
-</map>""")
-            }
-        }
 
         private val PREFS_PATH_TEMPLATES = listOf(
             "/data_mirror/data_ce/null/0/%s/shared_prefs/%s", // Modern Android bypasses mount namespace isolation
