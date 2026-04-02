@@ -32,7 +32,11 @@ class HsrGameManager(private val context: Context) {
         get() = installedGamePackage != null
 
     val gameVersionName: String
-        get() = GamePackage.fromPackageName(installedGamePackage)?.displayName ?: "Unknown"
+        get() {
+            val pkg = installedGamePackage ?: return "Unknown"
+            return GamePackage.fromPackageName(pkg)?.displayName
+                ?: pkg.substringAfterLast('.').replaceFirstChar { it.uppercase() }
+        }
 
     val configPath: String?
         get() = findPrefsPath()
@@ -341,13 +345,32 @@ class HsrGameManager(private val context: Context) {
         get() = File(context.filesDir, PREFS_BACKUP_FILE)
 
     private fun detectInstalledPackage(): String? {
+        // Phase 1: Check known packages first (fast path via PackageManager)
         for (pkg in GamePackage.entries) {
             runCatching {
                 context.packageManager.getPackageInfo(pkg.packageName, 0)
-                Log.d(TAG, "Game found: ${pkg.packageName}")
+                Log.d(TAG, "Game found (known): ${pkg.packageName}")
                 return pkg.packageName
             }
         }
+
+        // Phase 2: Dynamic scan via root — catches unknown store variants
+        if (isRootAvailable) {
+            val result = Shell.cmd("pm list packages | grep -i hkrpg").exec()
+            if (result.isSuccess) {
+                val discovered = result.out
+                    .mapNotNull { line ->
+                        line.removePrefix("package:").trim().takeIf { it.isNotEmpty() }
+                    }
+                    .firstOrNull()
+
+                if (discovered != null) {
+                    Log.d(TAG, "Game found (dynamic scan): $discovered")
+                    return discovered
+                }
+            }
+        }
+
         Log.w(TAG, "No HSR package found")
         return null
     }
@@ -494,13 +517,15 @@ class HsrGameManager(private val context: Context) {
     }
 
     /**
-     * Enum representing supported HSR game packages
+     * Enum representing known HSR game packages.
+     * Unknown store variants are detected dynamically via `pm list packages`.
      */
     private enum class GamePackage(val packageName: String, val displayName: String) {
         GLOBAL("com.HoYoverse.hkrpgoversea", "Global/SEA"),
         CHINA("com.miHoYo.hkrpg", "CN (China)"),
         TW_HK_MO("com.HoYoverse.hkrpg", "TW/HK/MO"),
-        COGNOSPHERE("com.cognosphere.hkrpg", "Alternative Global");
+        COGNOSPHERE("com.cognosphere.hkrpg", "Alternative Global"),
+        SAMSUNG("com.HoYoverse.hkrpgsamsung", "Samsung Galaxy Store");
 
         companion object {
             fun fromPackageName(name: String?): GamePackage? =
@@ -508,3 +533,4 @@ class HsrGameManager(private val context: Context) {
         }
     }
 }
+
