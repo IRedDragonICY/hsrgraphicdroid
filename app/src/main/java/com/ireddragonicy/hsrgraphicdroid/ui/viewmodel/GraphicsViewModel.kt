@@ -199,7 +199,7 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
                 current.reflectionQuality = 3
                 current.sfxQuality = 4
                 current.bloomQuality = 3
-                current.aaMode = 2
+                current.aaMode = 1
                 current.enableSelfShadow = 2
                 current.dlssQuality = 1
                 current.particleTrailSmoothness = 3
@@ -216,7 +216,7 @@ class GraphicsViewModel(application: Application) : AndroidViewModel(application
                 current.reflectionQuality = 5
                 current.sfxQuality = 5
                 current.bloomQuality = 5
-                current.aaMode = 2
+                current.aaMode = 1
                 current.enableSelfShadow = 2
                 current.enableMetalFXSU = true
                 current.dlssQuality = 1
