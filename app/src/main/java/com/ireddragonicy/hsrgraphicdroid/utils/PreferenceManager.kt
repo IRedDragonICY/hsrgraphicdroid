@@ -1,44 +1,48 @@
 package com.ireddragonicy.hsrgraphicdroid.utils
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import android.content.SharedPreferences
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.onStart
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+class PreferenceManager(context: Context) {
 
-class PreferenceManager(private val context: Context) {
-    
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
     companion object {
-        private val THEME_KEY = stringPreferencesKey("theme")
-        private val LANGUAGE_KEY = stringPreferencesKey("language")
+        private const val THEME_KEY = "theme"
+        private const val LANGUAGE_KEY = "language"
     }
-    
+
     suspend fun setTheme(theme: String) {
-        context.dataStore.edit { preferences ->
-            preferences[THEME_KEY] = theme
-        }
+        prefs.edit().putString(THEME_KEY, theme).apply()
     }
-    
-    fun getTheme(): Flow<String> {
-        return context.dataStore.data.map { preferences ->
-            preferences[THEME_KEY] ?: "system"
-        }
-    }
-    
+
+    fun getTheme(): Flow<String> = observeKey(THEME_KEY, "system")
+
     suspend fun setLanguage(language: String) {
-        context.dataStore.edit { preferences ->
-            preferences[LANGUAGE_KEY] = language
-        }
+        prefs.edit().putString(LANGUAGE_KEY, language).apply()
     }
-    
-    fun getLanguage(): Flow<String> {
-        return context.dataStore.data.map { preferences ->
-            preferences[LANGUAGE_KEY] ?: "system"
+
+    fun getLanguage(): Flow<String> = observeKey(LANGUAGE_KEY, "system")
+
+    /**
+     * Observe a SharedPreferences key as a Flow.
+     * Emits the current value immediately, then emits on every change.
+     */
+    private fun observeKey(key: String, default: String): Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+            if (changedKey == key) {
+                trySend(prefs.getString(key, default) ?: default)
+            }
         }
-    }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.onStart {
+        emit(prefs.getString(key, default) ?: default)
+    }.distinctUntilChanged()
 }

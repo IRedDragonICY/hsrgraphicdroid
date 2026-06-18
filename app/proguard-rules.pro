@@ -93,9 +93,6 @@
 -keep interface com.topjohnwu.superuser.** { *; }
 -keepclassmembers class * extends com.topjohnwu.superuser.Shell$Initializer { *; }
 
-# DataStore - minimal
--keep class androidx.datastore.preferences.** { *; }
-
 # ==================== ANDROID RULES (MINIMAL) ====================
 
 # Remove unused resources aggressively
