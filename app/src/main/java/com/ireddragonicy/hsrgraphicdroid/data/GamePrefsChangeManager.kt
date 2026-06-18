@@ -7,11 +7,9 @@ class GamePrefsChangeManager : BaseChangeManager<GamePreferences>() {
         "audioLanguage" to "Audio Language",
         "videoBlacklist" to "Video Blacklist",
         "audioBlacklist" to "Audio Blacklist",
-        "isSaveBattleSpeed" to "Save Battle Speed",
+        "speedUpOpen" to "Speed Up Open",
         "autoBattleOpen" to "Auto Battle Open",
         "needDownloadAllAssets" to "Download All Assets",
-        "forceUpdateVideo" to "Force Update Video",
-        "forceUpdateAudio" to "Force Update Audio",
         "showSimplifiedSkillDesc" to "Show Simplified Skill Desc",
         "gridFightSeenSeasonTalentTree" to "Season Talent Tree",
         "rogueTournEnableGodMode" to "Rogue Tourn God Mode"

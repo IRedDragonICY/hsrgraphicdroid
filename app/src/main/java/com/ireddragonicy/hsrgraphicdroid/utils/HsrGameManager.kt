@@ -61,8 +61,17 @@ class HsrGameManager(private val context: Context) {
                 } else {
                     it.screenWidth = map["Screenmanager%20Resolution%20Width"] as? Int ?: 1920
                     it.screenHeight = map["Screenmanager%20Resolution%20Height"] as? Int ?: 1080
-                    it.fullscreenMode = map["Screenmanager%20Fullscreen%20mode"] as? Int ?: 1
+                    it.fullscreenMode = map["Screenmanager%20Fullscreen%20mode"] as? Int ?: -1
                     it.graphicsQuality = map["GraphicsSettings_GraphicsQuality"] as? Int ?: 3
+                    // These are stored as separate top-level XML entries, NOT inside the GraphicsSettings_Model JSON
+                    it.enablePsoShaderWarmup = (map["GraphicsSettings_EnablePsoShaderWarmup"] as? Int ?: 1) == 1
+                    it.isUserSave = map["GraphicsSettings_IsUserSave"] as? Int ?: 1
+                    it.version = map["GraphicsSettings_Version"] as? Int ?: 10
+                    // SpeedUpOpen is a per-user key
+                    val uid = map[LAST_USER_ID_KEY] as? Int
+                    if (uid != null) {
+                        it.speedUpOpen = map["User_${uid}_SpeedUpOpen"] as? Int ?: 1
+                    }
                 }
             }
         }.onFailure { e ->
@@ -80,6 +89,15 @@ class HsrGameManager(private val context: Context) {
             map["Screenmanager%20Resolution%20Height"] = settings.screenHeight
             map["Screenmanager%20Fullscreen%20mode"] = settings.fullscreenMode
             map["GraphicsSettings_GraphicsQuality"] = settings.graphicsQuality
+            // Write as separate top-level XML entries (not inside the JSON blob)
+            map["GraphicsSettings_EnablePsoShaderWarmup"] = if (settings.enablePsoShaderWarmup) 1 else 0
+            map["GraphicsSettings_IsUserSave"] = settings.isUserSave
+            map["GraphicsSettings_Version"] = settings.version
+            // SpeedUpOpen is a per-user key
+            val uid = map[LAST_USER_ID_KEY] as? Int
+            if (uid != null) {
+                map["User_${uid}_SpeedUpOpen"] = settings.speedUpOpen
+            }
             
             savePrefsMap(map)
         }.getOrDefault(false)
@@ -159,11 +177,9 @@ class HsrGameManager(private val context: Context) {
                 audioBlacklist = GamePreferences.parseBlacklistFromEncoded(
                     map[AUDIO_BLACKLIST_KEY] as? String
                 ),
-                isSaveBattleSpeed = map["OtherSettings_IsSaveBattleSpeed"] as? Int,
+                speedUpOpen = lastUserId?.let { map["User_${it}_SpeedUpOpen"] as? Int },
                 autoBattleOpen = map["OtherSettings_AutoBattleOpen"] as? Int,
                 needDownloadAllAssets = map["App_NeedDownloadAllAssets"] as? Int,
-                forceUpdateVideo = map["App_ForceUpdateVideo"] as? Int,
-                forceUpdateAudio = map["App_ForceUpdateAudio"] as? Int,
                 showSimplifiedSkillDesc = lastUserId?.let { map["User_${it}_ShowSimplifiedSkillDesc"] as? Int },
                 gridFightSeenSeasonTalentTree = lastUserId?.let { map["User_${it}_GridFightSeenSeasonTalentTree"] as? Int },
                 rogueTournEnableGodMode = lastUserId?.let { map["User_${it}_RogueTournEnableGodMode"] as? Int }
@@ -223,15 +239,16 @@ class HsrGameManager(private val context: Context) {
         val map = getPrefsMap() ?: return false
         
         return runCatching {
-            prefs.isSaveBattleSpeed?.let { map["OtherSettings_IsSaveBattleSpeed"] = it }
-            prefs.autoBattleOpen?.let { map["OtherSettings_AutoBattleOpen"] = it }
-            prefs.needDownloadAllAssets?.let { map["App_NeedDownloadAllAssets"] = it }
-            prefs.forceUpdateVideo?.let { map["App_ForceUpdateVideo"] = it }
-            prefs.forceUpdateAudio?.let { map["App_ForceUpdateAudio"] = it }
-            
-            // UID specific settings
+            // SpeedUpOpen is a per-user key
             val uid = prefs.lastUserId ?: map[LAST_USER_ID_KEY] as? Int
             
+            if (uid != null) {
+                prefs.speedUpOpen?.let { map["User_${uid}_SpeedUpOpen"] = it }
+            }
+            prefs.autoBattleOpen?.let { map["OtherSettings_AutoBattleOpen"] = it }
+            prefs.needDownloadAllAssets?.let { map["App_NeedDownloadAllAssets"] = it }
+            
+            // UID specific settings
             if (uid != null) {
                 prefs.showSimplifiedSkillDesc?.let { map["User_${uid}_ShowSimplifiedSkillDesc"] = it }
                 prefs.gridFightSeenSeasonTalentTree?.let { map["User_${uid}_GridFightSeenSeasonTalentTree"] = it }

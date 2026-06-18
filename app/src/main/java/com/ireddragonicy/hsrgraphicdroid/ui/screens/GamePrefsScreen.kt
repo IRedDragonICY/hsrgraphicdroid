@@ -510,7 +510,7 @@ private fun QoLSettingsCard(
     onPreferenceChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (prefs.isSaveBattleSpeed == null && prefs.autoBattleOpen == null) return
+    if (prefs.speedUpOpen == null && prefs.autoBattleOpen == null) return
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -535,12 +535,12 @@ private fun QoLSettingsCard(
 
             Spacer(Modifier.height(8.dp))
             
-            if (prefs.isSaveBattleSpeed != null) {
+            if (prefs.speedUpOpen != null) {
                 PreferenceSwitchItem(
                     title = stringResource(R.string.is_save_battle_speed),
                     description = stringResource(R.string.is_save_battle_speed_desc),
-                    checked = prefs.isSaveBattleSpeed == 1,
-                    onCheckedChange = { onPreferenceChange("isSaveBattleSpeed", it) }
+                    checked = prefs.speedUpOpen == 1,
+                    onCheckedChange = { onPreferenceChange("speedUpOpen", it) }
                 )
             }
             
@@ -614,7 +614,7 @@ private fun AssetDownloadSettingsCard(
     onPreferenceChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (prefs.needDownloadAllAssets == null && prefs.forceUpdateVideo == null && prefs.forceUpdateAudio == null) return
+    if (prefs.needDownloadAllAssets == null) return
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -645,24 +645,6 @@ private fun AssetDownloadSettingsCard(
                     description = stringResource(R.string.need_download_all_assets_desc),
                     checked = prefs.needDownloadAllAssets == 1,
                     onCheckedChange = { onPreferenceChange("needDownloadAllAssets", it) }
-                )
-            }
-            
-            if (prefs.forceUpdateVideo != null) {
-                PreferenceSwitchItem(
-                    title = stringResource(R.string.force_update_video),
-                    description = stringResource(R.string.force_update_desc),
-                    checked = prefs.forceUpdateVideo == 1,
-                    onCheckedChange = { onPreferenceChange("forceUpdateVideo", it) }
-                )
-            }
-
-            if (prefs.forceUpdateAudio != null) {
-                PreferenceSwitchItem(
-                    title = stringResource(R.string.force_update_audio),
-                    description = stringResource(R.string.force_update_desc),
-                    checked = prefs.forceUpdateAudio == 1,
-                    onCheckedChange = { onPreferenceChange("forceUpdateAudio", it) }
                 )
             }
         }

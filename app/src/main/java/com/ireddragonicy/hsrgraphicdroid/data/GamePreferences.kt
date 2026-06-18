@@ -24,13 +24,11 @@ data class GamePreferences(
     var audioBlacklist: List<String> = emptyList(),
     
     // Quality of Life (QoL)
-    var isSaveBattleSpeed: Int? = null,
+    var speedUpOpen: Int? = null,
     var autoBattleOpen: Int? = null,
     
     // Updates & Downloads
     var needDownloadAllAssets: Int? = null,
-    var forceUpdateVideo: Int? = null,
-    var forceUpdateAudio: Int? = null,
     
     // UID Specific Settings
     var showSimplifiedSkillDesc: Int? = null,
@@ -146,11 +144,9 @@ data class GamePreferences(
                     elfOrderNeedShowNewHint = if (json.has("elfOrderNeedShowNewHint")) json.getBoolean("elfOrderNeedShowNewHint") else null,
                     videoBlacklist = parseBlacklistFromEncoded(json.optString("videoBlacklist", "")),
                     audioBlacklist = parseBlacklistFromEncoded(json.optString("audioBlacklist", "")),
-                    isSaveBattleSpeed = if (json.has("isSaveBattleSpeed")) json.getInt("isSaveBattleSpeed") else null,
+                    speedUpOpen = if (json.has("speedUpOpen")) json.getInt("speedUpOpen") else null,
                     autoBattleOpen = if (json.has("autoBattleOpen")) json.getInt("autoBattleOpen") else null,
                     needDownloadAllAssets = if (json.has("needDownloadAllAssets")) json.getInt("needDownloadAllAssets") else null,
-                    forceUpdateVideo = if (json.has("forceUpdateVideo")) json.getInt("forceUpdateVideo") else null,
-                    forceUpdateAudio = if (json.has("forceUpdateAudio")) json.getInt("forceUpdateAudio") else null,
                     showSimplifiedSkillDesc = if (json.has("showSimplifiedSkillDesc")) json.getInt("showSimplifiedSkillDesc") else null,
                     gridFightSeenSeasonTalentTree = if (json.has("gridFightSeenSeasonTalentTree")) json.getInt("gridFightSeenSeasonTalentTree") else null,
                     rogueTournEnableGodMode = if (json.has("rogueTournEnableGodMode")) json.getInt("rogueTournEnableGodMode") else null
@@ -169,11 +165,9 @@ data class GamePreferences(
             prefs.elfOrderNeedShowNewHint?.let { json.put("elfOrderNeedShowNewHint", it) }
             json.put("videoBlacklist", encodeBlacklistToString(prefs.videoBlacklist))
             json.put("audioBlacklist", encodeBlacklistToString(prefs.audioBlacklist))
-            prefs.isSaveBattleSpeed?.let { json.put("isSaveBattleSpeed", it) }
+            prefs.speedUpOpen?.let { json.put("speedUpOpen", it) }
             prefs.autoBattleOpen?.let { json.put("autoBattleOpen", it) }
             prefs.needDownloadAllAssets?.let { json.put("needDownloadAllAssets", it) }
-            prefs.forceUpdateVideo?.let { json.put("forceUpdateVideo", it) }
-            prefs.forceUpdateAudio?.let { json.put("forceUpdateAudio", it) }
             prefs.showSimplifiedSkillDesc?.let { json.put("showSimplifiedSkillDesc", it) }
             prefs.gridFightSeenSeasonTalentTree?.let { json.put("gridFightSeenSeasonTalentTree", it) }
             prefs.rogueTournEnableGodMode?.let { json.put("rogueTournEnableGodMode", it) }

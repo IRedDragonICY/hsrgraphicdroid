@@ -98,11 +98,9 @@ class GamePrefsViewModel(application: Application) : AndroidViewModel(applicatio
             if (newPrefs.audioLanguage != orig.audioLanguage) modifiedFields.add("audioLanguage")
             if (newPrefs.videoBlacklist != orig.videoBlacklist) modifiedFields.add("videoBlacklist")
             if (newPrefs.audioBlacklist != orig.audioBlacklist) modifiedFields.add("audioBlacklist")
-            if (newPrefs.isSaveBattleSpeed != orig.isSaveBattleSpeed) modifiedFields.add("isSaveBattleSpeed")
+            if (newPrefs.speedUpOpen != orig.speedUpOpen) modifiedFields.add("speedUpOpen")
             if (newPrefs.autoBattleOpen != orig.autoBattleOpen) modifiedFields.add("autoBattleOpen")
             if (newPrefs.needDownloadAllAssets != orig.needDownloadAllAssets) modifiedFields.add("needDownloadAllAssets")
-            if (newPrefs.forceUpdateVideo != orig.forceUpdateVideo) modifiedFields.add("forceUpdateVideo")
-            if (newPrefs.forceUpdateAudio != orig.forceUpdateAudio) modifiedFields.add("forceUpdateAudio")
             if (newPrefs.showSimplifiedSkillDesc != orig.showSimplifiedSkillDesc) modifiedFields.add("showSimplifiedSkillDesc")
             if (newPrefs.gridFightSeenSeasonTalentTree != orig.gridFightSeenSeasonTalentTree) modifiedFields.add("gridFightSeenSeasonTalentTree")
             if (newPrefs.rogueTournEnableGodMode != orig.rogueTournEnableGodMode) modifiedFields.add("rogueTournEnableGodMode")
@@ -158,11 +156,9 @@ class GamePrefsViewModel(application: Application) : AndroidViewModel(applicatio
         val value = if (isEnabled) 1 else 0
         val state = _uiState.value
         val newPrefs = when(key) {
-            "isSaveBattleSpeed" -> state.currentPrefs.copy(isSaveBattleSpeed = value)
+            "speedUpOpen" -> state.currentPrefs.copy(speedUpOpen = value)
             "autoBattleOpen" -> state.currentPrefs.copy(autoBattleOpen = value)
             "needDownloadAllAssets" -> state.currentPrefs.copy(needDownloadAllAssets = value)
-            "forceUpdateVideo" -> state.currentPrefs.copy(forceUpdateVideo = value)
-            "forceUpdateAudio" -> state.currentPrefs.copy(forceUpdateAudio = value)
             "showSimplifiedSkillDesc" -> state.currentPrefs.copy(showSimplifiedSkillDesc = value)
             "gridFightSeenSeasonTalentTree" -> state.currentPrefs.copy(gridFightSeenSeasonTalentTree = value)
             "rogueTournEnableGodMode" -> state.currentPrefs.copy(rogueTournEnableGodMode = value)
